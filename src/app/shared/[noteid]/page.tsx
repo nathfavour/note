@@ -245,7 +245,7 @@ export default async function SharedNotePage({ params }: { params: { noteid: str
           </header>
 
           <div className="p-8">
-            <div className="prose prose-lg max-w-none dark:prose-invert text-light-fg dark:text-dark-fg leading-relaxed">
+            <div className="prose prose-lg max-w-none dark:prose-invert text-light-fg dark:text-dark-fg [&>*]:leading-relaxed [&>p]:mb-6 [&>h1]:mb-6 [&>h1]:mt-8 [&>h2]:mb-5 [&>h2]:mt-7 [&>h3]:mb-4 [&>h3]:mt-6 [&>ul]:mb-6 [&>ol]:mb-6 [&>blockquote]:mb-6 [&>pre]:mb-6 [&>*:first-child]:mt-0">
               {note.content ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>{preProcessMarkdown(note.content)}</ReactMarkdown>
               ) : (
