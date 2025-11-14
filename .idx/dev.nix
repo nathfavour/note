@@ -1,11 +1,12 @@
 {pkgs}: {
-  channel = "stable-24.05";
+  channel = "unstable";
   packages = [
-    pkgs.nodejs_20
+    # pkgs.nodejs_24
     # pkgs.cargo
-    pkgs.rustup
-    pkgs.gcc
+    # pkgs.rustup
+    # pkgs.gcc
     pkgs.gh
+    pkgs.bun
 
   ];
   idx.extensions = [
