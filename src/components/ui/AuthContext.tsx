@@ -63,19 +63,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       setUser(currentUser);
-      // Reset retry count on success
-      if (isRetry) {
-        console.log('Authentication state recovered successfully');
-      }
     } catch (error) {
       console.error('Failed to get current user:', error);
       setUser(null);
-
-      // If this is the initial load and we failed, don't retry immediately
-      // to avoid infinite loops, but log for debugging
-      if (!isRetry && !isLoading) {
-        console.warn('Initial authentication check failed, user may need to re-authenticate');
-      }
     } finally {
       setIsLoading(false);
       // Reduced loading time to prevent excessive flashing
@@ -148,18 +138,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Session recovery function for when authentication state becomes inconsistent
   const recoverSession = async () => {
-    console.log('Attempting session recovery...');
     setIsLoading(true);
 
     try {
       // Try to refresh the user data
-      await refreshUser(true);
+      await refreshUser();
 
       if (user) {
-        console.log('Session recovery successful');
         return true;
       } else {
-        console.log('Session recovery failed, user needs to re-authenticate');
         setIDMWindowOpen(true);
         return false;
       }
@@ -199,7 +186,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshUser().then(() => {
       const currentUser = user;
       if (currentUser) {
-        console.log('User already authenticated, skipping IDM window');
         setIDMWindowOpen(false);
         return;
       }
@@ -228,13 +214,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIDMWindowRef(windowRef);
       setIDMWindowOpen(true);
 
-      // Poll for session changes
+      // Poll for session changes (only for IDM window)
       if (windowRef) {
         const pollInterval = setInterval(async () => {
           try {
             const currentUser = await getCurrentUser();
             if (currentUser && !user) {
-              console.log('IDM authentication successful');
               setUser(currentUser);
               setIDMWindowOpen(false);
               windowRef.close();
