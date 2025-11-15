@@ -9,15 +9,13 @@ export class DefaultAIProviderRegistry implements AIProviderRegistry {
     
     // Initialize the provider
     provider.initialize().catch(error => {
-      console.warn(`Failed to initialize AI provider ${provider.id}:`, error);
+      // Silent initialization failure handling
     });
     
     // Enable by default if config allows
     if (provider.getConfig().enabled) {
       this.enabledProviders.add(provider.id);
     }
-    
-    console.log(`Registered AI provider: ${provider.name} (${provider.id})`);
   }
 
   unregister(providerId: string): void {
@@ -25,12 +23,11 @@ export class DefaultAIProviderRegistry implements AIProviderRegistry {
     if (provider) {
       // Cleanup the provider
       provider.cleanup().catch(error => {
-        console.warn(`Failed to cleanup AI provider ${providerId}:`, error);
+        // Silent cleanup failure handling
       });
       
       this.providers.delete(providerId);
       this.enabledProviders.delete(providerId);
-      console.log(`Unregistered AI provider: ${providerId}`);
     }
   }
 
@@ -61,8 +58,6 @@ export class DefaultAIProviderRegistry implements AIProviderRegistry {
       this.enabledProviders.delete(providerId);
       provider.updateConfig({ ...provider.getConfig(), enabled: false });
     }
-    
-    console.log(`AI provider ${providerId} ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   async getHealthyProviders(): Promise<AIProvider[]> {
@@ -76,7 +71,7 @@ export class DefaultAIProviderRegistry implements AIProviderRegistry {
           healthyProviders.push(provider);
         }
       } catch (error) {
-        console.warn(`AI provider ${provider.id} health check failed:`, error);
+        // Silent health check failure handling
       }
     }
 
@@ -165,7 +160,6 @@ export class AIService {
         try {
           return await this.tryGenerateWithProvider(primaryProvider, { prompt, type, options });
         } catch (error) {
-          console.warn(`Primary provider ${this.config.primaryProvider} failed:`, error);
           lastError = error as Error;
         }
       }
@@ -178,7 +172,6 @@ export class AIService {
       try {
         return await this.tryGenerateWithProvider(provider, { prompt, type, options });
       } catch (error) {
-        console.warn(`Provider ${provider.id} failed:`, error);
         lastError = error as Error;
       }
     }

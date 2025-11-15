@@ -98,8 +98,6 @@ export function getShareableUrl(noteId: string): string {
  */
 export async function validatePublicNoteAccess(noteId: string): Promise<Notes | null> {
   try {
-    console.log('Attempting to access public note:', noteId);
-    
     // Use standard client to access public notes
     const note = await tablesDB.getRow({
       databaseId: APPWRITE_DATABASE_ID,
@@ -107,18 +105,13 @@ export async function validatePublicNoteAccess(noteId: string): Promise<Notes | 
       rowId: noteId
     }) as unknown as Notes;
 
-    console.log('Successfully retrieved note:', note.title, 'isPublic:', note.isPublic);
-
     // Check if note is public
     if (!isNotePublic(note)) {
-      console.log('Note is not public, denying access');
       return null;
     }
 
-    console.log('Note is public, granting access');
     return note;
   } catch (error) {
-    console.error('Error accessing public note:', error);
     // Note doesn't exist or no access
     return null;
   }

@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Periodic session validation to detect expired sessions
+  // Session validation on initial load and manual refresh only
   useEffect(() => {
     // Restore email verification reminder dismissal state
     if (typeof window !== 'undefined') {
@@ -97,51 +97,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     refreshUser();
 
-    // Set up periodic session validation (every 5 minutes)
-    const sessionCheckInterval = setInterval(async () => {
-      if (user && !isLoading) {
-        try {
-          const currentUser = await getCurrentUser();
-          // If user exists but session is invalid, clear state
-          if (!currentUser && user) {
-            console.warn('Session expired, clearing authentication state');
-            setUser(null);
-            // Open IDM window to re-authenticate
-            setIDMWindowOpen(true);
-          } else if (currentUser && currentUser.$id !== user.$id) {
-            // User changed (edge case), update state
-            setUser(currentUser);
-          }
-        } catch (error) {
-          console.error('Session validation failed:', error);
-          // Don't clear user state on network errors, just log
-        }
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    let lastRefreshTime = Date.now();
+    const MIN_REFRESH_INTERVAL = 60 * 1000; // 1 minute minimum between refreshes
 
-    // Listen for visibility change to re-validate session when user returns to tab
-    const handleVisibilityChange = () => {
-      if (!document.hidden && user && !isLoading) {
-        refreshUser(true); // Pass true to indicate this is a retry
+    // Event-based session validation only on explicit user actions (prevent polling abuse)
+    const handleUserActivity = () => {
+      const now = Date.now();
+      // Throttle refreshes: max 1 per minute
+      if (now - lastRefreshTime >= MIN_REFRESH_INTERVAL && user && !isLoading) {
+        lastRefreshTime = now;
+        refreshUser();
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      if (user && !isLoading) {
-        console.log('Network connection restored, validating session');
-        refreshUser(true);
-      }
-    };
-
-    window.addEventListener('online', handleOnline);
+    // Only validate on explicit user interaction (click, keydown)
+    // Removed visibility and online events to prevent automatic refresh abuse
+    document.addEventListener('click', handleUserActivity, { once: false, passive: true });
+    document.addEventListener('keydown', handleUserActivity, { once: false, passive: true });
 
     return () => {
-      clearInterval(sessionCheckInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('click', handleUserActivity);
+      document.removeEventListener('keydown', handleUserActivity);
     };
   }, [user, isLoading]);
 

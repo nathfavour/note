@@ -4,8 +4,6 @@ import { createGitHubModelsProvider } from '@/lib/ai/providers/github';
 
 // Initialize AI providers based on environment and configuration
 export function initializeAIProviders() {
-  console.log('Initializing AI provider system...');
-
   // Always register mock provider for development and fallback
   const mockProvider = createMockProvider({
     enabled: true
@@ -13,7 +11,6 @@ export function initializeAIProviders() {
   aiProviderRegistry.register(mockProvider);
 
   // Gemini provider disabled - using GitHub Models only
-  console.log('Gemini provider disabled by configuration');
 
   // Register GitHub Models provider if GitHub token is available
   const githubToken = process.env.GITHUB_TOKEN;
@@ -24,9 +21,6 @@ export function initializeAIProviders() {
       model: 'gpt-4.1', // Default model
     });
     aiProviderRegistry.register(githubProvider);
-    console.log('GitHub Models provider registered (enabled)');
-  } else {
-    console.log('GitHub token not found - GitHub Models provider not registered');
   }
 
   // Configure AI service with primary provider (GitHub Models only)
@@ -43,8 +37,6 @@ export function initializeAIProviders() {
     timeout: 30000,
     loadBalancing: 'round-robin'
   });
-
-  console.log(`AI provider system initialized with ${primaryProvider} as primary provider`);
 }
 
 // Auto-initialize when this module is imported

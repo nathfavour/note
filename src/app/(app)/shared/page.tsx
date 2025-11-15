@@ -23,19 +23,27 @@ export default function SharedNotesPage() {
   const [publicNotes, setPublicNotes] = useState<Notes[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'private' | 'public'>('private');
+  const [isFetching, setIsFetching] = useState(false);
 
-  // Fetch shared and public notes
+  // Fetch shared and public notes with request deduplication
   useEffect(() => {
+    // Prevent multiple simultaneous requests
+    if (isFetching) return;
+
     const fetchNotes = async () => {
       try {
         setLoading(true);
+        setIsFetching(true);
         
-        // Fetch privately shared notes
-        const sharedResult = await getSharedNotes();
+        // Fetch privately shared notes and public notes in parallel
+        const [sharedResult, user] = await Promise.all([
+          getSharedNotes(),
+          getCurrentUser()
+        ]);
+
         setSharedNotes(sharedResult.documents as SharedNote[]);
         
         // Fetch current user's public notes only
-        const user = await getCurrentUser();
         if (user && user.$id) {
           const publicResult = await listPublicNotesByUser(user.$id);
           setPublicNotes(publicResult.documents as unknown as Notes[]);
@@ -47,11 +55,12 @@ export default function SharedNotesPage() {
         console.error('Error fetching shared notes:', error);
       } finally {
         setLoading(false);
+        setIsFetching(false);
       }
     };
 
     fetchNotes();
-  }, []);
+  }, [isFetching]);
 
   const currentNotes = activeTab === 'private' ? sharedNotes : publicNotes;
 

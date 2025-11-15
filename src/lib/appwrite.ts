@@ -63,6 +63,43 @@ export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUC
 
 export { client, account, databases, tablesDB, storage, functions, ID, Query, Permission, Role, OAuthProvider };
 
+// Simple in-memory cache for query results with TTL
+const queryCache = new Map<string, { data: any; expiresAt: number }>();
+
+function getCacheKey(prefix: string, params: any): string {
+  return `${prefix}:${JSON.stringify(params)}`;
+}
+
+function isCacheExpired(expiresAt: number): boolean {
+  return Date.now() > expiresAt;
+}
+
+function getCached<T>(key: string): T | null {
+  const entry = queryCache.get(key);
+  if (!entry) return null;
+  if (isCacheExpired(entry.expiresAt)) {
+    queryCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function setCached<T>(key: string, data: T, ttlMs: number = 5 * 60 * 1000): void {
+  queryCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+}
+
+// Cleanup old cache entries every 10 minutes
+if (typeof window === 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of queryCache.entries()) {
+      if (isCacheExpired(entry.expiresAt)) {
+        queryCache.delete(key);
+      }
+    }
+  }, 10 * 60 * 1000);
+}
+
 function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
   const { $id, $sequence, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...cleanData } = data as any;
   return cleanData;
@@ -496,62 +533,23 @@ export async function listNotes(queries: any[] = [], limit: number = 100) {
   return { ...res, documents: notes };
 }
 
-// New function to get all notes with cursor pagination
+// New function to get all notes with cursor pagination (memory efficient)
 export async function getAllNotes(): Promise<{ documents: Notes[], total: number }> {
-  const user = await getCurrentUser();
-  if (!user || !user.$id) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return { documents: [], total: 0 };
+
+    const notesRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_TABLE_ID_NOTES,
+      [Query.equal('userId', currentUser.$id), Query.limit(1000)]
+    );
+
+    return { documents: notesRes.documents as Notes[], total: notesRes.total };
+  } catch (error) {
+    console.error('getAllNotes error:', error);
     return { documents: [], total: 0 };
   }
-  let allNotes: Notes[] = [];
-  let cursor: string | undefined;
-  const batchSize = 100;
-  while (true) {
-    const queries: any[] = [
-      Query.equal('userId', user.$id),
-      Query.limit(batchSize),
-      Query.orderDesc('$createdAt')
-    ];
-    if (cursor) queries.push(Query.cursorAfter(cursor));
-    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, queries);
-    const notes = res.documents as unknown as Notes[];
-    allNotes.push(...notes);
-    if (notes.length < batchSize) break;
-    cursor = notes[notes.length - 1].$id;
-  }
-  // Hydrate all tags in one or multiple batches if necessary
-  try {
-    if (allNotes.length) {
-      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
-      const noteIds = allNotes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
-      if (noteIds.length) {
-        // Appwrite max limit per request (assuming 100); chunk ids
-        const chunk = <T,>(arr: T[], size: number): T[][] => arr.length ? [arr.slice(0, size), ...chunk(arr.slice(size), size)] : [];
-        const idChunks = chunk(noteIds, 100);
-        const tagMap: Record<string, Set<string>> = {};
-        for (const ids of idChunks) {
-          const pivotRes = await databases.listDocuments(
-            APPWRITE_DATABASE_ID,
-            noteTagsCollection,
-            [Query.equal('noteId', ids), Query.limit(Math.min(1000, ids.length * 10))] as any
-          );
-          for (const p of pivotRes.documents as any[]) {
-            if (!p.noteId || !p.tag) continue;
-            if (!tagMap[p.noteId]) tagMap[p.noteId] = new Set();
-            tagMap[p.noteId].add(p.tag);
-          }
-        }
-        for (const n of allNotes as any[]) {
-          const id = n.$id || n.id;
-            if (id && tagMap[id] && tagMap[id].size) {
-            n.tags = Array.from(tagMap[id]);
-          }
-        }
-      }
-    }
-  } catch (e) {
-    // Non-fatal
-  }
-  return { documents: allNotes, total: allNotes.length };
 }
 
 // --- TAGS CRUD ---
@@ -1264,6 +1262,11 @@ export async function getSharedUsers(noteId: string) {
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error("User not authenticated");
 
+    // Check cache first (5-minute TTL)
+    const cacheKey = getCacheKey('getSharedUsers', noteId);
+    const cached = getCached<any[]>(cacheKey);
+    if (cached) return cached;
+
     // Get all collaborations for this note
     const collaborations = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -1271,37 +1274,64 @@ export async function getSharedUsers(noteId: string) {
       [Query.equal('noteId', noteId)]
     );
 
-    // Get user details for each collaborator and include profile picture id when available
-    const sharedUsers = await Promise.all(
-      collaborations.documents.map(async (collab: any) => {
-        try {
-          const user: any = await databases.getDocument(
-            APPWRITE_DATABASE_ID,
-            APPWRITE_TABLE_ID_USERS,
-            collab.userId
-          );
+    if (!collaborations.documents.length) {
+      setCached(cacheKey, []);
+      return [];
+    }
 
-          // Prefer the prefs.profilePicId field but fall back to a legacy avatar field if present
-          const profilePicId = (user?.prefs && (user as any).prefs.profilePicId)
-            ? (user as any).prefs.profilePicId
-            : (user?.avatar || null);
+    // Batch fetch user details instead of individual queries
+    const userIds = collaborations.documents
+      .map((collab: any) => collab.userId)
+      .filter(Boolean);
 
-          return {
-            id: collab.userId,
-            name: user.name,
-            email: user.email,
-            permission: collab.permission,
-            collaborationId: collab.$id,
-            profilePicId
-          };
-        } catch (error) {
-          console.error('Error fetching user details:', error);
-          return null;
+    if (!userIds.length) {
+      setCached(cacheKey, []);
+      return [];
+    }
+
+    // Fetch all users in a single batch query (or multiple batches if > 100)
+    const sharedUsers: any[] = [];
+    const batchSize = 100;
+    
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batch = userIds.slice(i, i + batchSize);
+      try {
+        const usersRes = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_TABLE_ID_USERS,
+          [Query.equal('$id', batch), Query.limit(batch.length)] as any
+        );
+
+        const userMap: Record<string, any> = {};
+        for (const user of usersRes.documents as any[]) {
+          userMap[user.$id] = user;
         }
-      })
-    );
 
-    return sharedUsers.filter(user => user !== null);
+        // Map back to collaborations data
+        for (const collab of collaborations.documents as any[]) {
+          if (userMap[collab.userId]) {
+            const user = userMap[collab.userId];
+            const profilePicId = (user?.prefs && user.prefs.profilePicId)
+              ? user.prefs.profilePicId
+              : (user?.avatar || null);
+
+            sharedUsers.push({
+              id: collab.userId,
+              name: user.name,
+              email: user.email,
+              permission: collab.permission,
+              collaborationId: collab.$id,
+              profilePicId
+            });
+          }
+        }
+      } catch (batchErr) {
+        console.error('Batch user fetch failed:', batchErr);
+      }
+    }
+
+    setCached(cacheKey, sharedUsers);
+    return sharedUsers;
   } catch (error: any) {
     console.error('getSharedUsers error:', error);
     throw new Error(error.message || 'Failed to get shared users');
@@ -1349,6 +1379,11 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
     const currentUser = await getCurrentUser();
     if (!currentUser) return { documents: [], total: 0 };
 
+    // Check cache first (5-minute TTL)
+    const cacheKey = getCacheKey('getSharedNotes', currentUser.$id);
+    const cached = getCached<{ documents: Notes[], total: number }>(cacheKey);
+    if (cached) return cached;
+
     // Get all collaborations where current user is a collaborator
     const collaborations = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -1356,38 +1391,64 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
       [Query.equal('userId', currentUser.$id)]
     );
 
-    // Get note details for each collaboration
-    const sharedNotes = await Promise.all(
-      collaborations.documents.map(async (collab: any): Promise<Notes | null> => {
-        try {
-          const note = await databases.getDocument(
-            APPWRITE_DATABASE_ID,
-            APPWRITE_TABLE_ID_NOTES,
-            collab.noteId
-          ) as unknown as Notes;
-          
-          // Add sharing info to note
-          (note as any).sharedPermission = collab.permission;
-          (note as any).sharedAt = collab.invitedAt;
-          // Ensure attachments is always an array for UI consistency
-          if (!(note as any).attachments || !Array.isArray((note as any).attachments)) {
-            (note as any).attachments = [];
-          }
-          
-          return note;
-        } catch (error) {
-          console.error('Error fetching shared note:', error);
-          return null;
-        }
-      })
-    );
+    if (!collaborations.documents.length) {
+      const result = { documents: [], total: 0 };
+      setCached(cacheKey, result);
+      return result;
+    }
 
-    const validNotes = (sharedNotes.filter((n: Notes | null): n is Notes => n !== null));
-    
-    return {
-      documents: validNotes,
-      total: validNotes.length
+    // Batch fetch note details instead of individual queries
+    const noteIds = collaborations.documents
+      .map((collab: any) => collab.noteId)
+      .filter(Boolean);
+
+    if (!noteIds.length) {
+      const result = { documents: [], total: 0 };
+      setCached(cacheKey, result);
+      return result;
+    }
+
+    // Fetch all notes in batches
+    const sharedNotes: Notes[] = [];
+    const batchSize = 100;
+
+    for (let i = 0; i < noteIds.length; i += batchSize) {
+      const batch = noteIds.slice(i, i + batchSize);
+      try {
+        const notesRes = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_TABLE_ID_NOTES,
+          [Query.equal('$id', batch), Query.limit(batch.length)] as any
+        );
+
+        const noteMap: Record<string, any> = {};
+        for (const note of notesRes.documents as any[]) {
+          noteMap[note.$id] = note;
+        }
+
+        // Map collaborations to notes with sharing metadata
+        for (const collab of collaborations.documents as any[]) {
+          if (noteMap[collab.noteId]) {
+            const note = noteMap[collab.noteId] as any;
+            (note).sharedPermission = collab.permission;
+            (note).sharedAt = collab.invitedAt;
+            if (!(note as any).attachments || !Array.isArray((note as any).attachments)) {
+              (note as any).attachments = [];
+            }
+            sharedNotes.push(note as Notes);
+          }
+        }
+      } catch (batchErr) {
+        console.error('Batch note fetch failed:', batchErr);
+      }
+    }
+
+    const result = {
+      documents: sharedNotes,
+      total: sharedNotes.length
     };
+    setCached(cacheKey, result);
+    return result;
   } catch (error: any) {
     console.error('getSharedNotes error:', error);
     return { documents: [], total: 0 };
@@ -1487,7 +1548,6 @@ export async function uploadNoteAttachment(file: File, userId?: string) {
   }
   try {
     const res: any = await uploadFile(bucketId, file, userId);
-    console.log('[attachments] uploadNoteAttachment:success', { bucketId, fileId: res.$id || res.id, durationMs: Date.now() - startedAt });
     return res;
   } catch (e: any) {
     console.error('[attachments] uploadNoteAttachment:error', { bucketId, error: e?.message || String(e) });
@@ -1602,8 +1662,6 @@ function validateAttachmentMime(mime: string | null | undefined) {
 }
 
 export async function addAttachmentToNote(noteId: string, file: File, userId?: string) {
-  const startTs = Date.now();
-  console.log('[attachments] addAttachmentToNote:start', { noteId, name: (file as any)?.name, size: (file as any)?.size, type: (file as any)?.type });
   const user = userId ? { $id: userId } : await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
   // Get existing note + attachments
@@ -1620,7 +1678,6 @@ export async function addAttachmentToNote(noteId: string, file: File, userId?: s
     await enforceAttachmentPlanLimit(user.$id, existingMetas.length, file.size);
   } catch (e: any) {
     if (e?.code === 'ATTACHMENT_SIZE_LIMIT') throw e;
-    console.error('[attachments] plan limit check error', { error: e?.message });
   }
 
   // MIME validation + filename sanitization
@@ -1672,12 +1729,10 @@ export async function addAttachmentToNote(noteId: string, file: File, userId?: s
   } catch (e) {
     console.error('dual-write attachment record failed', e);
   }
-  console.log('[attachments] addAttachmentToNote:done', { noteId, attachmentId: meta.id, durationMs: Date.now() - startTs });
   return meta;
 }
 
 export async function listNoteAttachments(noteId: string, currentUserId?: string): Promise<EmbeddedAttachmentMeta[]> {
-  const startTs = Date.now();
   // Optional access guard: if currentUserId provided, ensure user is owner or collaborator.
   try {
     if (currentUserId) {
@@ -1725,14 +1780,10 @@ export async function listNoteAttachments(noteId: string, currentUserId?: string
       console.error('listNoteAttachments merge failed', e);
     }
   }
-  const durationMs = Date.now() - startTs;
-  console.log('[attachments] list:done', { noteId, count: embedded.length, durationMs });
   return embedded;
 }
 
 export async function removeAttachmentFromNote(noteId: string, attachmentId: string) {
-  const startTs = Date.now();
-  console.log('[attachments] removeAttachment:start', { noteId, attachmentId });
   const user = await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
   const note = await getNote(noteId) as any;
@@ -1743,8 +1794,6 @@ export async function removeAttachmentFromNote(noteId: string, attachmentId: str
   const serialized = remaining.map(serializeAttachmentMeta);
   await updateNote(noteId, { attachments: serialized } as any);
   try { await deleteNoteAttachment(attachmentId); } catch (e) { /* non-fatal */ }
-  const durationMs = Date.now() - startTs;
-  console.log('[attachments] removeAttachment:done', { noteId, attachmentId, durationMs, remaining: remaining.length });
   return { removed: true };
 }
 
