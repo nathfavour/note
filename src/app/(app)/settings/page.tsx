@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, updateAIMode, getAIMode, sendPasswordResetEmail, functions } from "@/lib/appwrite";
+import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -109,20 +109,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleRemoveAuthMethod = async (type: 'totp' | 'email' | 'phone') => {
-    try {
-      if (type === 'totp') {
-        // Handle TOTP authenticator removal via MFA API
-        // This would require calling the delete authenticator endpoint
-        setSuccess("Authenticator removed successfully.");
-      } else {
-        setError("Authentication method removal not supported yet");
-      }
-    } catch {
-      setError("Failed to remove authentication method");
-    }
-  };
-
   const handlePasswordReset = async () => {
     if (!user?.email) {
       setError("User email not found");
@@ -148,66 +134,6 @@ export default function SettingsPage() {
     setResetEmailSent(false);
     setError("");
     setSuccess("");
-  };
-
-  const handleConnectWallet = async () => {
-    if (!(typeof window !== 'undefined' && (window as any).ethereum)) {
-      setError("No wallet provider detected. Please install MetaMask or another Web3 wallet.");
-      return;
-    }
-
-    try {
-      setError("");
-      setSuccess("");
-
-      // Get current user's ID for authentication
-      const currentUser = await account.get();
-      const userId = currentUser.$id;
-
-      // Request wallet connection
-      const accounts = (await (window as any).ethereum.request({ method: 'eth_requestAccounts' })) as string[];
-      const walletAddress = accounts?.[0];
-      if (!walletAddress) throw new Error('No wallet address available');
-
-      // Create message for user to sign
-      const timestamp = Date.now();
-      const baseMessage = `auth-${timestamp}`;
-      const fullMessage = `Sign this message to authenticate: ${baseMessage}`;
-
-      // User signs the message
-      const signature = await (window as any).ethereum.request({
-        method: 'personal_sign',
-        params: [fullMessage, walletAddress]
-      });
-
-      // Call connect-wallet endpoint via function
-      const fnId = process.env.NEXT_PUBLIC_FUNCTION_ID;
-      if (!fnId) throw new Error('Wallet auth function not configured');
-
-      const execution = await functions.createExecution(
-        fnId,
-        JSON.stringify({
-          userId,
-          address: walletAddress,
-          signature,
-          message: baseMessage
-        }),
-        false,
-        '/connect-wallet'
-      );
-
-      const response = JSON.parse((execution as any).responseBody || '{}');
-      const status = (execution as any).responseStatusCode;
-      if (status !== 200) {
-        throw new Error(response?.error || 'Failed to connect wallet');
-      }
-
-      setSuccess(`✓ Wallet ${walletAddress.substring(0, 6)}...${walletAddress.substring(38)} connected successfully!`);
-      const updatedUser = await account.get();
-      setUser(updatedUser);
-    } catch (err: any) {
-      setError((err as Error).message || "Failed to connect wallet");
-    }
   };
 
   const handleEditProfile = () => {
@@ -336,15 +262,14 @@ export default function SettingsPage() {
                   onUpdate={handleUpdate}
                   onSettingChange={handleSettingChange}
                   router={router}
-                  authMethods={authMethods}
-                  onRemoveAuthMethod={handleRemoveAuthMethod}
                   showPasswordReset={showPasswordReset}
                   setShowPasswordReset={setShowPasswordReset}
                   resetEmailSent={resetEmailSent}
                   handlePasswordReset={handlePasswordReset}
                   handleCancelPasswordReset={handleCancelPasswordReset}
-                  onConnectWallet={handleConnectWallet}
                   onPublicProfileToggle={handlePublicProfileToggle}
+                  mfaStatus={mfaStatus}
+                  setMfaStatus={setMfaStatus}
                 />
              )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
@@ -431,15 +356,14 @@ const SettingsTab = ({
   onUpdate,
   onSettingChange,
   router,
-  authMethods,
-  onRemoveAuthMethod,
   showPasswordReset,
   setShowPasswordReset,
   resetEmailSent,
   handlePasswordReset,
   handleCancelPasswordReset,
-  onConnectWallet,
-  onPublicProfileToggle
+  onPublicProfileToggle,
+  mfaStatus,
+  setMfaStatus
 }: any) => {
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -476,10 +400,7 @@ const SettingsTab = ({
         await verifyTOTPFactor(otp);
       }
       const newStatus = await getMFAStatus();
-      setAuthMethods({
-        ...authMethods,
-        mfaStatus: newStatus
-      });
+      setMfaStatus(newStatus);
     } catch (err: any) {
       console.error('MFA verification error:', err);
       throw err;
@@ -497,10 +418,7 @@ const SettingsTab = ({
         await deleteEmailMFAFactor();
       }
       const newStatus = await getMFAStatus();
-      setAuthMethods({
-        ...authMethods,
-        mfaStatus: newStatus
-      });
+      setMfaStatus(newStatus);
     } catch (err: any) {
       console.error('MFA disable error:', err);
       throw err;
@@ -717,110 +635,64 @@ const SettingsTab = ({
         </div>
       </div>
 
-      {/* MFA Factors from Backend */}
-      {authMethods.mfaFactors && (
-        <div className="p-6 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-              <p className="text-sm text-foreground/70">Additional security factors configured</p>
-            </div>
+      
+      {/* MFA Status Section */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
+            <p className="text-sm text-foreground/70">Enhance your account security</p>
           </div>
-          
-          <div className="space-y-3">
-            {authMethods.mfaFactors.totp && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                  <p className="text-xs text-foreground/60">Time-based one-time passwords</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                    Enabled
-                  </span>
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => onRemoveAuthMethod('totp')}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {authMethods.mfaFactors.email && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Email Verification</p>
-                  <p className="text-xs text-foreground/60">Codes sent to your email</p>
-                </div>
-                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                  Enabled
-                </span>
-              </div>
-            )}
-            
-            {authMethods.mfaFactors.phone && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">SMS Verification</p>
-                  <p className="text-xs text-foreground/60">Codes sent to your phone</p>
-                </div>
-                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                  Enabled
-                </span>
-              </div>
-            )}
-            
-            {!authMethods.mfaFactors.totp && !authMethods.mfaFactors.email && !authMethods.mfaFactors.phone && (
-              <p className="text-sm text-foreground/60">No additional authentication factors configured</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Platform Support Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Passkey Authentication</h3>
-            <div className="text-xs px-2 py-1 rounded bg-background">
-              {authMethods.passkeySupported ? (
-                <span className="text-green-600 dark:text-green-400 font-medium">Available</span>
-              ) : (
-                <span className="text-foreground/60">Not Available</span>
-              )}
-            </div>
-          </div>
-          <p className="text-xs text-foreground/70">
-            {authMethods.passkeySupported
-              ? 'Your device supports biometric authentication'
-              : 'Your device or browser does not support passkeys'
-            }
-          </p>
         </div>
         
-        <div className="p-4 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Web3 Wallet Provider</h3>
-            <div className="text-xs px-2 py-1 rounded bg-background">
-              {typeof window !== 'undefined' && (window as any).ethereum ? (
-                <span className="text-green-600 dark:text-green-400 font-medium">Detected</span>
-              ) : (
-                <span className="text-foreground/60">Not Found</span>
-              )}
+        <div className="space-y-3">
+          {/* TOTP */}
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
+                <p className="text-xs text-foreground/60 mt-1">
+                  {mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setMfaModalFactor('totp');
+                  setMfaModalOpen(true);
+                }}
+                disabled={mfaMFALoading}
+              >
+                {mfaStatus.totp ? 'Manage' : 'Enable'}
+              </Button>
             </div>
           </div>
-          <p className="text-xs text-foreground/70">
-            {typeof window !== 'undefined' && (window as any).ethereum
-              ? 'MetaMask or compatible wallet provider detected'
-              : 'Install MetaMask or another Web3 wallet extension'
-            }
-          </p>
+
+          {/* Email OTP */}
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Email OTP</p>
+                <p className="text-xs text-foreground/60 mt-1">
+                  {mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setMfaModalFactor('email');
+                  setMfaModalOpen(true);
+                }}
+                disabled={mfaMFALoading}
+              >
+                {mfaStatus.email ? 'Manage' : 'Enable'}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
           <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
