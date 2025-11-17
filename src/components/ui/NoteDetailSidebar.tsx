@@ -12,8 +12,6 @@ import { getNoteWithSharing } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import NoteContentDisplay from '@/components/NoteContentDisplay';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
-import { LinkComponent } from '@/components/LinkRenderer';
-import { preProcessMarkdown } from '@/lib/markdown';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -45,25 +43,27 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const noteFormat = (note.format as 'text' | 'doodle') || 'text';
 
   useEffect(() => {
-    if (note.attachments && Array.isArray(note.attachments)) {
+    const loadEnhancedNote = async () => {
       try {
-        const parsed = note.attachments.map((a: any) => {
-          if (typeof a === 'string') {
-            return JSON.parse(a);
-          }
-          ) : (
-            <div>
-              <NoteContentRenderer
-                content={note.content || ''}
-                format={noteFormat}
-                textClassName="text-foreground"
-                doodleClassName="rounded-lg border border-border mb-2"
-                emptyFallback={<span className="italic text-muted">No content</span>}
-                onEditDoodle={noteFormat === 'doodle' ? () => setIsEditing(true) : undefined}
-              />
-        }
+        const data = await getNoteWithSharing(note.$id);
+        setEnhancedNote(data);
+      } catch (err) {
+        console.error('Error loading shared note details:', err);
+        setEnhancedNote(null);
       }
     };
+
+    if (note.attachments && Array.isArray(note.attachments)) {
+      try {
+        const parsed = note.attachments.map((a: any) => (typeof a === 'string' ? JSON.parse(a) : a));
+        setCurrentAttachments(parsed);
+      } catch (err) {
+        console.error('Error parsing attachments:', err);
+        setCurrentAttachments([]);
+      }
+    } else {
+      setCurrentAttachments([]);
+    }
 
     loadEnhancedNote();
   }, [note.$id]);
@@ -275,33 +275,17 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
             </div>
           ) : (
             <div>
-              {note.format === 'doodle' ? (
-                <NoteContentDisplay
-                  content={note.content || ''}
-                  format="doodle"
-                  className="rounded-lg border border-border mb-2"
-                  onEditDoodle={() => setIsEditing(true)}
-                />
-              ) : (
-                <div className="text-foreground prose prose-lg max-w-none dark:prose-invert [&>*]:leading-relaxed [&>p]:mb-6 [&>h1]:mb-8 [&>h1]:mt-8 [&>h2]:mb-6 [&>h2]:mt-7 [&>h3]:mb-4 [&>h3]:mt-6 [&>ul]:mb-6 [&>ol]:mb-6 [&>ol>li]:marker:font-bold [&>blockquote]:mb-6 [&>pre]:mb-6 [&>*:first-child]:mt-0 [&_ol]:list-decimal [&_ul]:list-disc [&_li]:ml-4">
-                  {note.content ? (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm, remarkBreaks]}
-                      rehypePlugins={[rehypeSanitize]}
-                      components={{
-                        a: LinkComponent
-                      }}
-                    >
-                      {preProcessMarkdown(note.content)}
-                    </ReactMarkdown>
-                  ) : (
-                    <span className="italic text-muted">No content</span>
-                  )}
-                </div>
-              )}
+              <NoteContentRenderer
+                content={note.content || ''}
+                format={noteFormat}
+                textClassName="text-foreground"
+                doodleClassName="rounded-lg border border-border mb-2"
+                emptyFallback={<span className="italic text-muted">No content</span>}
+                onEditDoodle={noteFormat === 'doodle' ? () => setIsEditing(true) : undefined}
+              />
 
               {/* Copy Button - only for text notes */}
-              {note.format !== 'doodle' && note.content && (
+              {noteFormat !== 'doodle' && note.content && (
                 <div className="pt-2">
                   <Button
                     variant="outline"
