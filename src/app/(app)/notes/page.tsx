@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { updateNote, deleteNote } from '@/lib/appwrite';
+import { deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
 
 import { useOverlay } from '@/components/ui/OverlayContext';
@@ -28,7 +28,7 @@ import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
-  const { notes: allNotes, totalNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
+  const { notes: allNotes, totalNotes, isLoading: isInitialLoading, hasMore, loadMore, upsertNote, removeNote } = useNotes();
   const { openOverlay, closeOverlay } = useOverlay();
 
   const { isCollapsed } = useSidebar();
@@ -91,9 +91,9 @@ export default function NotesPage() {
     paginationConfig
   });
 
-  const handleNoteCreated = useCallback(async (newNote: Notes) => {
-    await refetchNotes();
-  }, [refetchNotes]);
+  const handleNoteCreated = useCallback((newNote: Notes) => {
+    upsertNote(newNote);
+  }, [upsertNote]);
 
   // Removed AI generation logic from core page to fully decouple.
   // URL ai-prompt parameter no longer auto-triggers AI generation.
@@ -115,14 +115,13 @@ export default function NotesPage() {
     }
   }, [searchParams, openOverlay, handleNoteCreated]);
 
-  const handleNoteUpdated = useCallback(async (updatedNote: Notes) => {
+  const handleNoteUpdated = useCallback((updatedNote: Notes) => {
     if (!updatedNote.$id) {
       console.error('Cannot update note: missing ID');
       return;
     }
-    await updateNote(updatedNote.$id, updatedNote);
-    await refetchNotes();
-  }, [refetchNotes]);
+    upsertNote(updatedNote);
+  }, [upsertNote]);
 
   const handleNoteDeleted = useCallback(async (noteId: string) => {
     if (!noteId) {
@@ -130,8 +129,8 @@ export default function NotesPage() {
       return;
     }
     await deleteNote(noteId);
-    await refetchNotes();
-  }, [refetchNotes]);
+    removeNote(noteId);
+  }, [removeNote]);
 
   useEffect(() => {
     if (!openNoteIdParam) return;

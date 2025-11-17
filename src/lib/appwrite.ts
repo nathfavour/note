@@ -21,8 +21,6 @@ import {
     searchUsers,
 } from './appwrite/user-profile';
 
-import { createRevision, pruneRevisions } from '@/lib/revisions';
-
 // Named re-exports for user profile helpers
 export { createUser, getUser, updateUser, deleteUser, listUsers, searchUsers };
 
@@ -329,19 +327,6 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const updatedData = { ...rest, updatedAt };
   const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as any;
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
-  
-  // Create revision using new system (handles diff, validation, etc.)
-  try {
-    await createRevision(noteId, before, doc, 'manual');
-    
-    // Prune old revisions based on user plan (best-effort, non-blocking)
-    pruneRevisions(noteId, before.userId).catch(e => 
-      console.error('Revision pruning failed (non-blocking):', e)
-    );
-  } catch (revErr) {
-    console.error('Revision tracking failed:', revErr);
-    // Don't break note updates if revision system fails
-  }
   
   // Handle tags if provided
   try {

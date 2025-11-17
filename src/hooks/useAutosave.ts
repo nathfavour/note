@@ -1,90 +1,106 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
-import { hasSignificantChanges } from '@/lib/revisions';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { updateNote } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite';
 
 interface AutosaveOptions {
-  minChangeThreshold?: number; // Min chars for content changes (default: 5)
-  debounceMs?: number; // Debounce time before considering save (default: 500ms)
-  enabled?: boolean; // Enable/disable autosave (default: true)
-  onSave?: () => void; // Callback after successful save
-  onError?: (error: Error) => void; // Callback on error
+  minChangeThreshold?: number; // Minimum length diff before saving
+  debounceMs?: number;
+  enabled?: boolean;
+  onSave?: (note: Notes) => void;
+  onError?: (error: Error) => void;
 }
 
-/**
- * Hook for intelligent autosave on note editors
- * Monitors note changes and saves when substantial changes detected
- * Respects user's revision limits (3 free, 10 paid)
- */
-export function useAutosave(
-  note: Notes | null,
-  options: AutosaveOptions = {}
+function arraysEqual(a?: string[] | null, b?: string[] | null) {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function shouldSave(
+  previous: Notes | null,
+  current: Notes,
+  minChangeThreshold: number
 ) {
+  if (!previous) return true;
+  if (previous.title !== current.title) return true;
+  if (previous.format !== current.format) return true;
+  if (!arraysEqual(previous.tags, current.tags)) return true;
+
+  const prevContent = (previous.content || '').trim();
+  const currContent = (current.content || '').trim();
+  if (prevContent === currContent) return false;
+
+  const diff = Math.abs(currContent.length - prevContent.length);
+  if (diff >= minChangeThreshold || prevContent === '' || currContent === '') {
+    return true;
+  }
+
+  return false;
+}
+
+export function useAutosave(note: Notes | null, options: AutosaveOptions = {}) {
   const {
-    minChangeThreshold = 5,
+    minChangeThreshold = 0,
     debounceMs = 500,
     enabled = true,
     onSave,
     onError,
   } = options;
 
-  const lastSavedRef = useRef<Notes | null>(note);
+  const [isSaving, setIsSaving] = useState(false);
+  const lastSavedRef = useRef<Notes | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
 
   const performSave = useCallback(
-    async (currentNote: Notes) => {
-      if (!enabled || isSavingRef.current || !currentNote.$id) {
+    async (candidate: Notes) => {
+      if (!enabled || isSavingRef.current || !candidate.$id) return;
+      if (!shouldSave(lastSavedRef.current, candidate, minChangeThreshold)) {
         return;
       }
 
-      // Check if there are actual significant changes
-      if (
-        lastSavedRef.current &&
-        !hasSignificantChanges(lastSavedRef.current, currentNote, [
-          'title',
-          'content',
-          'tags',
-          'format',
-        ])
-      ) {
-        return; // No significant changes
-      }
-
       isSavingRef.current = true;
+      setIsSaving(true);
 
       try {
-        await updateNote(currentNote.$id, currentNote);
-        lastSavedRef.current = { ...currentNote };
-        onSave?.();
+        const saved = await updateNote(candidate.$id, candidate);
+        lastSavedRef.current = candidate;
+        onSave?.(saved);
       } catch (error) {
         console.error('Autosave failed:', error);
         onError?.(error as Error);
       } finally {
         isSavingRef.current = false;
+        setIsSaving(false);
       }
     },
-    [enabled, onSave, onError]
+    [enabled, minChangeThreshold, onSave, onError]
   );
 
-  // Trigger autosave when note changes
   useEffect(() => {
-    if (!enabled || !note) {
+    if (!note) {
+      lastSavedRef.current = null;
       return;
     }
+    if (!lastSavedRef.current || lastSavedRef.current.$id !== note.$id) {
+      lastSavedRef.current = note;
+    }
+  }, [note?.$id]);
 
-    // Clear existing debounce timer
+  useEffect(() => {
+    if (!enabled || !note) return;
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-
-    // Set new debounce timer
     debounceTimerRef.current = setTimeout(() => {
       performSave(note);
     }, debounceMs);
-
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -92,7 +108,6 @@ export function useAutosave(
     };
   }, [note, enabled, debounceMs, performSave]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -102,9 +117,7 @@ export function useAutosave(
   }, []);
 
   return {
-    isSaving: isSavingRef.current,
-    lastSaved: lastSavedRef.current,
-    forceSync: () => note && performSave(note),
+    isSaving,
   };
 }
 

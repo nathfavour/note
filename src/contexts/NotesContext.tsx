@@ -13,6 +13,8 @@ interface NotesContextType {
   hasMore: boolean;
   loadMore: () => Promise<void>;
   refetchNotes: () => void;
+  upsertNote: (note: Notes) => void;
+  removeNote: (noteId: string) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -114,8 +116,38 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, fetchBatch]);
 
+  const upsertNote = useCallback((note: Notes) => {
+    const existed = notesRef.current.some((n) => n.$id === note.$id);
+    setNotes((prev) => {
+      if (existed) {
+        return prev.map((item) => (item.$id === note.$id ? note : item));
+      }
+      return [note, ...prev];
+    });
+    if (!existed) {
+      setTotalNotes((prev) => prev + 1);
+    }
+  }, []);
+
+  const removeNote = useCallback((noteId: string) => {
+    setNotes((prev) => prev.filter((note) => note.$id !== noteId));
+    setTotalNotes((prev) => Math.max(0, prev - 1));
+  }, []);
+
   return (
-    <NotesContext.Provider value={{ notes, totalNotes, isLoading, error, hasMore, loadMore, refetchNotes }}>
+    <NotesContext.Provider
+      value={{
+        notes,
+        totalNotes,
+        isLoading,
+        error,
+        hasMore,
+        loadMore,
+        refetchNotes,
+        upsertNote,
+        removeNote,
+      }}
+    >
       {children}
     </NotesContext.Provider>
   );
