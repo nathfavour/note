@@ -8,6 +8,7 @@ import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
 import { Button } from '@/components/ui/Button';
 import { MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/components/ui/Toast';
+import { Modal } from '@/components/ui/modal';
 
 export default function NoteEditorPage() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ export default function NoteEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export default function NoteEditorPage() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleDelete(note.$id)}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={isDeleting}
             >
               <TrashIcon className="h-4 w-4 mr-1" />
@@ -122,7 +124,6 @@ export default function NoteEditorPage() {
             </Button>
           </div>
         </header>
-
         <main className="mt-6">
           <NoteDetailSidebar
             note={note}
@@ -133,6 +134,35 @@ export default function NoteEditorPage() {
           />
         </main>
       </div>
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Confirm delete"
+      >
+        <div className="space-y-4">
+          <p className="text-foreground">
+            Deleting this note is permanent. Are you sure?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (note?.$id) {
+                  handleDelete(note.$id);
+                }
+                setShowDeleteConfirm(false);
+              }}
+              className="flex-1"
+              disabled={isDeleting}
+            >
+              Delete note
+            </Button>
+            <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
