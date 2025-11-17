@@ -463,6 +463,8 @@ export function NoteDetailSidebar({
                 <Button
                   variant="outline"
                   size="sm"
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onFocus={(event) => event.stopPropagation()}
                   onClick={async (event) => {
                     event.stopPropagation();
                     try {

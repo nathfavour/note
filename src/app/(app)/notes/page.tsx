@@ -16,6 +16,8 @@ import { useSearch } from '@/hooks/useSearch';
 import {
   MagnifyingGlassIcon,
   PlusCircleIcon,
+  ArrowLeftOnRectangleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
@@ -31,7 +33,7 @@ export default function NotesPage() {
   const { notes: allNotes, totalNotes, isLoading: isInitialLoading, hasMore, loadMore, upsertNote, removeNote } = useNotes();
   const { openOverlay, closeOverlay } = useOverlay();
 
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, setIsCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen, openSidebar } = useDynamicSidebar();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -116,6 +118,9 @@ export default function NotesPage() {
   }, [searchParams, openOverlay, handleNoteCreated]);
 
   const handleNoteUpdated = useCallback((updatedNote: Notes) => {
+      const handleToggleSidebar = useCallback(() => {
+        setIsCollapsed((prev) => !prev);
+      }, [setIsCollapsed]);
     if (!updatedNote.$id) {
       console.error('Cannot update note: missing ID');
       return;
@@ -188,6 +193,18 @@ export default function NotesPage() {
             Notes
           </h1>
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleSidebar}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? (
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              ) : (
+                <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+              )}
+            </Button>
             <Button size="icon" onClick={handleCreateNoteClick}>
               <PlusCircleIcon className="h-6 w-6" />
             </Button>
@@ -195,7 +212,7 @@ export default function NotesPage() {
         </header>
 
         {/* Desktop Header */}
-      <header className="hidden md:flex items-center justify-between mb-8">
+        <header className="hidden md:flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-black text-foreground mb-2">
             My Notes
@@ -209,6 +226,18 @@ export default function NotesPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleSidebar}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? (
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+            ) : (
+              <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+            )}
+          </Button>
           <Button onClick={handleCreateNoteClick} size="icon">
             <PlusCircleIcon className="h-5 w-5" />
           </Button>
