@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  HomeIcon, 
-  PlusCircleIcon, 
-  ShareIcon, 
+import {
+  HomeIcon,
+  ShareIcon,
   TagIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
@@ -18,8 +17,6 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
-import { useState, useEffect } from 'react';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { getUserProfilePicId } from '@/lib/utils';
 
@@ -29,67 +26,39 @@ interface NavigationProps {
 
 export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) => {
   const pathname = usePathname();
-
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+
+  const navLinks = [
+    { icon: HomeIcon, href: '/notes' },
+    { icon: ShareIcon, href: '/shared' },
+    { icon: TagIcon, href: '/tags' },
+    { icon: PuzzlePieceIcon, href: '/extensions' },
+  ];
 
   return (
     <footer className={`fixed bottom-4 left-4 right-4 z-50 md:hidden ${className}`}>
       <nav className="bg-light-card dark:bg-dark-card border-2 border-light-border dark:border-dark-border rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm">
         <div className="flex justify-around items-center">
-          <Link 
-            href="/notes" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/notes') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <HomeIcon className="h-6 w-6" />
-          </Link>
-          
-          <Link 
-            href="/shared" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/shared') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <ShareIcon className="h-6 w-6" />
-          </Link>
-          
-          <a 
-            href="/tags" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/tags') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <TagIcon className="h-6 w-6" />
-          </a>
-          
-
-          
-          <a 
-            href="/extensions" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/extensions') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <PuzzlePieceIcon className="h-6 w-6" />
-          </a>
+          {navLinks.map(({ icon: Icon, href }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
+                isActive(href)
+                  ? 'text-white bg-accent shadow-lg transform -translate-y-0.5'
+                  : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+              }`}
+            >
+              <Icon className="h-6 w-6" />
+            </Link>
+          ))}
         </div>
       </nav>
     </footer>
   );
 };
 
-export const DesktopSidebar: React.FC<NavigationProps> = ({ 
-  className = '' 
-}) => {
+export const DesktopSidebar: React.FC<NavigationProps> = ({ className = '' }) => {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const pathname = usePathname();
   const { openOverlay } = useOverlay();
@@ -101,35 +70,33 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
     let mounted = true;
     const profilePicId = getUserProfilePicId(user);
     const cached = getCachedProfilePreview(profilePicId || undefined);
-    if (cached !== undefined) setSmallProfileUrl(cached ?? null);
+    if (cached !== undefined && mounted) {
+      setSmallProfileUrl(cached ?? null);
+    }
 
     const fetchPreview = async () => {
       try {
         if (profilePicId) {
           const url = await fetchProfilePreview(profilePicId, 64, 64);
-          if (mounted) setSmallProfileUrl(url as unknown as string);
-        } else {
-          if (mounted) setSmallProfileUrl(null);
+          if (mounted) {
+            setSmallProfileUrl(url as unknown as string);
+          }
+        } else if (mounted) {
+          setSmallProfileUrl(null);
         }
       } catch (err) {
         console.warn('Failed to fetch profile preview', err);
-        if (mounted) setSmallProfileUrl(null);
+        if (mounted) {
+          setSmallProfileUrl(null);
+        }
       }
     };
-    fetchPreview();
-    return () => { mounted = false; };
-  }, [getUserProfilePicId(user)]);
 
-  const handleCreateClick = () => {
-    openOverlay(
-      <CreateNoteForm 
-        onNoteCreated={(newNote) => {
-          // Handle the note creation - could refresh a global state or navigate
-          console.log('Note created:', newNote);
-        }} 
-      />
-    );
-  };
+    fetchPreview();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
@@ -142,9 +109,11 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <aside className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 z-20 ${isCollapsed ? 'w-16' : 'w-64'} ${className}`}>
-      
-      {/* Collapse Toggle */}
+    <aside
+      className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 z-20 ${
+        isCollapsed ? 'w-16' : 'w-64'
+      } ${className}`}
+    >
       <div className="flex items-center justify-end p-4 border-b border-light-border dark:border-dark-border">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -154,43 +123,35 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         </button>
       </div>
 
-      {/* Navigation Items */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
-          
+
           return (
-            <a
+            <Link
               key={item.path}
               href={item.path}
               className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group ${
-                active 
-                  ? 'bg-accent text-white shadow-lg transform translate-x-1' 
+                active
+                  ? 'bg-accent text-white shadow-lg transform translate-x-1'
                   : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:translate-x-0.5'
               } ${isCollapsed ? 'justify-center px-3' : ''}`}
             >
               <Icon className="h-6 w-6 flex-shrink-0" />
               {!isCollapsed && <span className="font-semibold">{item.label}</span>}
-              {active && !isCollapsed && (
-                <div className="w-1 h-6 bg-white rounded-full ml-auto"></div>
-              )}
-            </a>
+              {active && !isCollapsed && <div className="w-1 h-6 bg-white rounded-full ml-auto"></div>}
+            </Link>
           );
         })}
       </nav>
 
-      {/* User Profile & Controls */}
       <div className="p-4 border-t border-light-border dark:border-dark-border space-y-3">
-        {/* Theme Toggle */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-          {!isCollapsed && (
-            <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>
-          )}
+          {!isCollapsed && <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>}
           <ThemeToggle size="sm" />
         </div>
 
-        {/* User Info */}
         {isAuthenticated && user && (
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             {smallProfileUrl ? (
@@ -205,19 +166,18 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
                 <p className="font-semibold text-light-fg dark:text-dark-fg truncate text-sm">
                   {user.name || user.email || 'User'}
                 </p>
-                <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 truncate">
-                  {user.email}
-                </p>
+                <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 truncate">{user.email}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Logout */}
         {isAuthenticated && (
           <button
             onClick={() => logout()}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-sm ${isCollapsed ? 'justify-center px-2' : ''}`}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-sm ${
+              isCollapsed ? 'justify-center px-2' : ''
+            }`}
           >
             <PowerIcon className="h-5 w-5" />
             {!isCollapsed && <span className="font-medium">Logout</span>}
@@ -228,7 +188,6 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   );
 };
 
-// Default export that includes both components
 export default function Navigation({ className }: NavigationProps) {
   return (
     <>
