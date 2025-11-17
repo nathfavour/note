@@ -118,15 +118,16 @@ export default function NotesPage() {
   }, [searchParams, openOverlay, handleNoteCreated]);
 
   const handleNoteUpdated = useCallback((updatedNote: Notes) => {
-      const handleToggleSidebar = useCallback(() => {
-        setIsCollapsed((prev) => !prev);
-      }, [setIsCollapsed]);
     if (!updatedNote.$id) {
       console.error('Cannot update note: missing ID');
       return;
     }
     upsertNote(updatedNote);
   }, [upsertNote]);
+
+  const handleToggleSidebar = useCallback(() => {
+    setIsCollapsed((prev) => !prev);
+  }, [setIsCollapsed]);
 
   const handleNoteDeleted = useCallback(async (noteId: string) => {
     if (!noteId) {

@@ -154,17 +154,6 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         </button>
       </div>
 
-      {/* Create Button */}
-      <div className="p-4 border-b border-light-border dark:border-dark-border">
-        <button
-          onClick={handleCreateClick}
-          className={`w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-2xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:transform hover:-translate-y-0.5 ${isCollapsed ? 'px-3' : ''}`}
-        >
-          <PlusCircleIcon className="h-6 w-6" />
-          {!isCollapsed && <span>Create Note</span>}
-        </button>
-      </div>
-
       {/* Navigation Items */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
         {navItems.map((item) => {
