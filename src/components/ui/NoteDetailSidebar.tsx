@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
-import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
 import { useToast } from '@/components/ui/Toast';
+import { useRouter } from 'next/navigation';
+import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { getNoteWithSharing } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
@@ -41,6 +43,14 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
 
   const { showSuccess, showError } = useToast();
   const noteFormat = (note.format as 'text' | 'doodle') || 'text';
+  const router = useRouter();
+  const { closeSidebar } = useDynamicSidebar();
+
+  const handleOpenFullPage = () => {
+    if (!note.$id) return;
+    closeSidebar();
+    router.push(`/notes/${note.$id}`);
+  };
 
   useEffect(() => {
     const loadEnhancedNote = async () => {
@@ -179,6 +189,18 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
         >
           <PencilIcon className="h-4 w-4 mr-2" />
           {isEditing ? 'Editing' : 'Edit'}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleOpenFullPage();
+          }}
+          className="h-9 w-9"
+          aria-label="Open full page"
+        >
+          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"

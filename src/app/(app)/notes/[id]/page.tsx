@@ -6,7 +6,7 @@ import { getNote, updateNote, deleteNote } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite.d';
 import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/components/ui/Toast';
 
 export default function NoteEditorPage() {
@@ -97,8 +97,14 @@ export default function NoteEditorPage() {
       <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} disabled={isDeleting}>
-              <ArrowLeftIcon className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => note.$id && router.push(`/notes?openNoteId=${note.$id}`)}
+              disabled={isDeleting}
+              aria-label="Minimize to notes sidebar"
+            >
+              <MinusIcon className="h-5 w-5" />
             </Button>
             <h1 className="text-3xl font-black text-foreground tracking-tight">
               {title}

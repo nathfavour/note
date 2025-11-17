@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { updateNote, deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
 
 import { useOverlay } from '@/components/ui/OverlayContext';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { Notes } from '@/types/appwrite.d';
 import NoteCard from '@/components/ui/NoteCard';
 import { NoteGridSkeleton } from '@/components/ui/NoteCardSkeleton';
@@ -23,6 +23,7 @@ import { MobileBottomNav } from '@/components/Navigation';
 import { MobileFAB } from '@/components/MobileFAB';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
+import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
 
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
@@ -31,8 +32,10 @@ export default function NotesPage() {
   const { openOverlay, closeOverlay } = useOverlay();
 
   const { isCollapsed } = useSidebar();
-  const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
+  const { isOpen: isDynamicSidebarOpen, openSidebar } = useDynamicSidebar();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const openNoteIdParam = searchParams.get('openNoteId');
 
   // Fetch notes action for the search hook
   const fetchNotesAction = async () => {
@@ -112,23 +115,51 @@ export default function NotesPage() {
     }
   }, [searchParams, openOverlay, handleNoteCreated]);
 
-  const handleNoteUpdated = async (updatedNote: Notes) => {
+  const handleNoteUpdated = useCallback(async (updatedNote: Notes) => {
     if (!updatedNote.$id) {
       console.error('Cannot update note: missing ID');
       return;
     }
     await updateNote(updatedNote.$id, updatedNote);
     await refetchNotes();
-  };
+  }, [refetchNotes]);
 
-  const handleNoteDeleted = async (noteId: string) => {
+  const handleNoteDeleted = useCallback(async (noteId: string) => {
     if (!noteId) {
       console.error('Cannot delete note: missing ID');
       return;
     }
     await deleteNote(noteId);
     await refetchNotes();
-  };
+  }, [refetchNotes]);
+
+  useEffect(() => {
+    if (!openNoteIdParam) return;
+
+    const targetNote = allNotes.find((candidate) => candidate.$id === openNoteIdParam);
+    const cleanParams = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      params.delete('openNoteId');
+      const path = `/notes${params.toString() ? `?${params.toString()}` : ''}`;
+      router.replace(path, { forceOptimisticNavigation: true });
+    };
+
+    if (!targetNote) {
+      cleanParams();
+      return;
+    }
+
+    openSidebar(
+      <NoteDetailSidebar
+        note={targetNote}
+        onUpdate={handleNoteUpdated}
+        onDelete={handleNoteDeleted}
+      />
+    );
+
+    cleanParams();
+  }, [openNoteIdParam, allNotes, openSidebar, handleNoteUpdated, handleNoteDeleted, router]);
 
   const handleCreateNoteClick = () => {
     openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);

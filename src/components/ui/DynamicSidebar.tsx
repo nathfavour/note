@@ -17,19 +17,24 @@ export function DynamicSidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<ReactNode | null>(null);
 
-  const openSidebar = (newContent: ReactNode) => {
+  const openSidebar = React.useCallback((newContent: ReactNode) => {
     setContent(newContent);
     setIsOpen(true);
-  };
+  }, []);
 
-  const closeSidebar = () => {
+  const closeSidebar = React.useCallback(() => {
     setIsOpen(false);
     // Delay clearing content to allow for exit animation
     setTimeout(() => setContent(null), 300);
-  };
+  }, []);
+
+  const providerValue = React.useMemo(
+    () => ({ isOpen, content, openSidebar, closeSidebar }),
+    [isOpen, content, openSidebar, closeSidebar]
+  );
 
   return (
-    <DynamicSidebarContext.Provider value={{ isOpen, content, openSidebar, closeSidebar }}>
+    <DynamicSidebarContext.Provider value={providerValue}>
       {children}
     </DynamicSidebarContext.Provider>
   );
