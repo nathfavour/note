@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
-import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
 import { useToast } from '@/components/ui/Toast';
@@ -30,7 +30,8 @@ interface EnhancedNote extends Notes {
 
 export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSidebarProps) {
   
-  const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'preview' | 'edit'>('preview');
+  const isEditing = activeTab === 'edit';
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDoodleEditor, setShowDoodleEditor] = useState(false);
   const [title, setTitle] = useState(note.title);
@@ -47,6 +48,10 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const noteFormat = (note.format as 'text' | 'doodle') || 'text';
   const router = useRouter();
   const { closeSidebar } = useDynamicSidebar();
+  const noteTabs: Array<{ id: 'preview' | 'edit'; label: string }> = [
+    { id: 'preview', label: 'Preview' },
+    { id: 'edit', label: 'Edit' }
+  ];
 
   const handleOpenFullPage = () => {
     if (!note.$id) return;
@@ -85,6 +90,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
     setContent(note.content || '');
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
+    setActiveTab('preview');
   }, [note.$id, note.title, note.content, note.format, note.tags]);
 
   const normalizedTags = useMemo(() => {
@@ -215,7 +221,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
     setContent(note.content || '');
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
-    setIsEditing(false);
+    setActiveTab('preview');
   };
 
   const handleDelete = () => {
@@ -225,37 +231,52 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header Actions */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={isEditing ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setIsEditing(!isEditing)}
-          className="flex-1"
+      {/* Header Controls */}
+      <div className="space-y-3">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleOpenFullPage();
+            }}
+            className="h-9 w-9"
+            aria-label="Open full page"
+          >
+            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+        <div
+          role="tablist"
+          aria-label="Note view tabs"
+          className="flex flex-wrap gap-2 border-b border-border pb-1"
         >
-          <PencilIcon className="h-4 w-4 mr-2" />
-          {isEditing ? 'Editing' : 'Edit'}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(event) => {
-            event.stopPropagation();
-            handleOpenFullPage();
-          }}
-          className="h-9 w-9"
-          aria-label="Open full page"
-        >
-          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDeleteConfirm(true)}
-          className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-        >
-          <TrashIcon className="h-4 w-4" />
-        </Button>
+          {noteTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                activeTab === tab.id
+                  ? 'bg-foreground text-card-foreground'
+                  : 'text-muted-foreground hover:bg-muted/10'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
@@ -349,7 +370,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                 textClassName="text-foreground"
                 doodleClassName="rounded-lg border border-border mb-2"
                 emptyFallback={<span className="italic text-muted">No content</span>}
-                onEditDoodle={noteFormat === 'doodle' ? () => setIsEditing(true) : undefined}
+                onEditDoodle={noteFormat === 'doodle' ? () => setActiveTab('edit') : undefined}
               />
 
               {/* Copy Button - only for text notes */}
