@@ -20,6 +20,7 @@ interface NoteDetailSidebarProps {
   note: Notes;
   onUpdate: (updatedNote: Notes) => void;
   onDelete: (noteId: string) => void;
+  showExpandButton?: boolean;
 }
 
 interface EnhancedNote extends Notes {
@@ -28,7 +29,7 @@ interface EnhancedNote extends Notes {
   sharedBy?: { name: string; email: string } | null;
 }
 
-export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSidebarProps) {
+export function NoteDetailSidebar({ note, onUpdate, onDelete, showExpandButton = true }: NoteDetailSidebarProps) {
   
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingContent, setIsEditingContent] = useState(false);
@@ -307,18 +308,20 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(event) => {
-            event.stopPropagation();
-            handleOpenFullPage();
-          }}
-          className="h-9 w-9"
-          aria-label="Open full page"
-        >
-          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-        </Button>
+        {showExpandButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleOpenFullPage();
+            }}
+            className="h-9 w-9"
+            aria-label="Open full page"
+          >
+            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
