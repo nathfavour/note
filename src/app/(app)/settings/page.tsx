@@ -13,10 +13,10 @@ import { getMFAStatus, createTOTPFactor, verifyTOTPFactor, deleteTOTPFactor, cre
 import { MFASettingsModal } from '@/components/ui/MFASettingsModal';
 import { SubscriptionTab } from "./SubscriptionTab";
 
-type TabType = 'profile' | 'settings' | 'preferences' | 'subscription';
+type TabType = 'profile' | 'preferences' | 'subscription';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('settings');
+  const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [user, setUser] = useState<import('@/types/appwrite').Users | null>(null);
   const [settings, setSettings] = useState<import('@/types/appwrite').Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -222,7 +222,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'profile' as TabType, label: 'Profile' },
-    { id: 'settings' as TabType, label: 'Settings' },
     { id: 'preferences' as TabType, label: 'Preferences' },
     { id: 'subscription' as TabType, label: 'Subscription' },
     ...(Object.values(enabledIntegrations).some(enabled => enabled) ? [{ id: 'integrations' as TabType, label: 'Integrations' }] : [])
@@ -252,26 +251,6 @@ export default function SettingsPage() {
 
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} onRemoveProfilePicture={handleRemoveProfilePicture} isRemovingProfilePic={isRemovingProfilePic} />}
-             {activeTab === 'settings' && (
-                <SettingsTab
-                  user={user}
-                  settings={settings}
-                  isVerified={isVerified}
-                  error={error}
-                  success={success}
-                  onUpdate={handleUpdate}
-                  onSettingChange={handleSettingChange}
-                  router={router}
-                  showPasswordReset={showPasswordReset}
-                  setShowPasswordReset={setShowPasswordReset}
-                  resetEmailSent={resetEmailSent}
-                  handlePasswordReset={handlePasswordReset}
-                  handleCancelPasswordReset={handleCancelPasswordReset}
-                  onPublicProfileToggle={handlePublicProfileToggle}
-                  mfaStatus={mfaStatus}
-                  setMfaStatus={setMfaStatus}
-                />
-             )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
             {activeTab === 'subscription' && <SubscriptionTab />}
           </div>
