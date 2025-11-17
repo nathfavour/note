@@ -220,6 +220,8 @@ export default function SettingsPage() {
     );
   }
 
+  const enabledIntegrations = {};
+
   const tabs = [
     { id: 'profile' as TabType, label: 'Profile' },
     { id: 'preferences' as TabType, label: 'Preferences' },
