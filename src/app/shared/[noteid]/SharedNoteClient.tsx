@@ -96,6 +96,8 @@ function SharedNoteHeader() {
 export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, isLoading } = useAuth();
+  const [isCopied, setIsCopied] = React.useState(false);
 
   if (!verifiedNote) {
     return (
@@ -119,8 +121,6 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       </div>
     );
   }
-  const { isAuthenticated, isLoading } = useAuth();
-  const [isCopied, setIsCopied] = React.useState(false);
 
   const handleCopyContent = () => {
     navigator.clipboard.writeText(verifiedNote?.content || '');
