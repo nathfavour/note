@@ -30,8 +30,9 @@ interface EnhancedNote extends Notes {
 
 export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSidebarProps) {
   
-  const [activeTab, setActiveTab] = useState<'preview' | 'edit'>('preview');
-  const isEditing = activeTab === 'edit';
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingContent, setIsEditingContent] = useState(false);
+  const isEditing = isEditingTitle || isEditingContent;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDoodleEditor, setShowDoodleEditor] = useState(false);
   const [title, setTitle] = useState(note.title);
@@ -43,15 +44,17 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
   const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
   const wasEditingRef = useRef(isEditing);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const titleContainerRef = useRef<HTMLDivElement>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
+  const titleIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { showSuccess, showError } = useToast();
   const noteFormat = (note.format as 'text' | 'doodle') || 'text';
   const router = useRouter();
   const { closeSidebar } = useDynamicSidebar();
-  const noteTabs: Array<{ id: 'preview' | 'edit'; label: string }> = [
-    { id: 'preview', label: 'Preview' },
-    { id: 'edit', label: 'Edit' }
-  ];
 
   const handleOpenFullPage = () => {
     if (!note.$id) return;
@@ -90,7 +93,8 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
     setContent(note.content || '');
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
-    setActiveTab('preview');
+    setIsEditingTitle(false);
+    setIsEditingContent(false);
   }, [note.$id, note.title, note.content, note.format, note.tags]);
 
   const normalizedTags = useMemo(() => {
@@ -99,6 +103,68 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       .map((tag) => tag.trim())
       .filter(Boolean);
   }, [tags]);
+
+  const resetTitleIdleTimer = () => {
+    if (titleIdleTimer.current) {
+      clearTimeout(titleIdleTimer.current);
+    }
+    titleIdleTimer.current = setTimeout(() => setIsEditingTitle(false), 15000);
+  };
+
+  const resetContentIdleTimer = () => {
+    if (contentIdleTimer.current) {
+      clearTimeout(contentIdleTimer.current);
+    }
+    contentIdleTimer.current = setTimeout(() => setIsEditingContent(false), 15000);
+  };
+
+  useEffect(() => {
+    if (!isEditingTitle && titleIdleTimer.current) {
+      clearTimeout(titleIdleTimer.current);
+      titleIdleTimer.current = null;
+    }
+  }, [isEditingTitle]);
+
+  useEffect(() => {
+    if (!isEditingContent && contentIdleTimer.current) {
+      clearTimeout(contentIdleTimer.current);
+      contentIdleTimer.current = null;
+    }
+  }, [isEditingContent]);
+
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+      resetTitleIdleTimer();
+    }
+  }, [isEditingTitle]);
+
+  useEffect(() => {
+    if (isEditingContent && contentTextareaRef.current) {
+      contentTextareaRef.current.focus();
+      resetContentIdleTimer();
+    }
+  }, [isEditingContent]);
+
+  useEffect(() => {
+    const handleGlobalFocusOrClick = (event: FocusEvent | MouseEvent) => {
+      const target = (event.target || document.activeElement) as Node | null;
+      if (isEditingTitle && titleContainerRef.current && target && !titleContainerRef.current.contains(target)) {
+        setIsEditingTitle(false);
+      }
+      if (isEditingContent && contentContainerRef.current && target && !contentContainerRef.current.contains(target)) {
+        setIsEditingContent(false);
+      }
+    };
+
+    document.addEventListener('focusin', handleGlobalFocusOrClick);
+    document.addEventListener('mousedown', handleGlobalFocusOrClick);
+    return () => {
+      document.removeEventListener('focusin', handleGlobalFocusOrClick);
+      document.removeEventListener('mousedown', handleGlobalFocusOrClick);
+    };
+  }, [isEditingTitle, isEditingContent]);
 
   const autosaveCandidate = useMemo<Notes>(() => ({
     ...note,
@@ -158,6 +224,14 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const handleDoodleSave = (doodleData: string) => {
     setContent(doodleData);
     setShowDoodleEditor(false);
+  };
+
+  const activateTitleEditing = () => {
+    setIsEditingTitle(true);
+  };
+
+  const activateContentEditing = () => {
+    setIsEditingContent(true);
   };
 
   const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,7 +295,8 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
     setContent(note.content || '');
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
-    setActiveTab('preview');
+    setIsEditingTitle(false);
+    setIsEditingContent(false);
   };
 
   const handleDelete = () => {
@@ -231,284 +306,280 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header Controls */}
-      <div className="space-y-3">
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleOpenFullPage();
-            }}
-            className="h-9 w-9"
-            aria-label="Open full page"
-          >
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        </div>
-        <div
-          role="tablist"
-          aria-label="Note view tabs"
-          className="flex flex-wrap gap-2 border-b border-border pb-1"
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleOpenFullPage();
+          }}
+          className="h-9 w-9"
+          aria-label="Open full page"
         >
-          {noteTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                activeTab === tab.id
-                  ? 'bg-foreground text-card-foreground'
-                  : 'text-muted-foreground hover:bg-muted/10'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
+          <TrashIcon className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Content */}
-      <div className="space-y-4">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">
-            Title
-          </label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={title || ''}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
-            />
-          ) : (
-            <h1 className="text-xl font-bold text-foreground">
-              {note.title}
-            </h1>
-          )}
+      <div
+        ref={titleContainerRef}
+        className="rounded-2xl border border-border bg-card shadow-sm p-4 transition focus-within:ring-2 focus-within:ring-accent/40"
+      >
+        <div className="flex items-center justify-between text-sm text-muted mb-1">
+          <span className="font-medium">Title</span>
+          <span className="text-xs text-muted-foreground">Tap to edit</span>
         </div>
+        {isEditingTitle ? (
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={title || ''}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              resetTitleIdleTimer();
+            }}
+            onFocus={() => setIsEditingTitle(true)}
+            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+        ) : (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={activateTitleEditing}
+            onFocus={activateTitleEditing}
+            className="text-xl font-bold text-foreground cursor-text"
+          >
+            {note.title || 'Untitled note'}
+          </div>
+        )}
+      </div>
 
-        {/* Content */}
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">
-            Content
-          </label>
-          {isEditing ? (
-            <div className="space-y-3">
-              {/* Format Toggle */}
-              <div className="flex gap-2 bg-muted rounded-lg p-1">
-                <button
-                  onClick={() => setFormat('text')}
-                  className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                    format === 'text'
-                      ? 'bg-accent text-white'
-                      : 'text-foreground hover:bg-accent/20'
-                  }`}
-                >
-                  Text
-                </button>
-                <button
-                  onClick={() => setFormat('doodle')}
-                  className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                    format === 'doodle'
-                      ? 'bg-accent text-white'
-                      : 'text-foreground hover:bg-accent/20'
-                  }`}
-                >
-                  Doodle
-                </button>
-              </div>
-
-              {/* Content Based on Format */}
-              {format === 'text' ? (
-                <textarea
-                  value={content || ''}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={12}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none"
-                />
-              ) : (
-                <div className="space-y-3">
-                  {content ? (
-                    <div className="border border-border rounded-lg overflow-hidden">
-                      <NoteContentDisplay
-                        content={content}
-                        format="doodle"
-                        className="w-full"
-                        onEditDoodle={() => setShowDoodleEditor(true)}
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowDoodleEditor(true)}
-                      className="w-full h-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:bg-accent/5 transition-colors"
-                    >
-                      <span className="text-sm text-muted">Click to draw</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <NoteContentRenderer
-                content={note.content || ''}
-                format={noteFormat}
-                textClassName="text-foreground"
-                doodleClassName="rounded-lg border border-border mb-2"
-                emptyFallback={<span className="italic text-muted">No content</span>}
-                onEditDoodle={noteFormat === 'doodle' ? () => setActiveTab('edit') : undefined}
-              />
-
-              {/* Copy Button - only for text notes */}
-              {noteFormat !== 'doodle' && note.content && (
-                <div className="pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(note.content || '');
-                        showSuccess('Copied', 'Content copied to clipboard');
-                      } catch (err) {
-                        console.error('Failed to copy note content', err);
-                        showError('Copy failed', 'Could not copy content to clipboard');
-                      }
-                    }}
-                  >
-                    <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
-                    Copy
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+      <div
+        ref={contentContainerRef}
+        className="space-y-3 rounded-2xl border border-border bg-card shadow-sm p-4 transition focus-within:ring-2 focus-within:ring-accent/40"
+      >
+        <div className="flex items-center justify-between text-sm text-muted">
+          <span className="font-medium">Content</span>
+          <span className="text-xs text-muted-foreground">Click inside to edit</span>
         </div>
-
-        {/* Tags */}
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">
-            Tags
-          </label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Separate tags with commas"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
-            />
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {note.tags?.map((tag: string, index: number) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-accent/20 text-accent rounded-full text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Attachments */}
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
-          {isEditing && (
-            <div className="mb-3">
-              <input
-                type="file"
-                id="attachment-input"
-                multiple
-                onChange={handleAttachmentUpload}
-                disabled={isUploadingAttachment}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById('attachment-input')?.click()}
-                disabled={isUploadingAttachment}
-                className="w-full"
+        {isEditingContent ? (
+          <div className="space-y-4">
+            <div className="flex gap-2 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setFormat('text')}
+                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                  format === 'text'
+                    ? 'bg-accent text-white'
+                    : 'text-foreground hover:bg-accent/20'
+                }`}
               >
-                <PaperClipIcon className="h-4 w-4 mr-2" />
-                {isUploadingAttachment ? 'Uploading...' : 'Add Attachments'}
-              </Button>
-              {attachmentErrors.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {attachmentErrors.map((err, i) => (
-                    <div key={i} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                      {err}
-                    </div>
-                  ))}
-                </div>
-              )}
+                Text
+              </button>
+              <button
+                onClick={() => setFormat('doodle')}
+                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                  format === 'doodle'
+                    ? 'bg-accent text-white'
+                    : 'text-foreground hover:bg-accent/20'
+                }`}
+              >
+                Doodle
+              </button>
             </div>
-          )}
-          {currentAttachments.length > 0 ? (
-            <ul className="space-y-1 max-h-40 overflow-auto pr-1">
-              {currentAttachments.map((a: any) => (
-                <li key={a.id} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded px-2 py-1">
-                  <div className="flex flex-col min-w-0">
-                    <a href={`/notes/${note.$id}/${a.id}`} className="truncate font-medium text-accent hover:underline" title={a.name}>{a.name}</a>
-                    <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)}{a.mime?` • ${a.mime}`:''}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <a
-                      href={`/notes/${note.$id}/${a.id}`}
-                      className="text-accent hover:underline"
-                      title="Open attachment"
-                    >Open</a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted italic">No attachments</p>
-          )}
-        </div>
 
-        {/* Metadata */}
-        <div className="pt-4 border-t border-border space-y-2">
-          <div className="text-sm text-muted">
-            Created: {formatNoteCreatedDate(note)}
-          </div>
-          <div className="text-sm text-muted">
-            Updated: {formatNoteUpdatedDate(note)}
-          </div>
-
-          {/* Sharing Information */}
-          {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
-              <div className="pt-2 border-t border-border">
-                <div className="flex items-center gap-2 text-sm text-muted">
-                  <UserIcon className="h-4 w-4" />
-                  <span>
-                    Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
-                  </span>
-                </div>
-                {enhancedNote.sharePermission && (
-                  <div className="text-xs text-muted mt-1">
-                    Permission: {enhancedNote.sharePermission}
+            {format === 'text' ? (
+              <textarea
+                ref={contentTextareaRef}
+                value={content || ''}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  resetContentIdleTimer();
+                }}
+                rows={12}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            ) : (
+              <div className="space-y-3">
+                {content ? (
+                  <div className="border border-border rounded-lg overflow-hidden">
+                    <NoteContentDisplay
+                      content={content}
+                      format="doodle"
+                      className="w-full"
+                      onEditDoodle={() => setShowDoodleEditor(true)}
+                    />
                   </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowDoodleEditor(true)}
+                    className="w-full h-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:bg-accent/5 transition-colors"
+                  >
+                    <span className="text-sm text-muted">Click to draw</span>
+                  </button>
                 )}
               </div>
-          )}
+            )}
+          </div>
+        ) : (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={activateContentEditing}
+            onFocus={activateContentEditing}
+            className="space-y-3 cursor-text"
+          >
+            <NoteContentRenderer
+              content={note.content || ''}
+              format={noteFormat}
+              textClassName="text-foreground"
+              doodleClassName="rounded-lg border border-border mb-2"
+              emptyFallback={<span className="italic text-muted">No content</span>}
+              onEditDoodle={noteFormat === 'doodle' ? activateContentEditing : undefined}
+            />
+
+            {noteFormat !== 'doodle' && note.content && (
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async (event) => {
+                    event.stopPropagation();
+                    try {
+                      await navigator.clipboard.writeText(note.content || '');
+                      showSuccess('Copied', 'Content copied to clipboard');
+                    } catch (err) {
+                      console.error('Failed to copy note content', err);
+                      showError('Copy failed', 'Could not copy content to clipboard');
+                    }
+                  }}
+                >
+                  <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Tags */}
+      <div>
+        <label className="block text-sm font-medium text-muted mb-2">
+          Tags
+        </label>
+        {isEditing ? (
+          <input
+            type="text"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="Separate tags with commas"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
+          />
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {note.tags?.map((tag: string, index: number) => (
+              <span
+                key={index}
+                className="px-2 py-1 bg-accent/20 text-accent rounded-full text-xs"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Attachments */}
+      <div>
+        <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
+        {isEditing && (
+          <div className="mb-3">
+            <input
+              type="file"
+              id="attachment-input"
+              multiple
+              onChange={handleAttachmentUpload}
+              disabled={isUploadingAttachment}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('attachment-input')?.click()}
+              disabled={isUploadingAttachment}
+              className="w-full"
+            >
+              <PaperClipIcon className="h-4 w-4 mr-2" />
+              {isUploadingAttachment ? 'Uploading...' : 'Add Attachments'}
+            </Button>
+            {attachmentErrors.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {attachmentErrors.map((err, i) => (
+                  <div key={i} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                    {err}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {currentAttachments.length > 0 ? (
+          <ul className="space-y-1 max-h-40 overflow-auto pr-1">
+            {currentAttachments.map((a: any) => (
+              <li key={a.id} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded px-2 py-1">
+                <div className="flex flex-col min-w-0">
+                  <a href={`/notes/${note.$id}/${a.id}`} className="truncate font-medium text-accent hover:underline" title={a.name}>{a.name}</a>
+                  <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <a
+                    href={`/notes/${note.$id}/${a.id}`}
+                    className="text-accent hover:underline"
+                    title="Open attachment"
+                  >Open</a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted italic">No attachments</p>
+        )}
+      </div>
+
+      {/* Metadata */}
+      <div className="pt-4 border-t border-border space-y-2">
+        <div className="text-sm text-muted">
+          Created: {formatNoteCreatedDate(note)}
         </div>
+        <div className="text-sm text-muted">
+          Updated: {formatNoteUpdatedDate(note)}
+        </div>
+
+        {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
+          <div className="pt-2 border-t border-border">
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <UserIcon className="h-4 w-4" />
+              <span>
+                Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
+              </span>
+            </div>
+            {enhancedNote.sharePermission && (
+              <div className="text-xs text-muted mt-1">
+                Permission: {enhancedNote.sharePermission}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Edit Actions */}
@@ -534,8 +605,8 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal 
-        isOpen={showDeleteConfirm} 
+      <Modal
+        isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="Delete Note"
       >
