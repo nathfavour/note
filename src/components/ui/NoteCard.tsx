@@ -89,7 +89,8 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
         note={note}
         onUpdate={onUpdate || (() => {})}
         onDelete={onDelete || (() => {})}
-      />
+      />,
+      note.$id || null
     );
   };
 
@@ -163,6 +164,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   return (
     <>
       <Card 
+        data-note-card
         className="relative flex flex-col bg-card border border-border note-card h-48 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:shadow-lg transition-shadow"
         onClick={handleClick}
         onContextMenu={handleRightClick}

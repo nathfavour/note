@@ -14,8 +14,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isDynamicSidebarOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
-      const sidebarElement = document.querySelector('[data-dynamic-sidebar]');
-      if (sidebarElement?.contains(event.target as Node)) {
+      const targetElement = event.target as Element | null;
+      if (!targetElement) return;
+      if (targetElement.closest('[data-dynamic-sidebar]')) {
+        return;
+      }
+      if (targetElement.closest('[data-note-card]')) {
         return;
       }
       closeSidebar();

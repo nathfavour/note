@@ -109,7 +109,8 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
           note={note}
           onUpdate={handleNoteUpdated}
           onDelete={handleNoteDeleted}
-        />
+        />,
+        note.$id || null
       );
       setIsOpen(false);
       clearSearch();

@@ -161,6 +161,8 @@ export default function NotesPage() {
         onUpdate={handleNoteUpdated}
         onDelete={handleNoteDeleted}
       />
+      ,
+      targetNote.$id || null
     );
 
     cleanParams();

@@ -7,7 +7,8 @@ import { Button } from './Button';
 interface DynamicSidebarContextType {
   isOpen: boolean;
   content: ReactNode | null;
-  openSidebar: (content: ReactNode) => void;
+  activeContentKey: string | null;
+  openSidebar: (content: ReactNode, key?: string | null) => void;
   closeSidebar: () => void;
 }
 
@@ -16,21 +17,32 @@ const DynamicSidebarContext = createContext<DynamicSidebarContextType | undefine
 export function DynamicSidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<ReactNode | null>(null);
+  const [activeContentKey, setActiveContentKey] = useState<string | null>(null);
 
-  const openSidebar = React.useCallback((newContent: ReactNode) => {
-    setContent(newContent);
-    setIsOpen(true);
-  }, []);
+  const openSidebar = React.useCallback(
+    (newContent: ReactNode, key: string | null = null) => {
+      if (isOpen && key && activeContentKey === key) {
+        return;
+      }
+      setContent(newContent);
+      setActiveContentKey(key);
+      setIsOpen(true);
+    },
+    [activeContentKey, isOpen]
+  );
 
   const closeSidebar = React.useCallback(() => {
     setIsOpen(false);
     // Delay clearing content to allow for exit animation
-    setTimeout(() => setContent(null), 300);
+    setTimeout(() => {
+      setContent(null);
+      setActiveContentKey(null);
+    }, 300);
   }, []);
 
   const providerValue = React.useMemo(
-    () => ({ isOpen, content, openSidebar, closeSidebar }),
-    [isOpen, content, openSidebar, closeSidebar]
+    () => ({ isOpen, content, activeContentKey, openSidebar, closeSidebar }),
+    [isOpen, content, activeContentKey, openSidebar, closeSidebar]
   );
 
   return (
