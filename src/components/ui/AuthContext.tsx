@@ -142,6 +142,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [refreshUser, router, pathname]);
 
+  useEffect(() => {
+    if (!idmWindowOpen) return;
+
+    const interval = setInterval(() => {
+      const child = idmWindowRef.current;
+      if (child && child.closed) {
+        clearInterval(interval);
+        idmWindowRef.current = null;
+        setIDMWindowOpen(false);
+        refreshUser();
+      }
+    }, 700);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [idmWindowOpen, refreshUser]);
+
   const login = (userData: User) => {
     setUser(userData);
   };
