@@ -6,20 +6,19 @@ import { useAuth } from '@/components/ui/AuthContext';
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, openIDMWindow } = useAuth();
-  const hasRunRef = useRef(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    // Only run once to prevent loops
-    if (hasRunRef.current || isLoading) return;
-    hasRunRef.current = true;
+    if (isLoading || hasRedirectedRef.current) return;
+    hasRedirectedRef.current = true;
 
     if (isAuthenticated) {
-      router.push('/notes');
+      router.replace('/notes');
     } else {
-      openIDMWindow();
+      router.replace('/landing');
     }
-  }, [isAuthenticated, isLoading, router, openIDMWindow]);
+  }, [isAuthenticated, isLoading, router]);
 
   // Don't render anything - just redirect
   return null;

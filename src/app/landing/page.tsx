@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -36,6 +36,14 @@ const features = [
 export default function LandingPage() {
   const { openIDMWindow, isAuthenticated, user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/notes');
+      return;
+    }
+    openIDMWindow();
+  }, [isAuthenticated, openIDMWindow, router]);
 
   // Generate user initials from name or email
   const getUserInitials = (user: any): string => {

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { getCurrentUser } from '@/lib/appwrite';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
 import { EmailVerificationReminder } from './EmailVerificationReminder';
@@ -41,9 +42,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [showInitialLoading, setShowInitialLoading] = useState(true);
   const [idmWindowOpen, setIDMWindowOpen] = useState(false);
   const [emailVerificationReminderDismissed, setEmailVerificationReminderDismissed] = useState(false);
-  const [idmWindowRef, setIDMWindowRef] = useState<Window | null>(null);
+  const idmWindowRef = useRef<Window | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const refreshUser = async (isRetry = false) => {
+  const refreshUser = useCallback(async (isRetry = false) => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
@@ -73,7 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setShowInitialLoading(false);
       }, 800); // Reduced from 1500ms to 800ms
     }
-  };
+  }, []);
 
   // Session validation on initial load and manual refresh only
   useEffect(() => {
@@ -109,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       document.removeEventListener('click', handleUserActivity);
       document.removeEventListener('keydown', handleUserActivity);
     };
-  }, [user, isLoading]);
+  }, [user, isLoading, refreshUser]);
 
   const login = (userData: User) => {
     setUser(userData);
@@ -182,21 +185,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Opens IDM window for authentication
   const openIDMWindow = useCallback(() => {
-    // First check if user already has a valid session
-    refreshUser().then(() => {
-      // Check user state directly instead of from closure
-      getCurrentUser().then((currentUser) => {
+    if (typeof window === 'undefined') return;
+
+    const launch = async () => {
+      try {
+        await refreshUser();
+        const currentUser = await getCurrentUser();
+
         if (currentUser) {
+          setUser(currentUser);
           setIDMWindowOpen(false);
+          if (idmWindowRef.current && !idmWindowRef.current.closed) {
+            idmWindowRef.current.close();
+            idmWindowRef.current = null;
+          }
+          if (pathname === '/' || pathname === '/landing') {
+            router.replace('/notes');
+          }
           return;
         }
 
-        // Get IDM configuration from environment
         const authSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
         const domain = process.env.NEXT_PUBLIC_DOMAIN;
 
         if (!authSubdomain || !domain) {
           console.error('IDM configuration missing: AUTH_SUBDOMAIN or DOMAIN not set');
+          router.replace('/landing');
           return;
         }
 
@@ -206,49 +220,94 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const left = window.screenX + (window.outerWidth - width) / 2;
         const top = window.screenY + (window.outerHeight - height) / 2;
 
-        const windowRef = window.open(
-          idmUrl,
-          'WhisperrNoteIDM',
-          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-        );
+        if (idmWindowRef.current && !idmWindowRef.current.closed) {
+          idmWindowRef.current.focus();
+        } else {
+          const windowRef = window.open(
+            idmUrl,
+            'WhisperrNoteIDM',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+          );
 
-        setIDMWindowRef(windowRef);
+          if (!windowRef) {
+            console.error('Failed to open IDM window');
+            setIDMWindowOpen(false);
+            router.replace('/landing');
+            return;
+          }
+
+          idmWindowRef.current = windowRef;
+        }
+
         setIDMWindowOpen(true);
 
-        // Poll for session changes (only for IDM window)
-        if (windowRef) {
-          const pollInterval = setInterval(async () => {
-            try {
-              const checkedUser = await getCurrentUser();
-              if (checkedUser) {
-                setUser(checkedUser);
-                setIDMWindowOpen(false);
-                windowRef.close();
-                clearInterval(pollInterval);
-              } else if (windowRef.closed) {
-                clearInterval(pollInterval);
-                setIDMWindowOpen(false);
-              }
-            } catch (error) {
-              console.error('Error checking session:', error);
-            }
-          }, 1000); // Check every second
+        const activeWindow = idmWindowRef.current;
+        if (!activeWindow) return;
 
-          // Clear interval after 10 minutes (safety timeout)
-          setTimeout(() => clearInterval(pollInterval), 10 * 60 * 1000);
-        }
-      }).catch((error) => {
-        console.error('Error checking user session:', error);
-      });
-    });
-  }, []);
+        let pollInterval: number | undefined;
+        let pollTimeout: number | undefined;
+
+        const clearPolling = () => {
+          if (pollInterval) {
+            window.clearInterval(pollInterval);
+            pollInterval = undefined;
+          }
+          if (pollTimeout) {
+            window.clearTimeout(pollTimeout);
+            pollTimeout = undefined;
+          }
+        };
+
+        pollInterval = window.setInterval(async () => {
+          try {
+            const checkedUser = await getCurrentUser();
+            if (checkedUser) {
+              setUser(checkedUser);
+              setIDMWindowOpen(false);
+              if (!activeWindow.closed) {
+                activeWindow.close();
+              }
+              idmWindowRef.current = null;
+              clearPolling();
+              if (pathname === '/' || pathname === '/landing') {
+                router.replace('/notes');
+              }
+              return;
+            }
+
+            if (activeWindow.closed) {
+              clearPolling();
+              setIDMWindowOpen(false);
+              idmWindowRef.current = null;
+              router.replace('/landing');
+            }
+          } catch (error) {
+            console.error('Error checking session:', error);
+          }
+        }, 1000);
+
+        pollTimeout = window.setTimeout(() => {
+          clearPolling();
+        }, 10 * 60 * 1000);
+      } catch (error) {
+        console.error('Failed to initiate IDM flow:', error);
+        router.replace('/landing');
+      }
+    };
+
+    launch();
+  }, [refreshUser, router, pathname]);
 
   const closeIDMWindow = useCallback(() => {
-    if (idmWindowRef && !idmWindowRef.closed) {
-      idmWindowRef.close();
+    if (idmWindowRef.current && !idmWindowRef.current.closed) {
+      idmWindowRef.current.close();
     }
+    idmWindowRef.current = null;
     setIDMWindowOpen(false);
-  }, [idmWindowRef]);
+    if (!user) {
+      router.replace('/landing');
+    }
+  }, [router, user]);
 
   const value = {
     user,
