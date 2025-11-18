@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface PaginationProps {
@@ -71,7 +72,7 @@ export function Pagination({
   };
 
   return (
-    <div className={`flex items-center justify-between ${className}`}>
+    <div className={`flex items-center justify-between ${className}`} {...sidebarIgnoreProps}>
       {/* Results info */}
       <div className="text-sm text-foreground/60">
         {compact ? (

@@ -26,6 +26,7 @@ import { MobileFAB } from '@/components/MobileFAB';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
+import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
@@ -196,7 +197,7 @@ export default function NotesPage() {
             Notes
           </h1>
           <div className="flex items-center gap-3">
-            <Button size="icon" onClick={handleCreateNoteClick}>
+            <Button size="icon" onClick={handleCreateNoteClick} {...sidebarIgnoreProps}>
               <PlusCircleIcon className="h-6 w-6" />
             </Button>
           </div>
@@ -222,6 +223,7 @@ export default function NotesPage() {
             size="icon"
             onClick={handleToggleSidebar}
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            {...sidebarIgnoreProps}
           >
             {isCollapsed ? (
               <ArrowRightOnRectangleIcon className="h-5 w-5" />
@@ -229,7 +231,7 @@ export default function NotesPage() {
               <ArrowLeftOnRectangleIcon className="h-5 w-5" />
             )}
           </Button>
-          <Button onClick={handleCreateNoteClick} size="icon">
+          <Button onClick={handleCreateNoteClick} size="icon" {...sidebarIgnoreProps}>
             <PlusCircleIcon className="h-5 w-5" />
           </Button>
         </div>
@@ -246,13 +248,14 @@ export default function NotesPage() {
               className="whitespace-nowrap"
               aria-pressed={searchQuery === tag}
               onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
+              {...sidebarIgnoreProps}
             >
               {tag}
             </Button>
           ))}
 
           {hasSearchResults && (
-            <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2">
+            <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2" {...sidebarIgnoreProps}>
               Clear
             </Button>
           )}
@@ -336,7 +339,9 @@ export default function NotesPage() {
           </div>
           {hasMore && !isInitialLoading && (
             <div className="flex justify-center">
-              <Button variant="secondary" onClick={loadMore}>Load More</Button>
+              <Button variant="secondary" onClick={loadMore} {...sidebarIgnoreProps}>
+                Load More
+              </Button>
             </div>
           )}
         </div>

@@ -9,6 +9,7 @@ import { useSearch } from '@/hooks/useSearch';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';
 import { deleteNote } from '@/lib/appwrite';
+import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 interface TopBarSearchProps {
   className?: string;
@@ -48,28 +49,31 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
     paginationConfig,
   });
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          searchRef.current &&
+          !searchRef.current.contains(event.target as Node)
+        ) {
+          setIsOpen(false);
+        }
+      };
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        clearSearch();
-        inputRef.current?.blur();
-      }
-    };
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setIsOpen(false);
+          clearSearch();
+          inputRef.current?.blur();
+        }
+      };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [clearSearch]);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }, [clearSearch]);
 
   const handleClear = () => {
     clearSearch();
@@ -123,7 +127,11 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
   const showDropdown = isOpen && searchQuery.length > 0;
 
   return (
-    <div className={`relative ${className}`} ref={searchRef}>
+    <div
+      className={`relative ${className}`}
+      ref={searchRef}
+      {...sidebarIgnoreProps}
+    >
       {/* Search Input */}
       <div className="relative">
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">

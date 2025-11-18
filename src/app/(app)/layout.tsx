@@ -5,6 +5,7 @@ import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
 import AppHeader from '@/components/AppHeader';
 import { SidebarProvider, useSidebar } from '@/components/ui/SidebarContext';
 import { DynamicSidebarProvider, useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
+import { SIDEBAR_IGNORE_ATTR } from '@/constants/sidebar';
 import { NotesProvider } from '@/contexts/NotesContext';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -19,7 +20,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       if (targetElement.closest('[data-dynamic-sidebar]')) {
         return;
       }
-      if (targetElement.closest('[data-note-card]')) {
+      if (targetElement.closest(`[${SIDEBAR_IGNORE_ATTR}]`)) {
         return;
       }
       closeSidebar();

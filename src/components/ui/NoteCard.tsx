@@ -17,6 +17,7 @@ import {
   EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
+import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 interface NoteCardProps {
   note: Notes;
@@ -164,7 +165,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   return (
     <>
       <Card 
-        data-note-card
+        {...sidebarIgnoreProps}
         className="relative flex flex-col bg-card border border-border note-card h-48 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:shadow-lg transition-shadow"
         onClick={handleClick}
         onContextMenu={handleRightClick}

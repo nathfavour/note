@@ -7,6 +7,7 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { ensureAI } from '@/lib/ai/lazy';
 // AI context removed; using lazy ensureAI loader
+import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 interface MobileFABProps {
   className?: string;
@@ -77,7 +78,10 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   // Legacy direct AI generation removed; handled within ensureAI modal callback
 
   return (
-    <div className={`fixed bottom-20 right-6 z-40 md:hidden ${className}`}>
+    <div
+      className={`fixed bottom-20 right-6 z-40 md:hidden ${className}`}
+      {...sidebarIgnoreProps}
+    >
       {/* Backdrop for expanded state */}
       {isExpanded && (
         <div 
