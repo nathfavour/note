@@ -9,7 +9,8 @@ const buttonVariants = cva(
         default: 'bg-accent text-light-bg hover:bg-accent-dark',
         destructive: 'bg-red-500 text-white hover:bg-red-600',
         outline: 'border border-border bg-transparent hover:bg-accent hover:text-light-bg',
-        secondary: 'bg-dark-card text-dark-fg hover:bg-dark-border',
+        secondary:
+          'bg-white text-foreground hover:bg-light-border dark:bg-dark-card dark:text-dark-fg dark:hover:bg-dark-border',
         ghost: 'hover:bg-accent hover:text-light-bg',
         link: 'text-primary underline-offset-4 hover:underline',
       },
