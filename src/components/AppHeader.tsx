@@ -165,7 +165,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 <div className="px-4 py-2 text-[10px] font-semibold text-muted-foreground">
                   Apps
                 </div>
-                <div className="grid grid-cols-3 gap-3 px-3 py-3 text-center">
+                <div className="grid grid-cols-3 gap-2 px-3 py-2 text-center">
                   {ECOSYSTEM_APPS.map((app) => {
                     const isActive = currentSubdomain === app.subdomain;
                     return (
@@ -174,16 +174,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         type="button"
                         onClick={() => handleAppClick(app.subdomain)}
                         disabled={isActive}
-                        className={`flex flex-col items-center gap-2 rounded-2xl border border-border px-3 py-3 text-center transition-all duration-200 ${
+                        className={`flex flex-col items-center gap-1 rounded-2xl border border-border px-2 py-2 text-center transition-all duration-200 ${
                           isActive
                             ? 'bg-muted text-foreground/70 cursor-default'
                             : 'bg-background hover:border-accent hover:shadow-inner-light dark:hover:shadow-inner-dark'
                         }`}
                       >
                         <img
-                          src={DEFAULT_ECOSYSTEM_LOGO}
-                          alt={`${app.label} logo`}
-                          className={`h-10 w-10 rounded-lg border ${isActive ? 'border-foreground/10' : 'border-border'} object-cover`}
+                          src="/logo/whisperrnote.png"
+                          alt="Whisperrnote logo"
+                          className={`h-8 w-8 rounded-full border ${isActive ? 'border-foreground/10' : 'border-border'} object-cover`}
                         />
                         <p className="text-[9px] font-semibold text-foreground">
                           {app.label}
