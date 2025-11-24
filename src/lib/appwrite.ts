@@ -1089,7 +1089,7 @@ export async function getNotesByTag(tagId: string): Promise<Notes[]> {
     const pivotRes = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
       noteTagsCollection,
-      [Query.equal('tag', tagId), Query.limit(1000)] as any
+      [Query.equal('tagId', tagId), Query.limit(1000)] as any
     );
 
     const noteIds = pivotRes.documents.map((p: any) => p.noteId).filter(Boolean);
