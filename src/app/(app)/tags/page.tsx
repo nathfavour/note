@@ -234,24 +234,22 @@ export default function TagsPage() {
           </div>
 
           {/* Right side or full screen on mobile: Notes sidebar */}
-          <div className="flex-1 overflow-y-auto lg:border-l lg:border-border p-4 lg:p-6 animate-slide-in-right">
-            <div className="max-w-4xl h-full">
-              <TagNotesListSidebar
-                tag={selectedTag}
-                onBack={() => setSelectedTag(null)}
-                onNoteUpdate={async (updatedNote) => {
-                  try {
-                    await updateNote(updatedNote.$id || '', updatedNote);
-                  } catch (err) {
-                    console.error('Failed to update note:', err);
-                  }
-                }}
-                onNoteDelete={(noteId) => {
-                  // Handle note deletion if needed
-                  console.log('Note deleted:', noteId);
-                }}
-              />
-            </div>
+          <div className="flex-1 overflow-hidden lg:border-l lg:border-border animate-slide-in-right">
+            <TagNotesListSidebar
+              tag={selectedTag}
+              onBack={() => setSelectedTag(null)}
+              onNoteUpdate={async (updatedNote) => {
+                try {
+                  await updateNote(updatedNote.$id || '', updatedNote);
+                } catch (err) {
+                  console.error('Failed to update note:', err);
+                }
+              }}
+              onNoteDelete={(noteId) => {
+                // Handle note deletion if needed
+                console.log('Note deleted:', noteId);
+              }}
+            />
           </div>
         </div>
 

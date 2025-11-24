@@ -71,7 +71,7 @@ export function TagNotesListSidebar({
   const renderContent = () => {
     if (selectedNote) {
       return (
-        <div className="overflow-y-auto px-4 py-4">
+        <div className="h-full px-4 py-4">
           <NoteDetailSidebar
             note={selectedNote}
             onUpdate={handleNoteUpdate}

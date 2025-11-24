@@ -26,7 +26,7 @@ interface NoteCardProps {
   onNoteSelect?: (note: Notes) => void;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
+const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSelect }) => {
   // context menu managed globally
   const [showShareModal, setShowShareModal] = useState(false);
   const { openMenu, closeMenu } = useContextMenu();
