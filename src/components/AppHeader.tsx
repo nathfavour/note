@@ -161,11 +161,11 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 className="fixed inset-0 z-10"
                 onClick={() => setIsAppsMenuOpen(false)}
               />
-              <div className="absolute top-full right-0 mt-2 w-72 rounded-2xl border border-border bg-card shadow-lg shadow-black/5 z-20">
+              <div className="absolute top-full right-0 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-lg shadow-black/5 z-20">
                 <div className="px-4 py-2 text-[10px] font-semibold text-muted-foreground">
                   Apps
                 </div>
-                <div className="grid grid-cols-3 gap-2 px-3 py-2 text-center">
+                <div className="grid grid-cols-3 gap-2 px-3 py-2 text-center sm:grid-cols-4">
                   {ECOSYSTEM_APPS.map((app) => {
                     const isActive = currentSubdomain === app.subdomain;
                     return (
@@ -174,10 +174,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         type="button"
                         onClick={() => handleAppClick(app.subdomain)}
                         disabled={isActive}
-                        className={`flex flex-col items-center gap-1 rounded-2xl border border-border px-2 py-2 text-center transition-all duration-200 ${
+                        className={`flex w-full flex-col items-center gap-1 text-[10px] font-semibold transition-colors duration-150 sm:flex-row sm:justify-center sm:gap-2 sm:text-[11px] ${
                           isActive
-                            ? 'bg-muted text-foreground/70 cursor-default'
-                            : 'bg-background hover:border-accent hover:shadow-inner-light dark:hover:shadow-inner-dark'
+                            ? 'text-foreground/70 cursor-default'
+                            : 'text-foreground/70 hover:text-foreground'
                         }`}
                       >
                         <img
