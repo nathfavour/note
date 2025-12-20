@@ -54,7 +54,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           await getUser(currentUser.$id);
         } catch (e) {
-          // Assuming a 'not found' error, create the user profile
           try {
             await createUser({
               id: currentUser.$id,
@@ -67,17 +66,74 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       setUser(currentUser);
-    } catch (error) {
+      setIsLoading(false);
+      return currentUser;
+    } catch (error: any) {
+      // If error is network related, don't clear user yet, just set offline flag if we had a user
+      const isNetworkError = !error.response && error.message?.includes('Network Error') || error.message?.includes('Failed to fetch');
+
+      if (!isNetworkError) {
+        setUser(null);
+      } else {
+        console.warn('Network issue detected during auth refresh. Retaining last known state.');
+      }
+
       console.error('Failed to get current user:', error);
-      setUser(null);
+      return null;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Session validation on initial load and manual refresh only
+  // Silent session discovery via iframe
+  const attemptSilentAuth = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
+    // Skip if already authenticated
+    if (user) return;
+
+    const authSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
+    const domain = process.env.NEXT_PUBLIC_DOMAIN;
+    if (!authSubdomain || !domain) return;
+
+    return new Promise<void>((resolve) => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://${authSubdomain}.${domain}/silent-check`;
+      iframe.style.display = 'none';
+
+      const timeout = setTimeout(() => {
+        cleanup();
+        resolve();
+      }, 5000);
+
+      const handleIframeMessage = (event: MessageEvent) => {
+        if (event.origin !== `https://${authSubdomain}.${domain}`) return;
+
+        if (event.data?.type === 'idm:auth-status' && event.data.status === 'authenticated') {
+          console.log('Silent auth discovered active session');
+          refreshUser();
+          cleanup();
+          resolve();
+        } else if (event.data?.type === 'idm:auth-status') {
+          cleanup();
+          resolve();
+        }
+      };
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        window.removeEventListener('message', handleIframeMessage);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      };
+
+      window.addEventListener('message', handleIframeMessage);
+      document.body.appendChild(iframe);
+    });
+  }, [user, refreshUser]);
+
   useEffect(() => {
-    // Restore email verification reminder dismissal state
     if (typeof window !== 'undefined') {
       const dismissed = localStorage.getItem('emailVerificationReminderDismissed');
       if (dismissed === 'true') {
@@ -85,23 +141,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
 
-    refreshUser();
+    const initAuth = async () => {
+      const localUser = await refreshUser();
+      if (!localUser) {
+        // Only attempt silent discovery if we definitely don't have a session locally
+        await attemptSilentAuth();
+      }
+    };
+
+    initAuth();
 
     let lastRefreshTime = Date.now();
-    const MIN_REFRESH_INTERVAL = 60 * 1000; // 1 minute minimum between refreshes
+    const MIN_REFRESH_INTERVAL = 5 * 60 * 1000; // Increased to 5 mins
 
-    // Event-based session validation only on explicit user actions (prevent polling abuse)
     const handleUserActivity = () => {
       const now = Date.now();
-      // Throttle refreshes: max 1 per minute
       if (now - lastRefreshTime >= MIN_REFRESH_INTERVAL && user && !isLoading) {
         lastRefreshTime = now;
         refreshUser();
       }
     };
 
-    // Only validate on explicit user interaction (click, keydown)
-    // Removed visibility and online events to prevent automatic refresh abuse
     document.addEventListener('click', handleUserActivity, { once: false, passive: true });
     document.addEventListener('keydown', handleUserActivity, { once: false, passive: true });
 
@@ -109,7 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       document.removeEventListener('click', handleUserActivity);
       document.removeEventListener('keydown', handleUserActivity);
     };
-  }, [user, isLoading, refreshUser]);
+  }, [user, isLoading, refreshUser, attemptSilentAuth]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {

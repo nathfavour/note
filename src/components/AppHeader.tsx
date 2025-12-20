@@ -118,9 +118,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
       <div className="flex items-center justify-between px-6 py-3 gap-4">
         {/* Left: Whisperrnote Logo - Always at the edge */}
         <div className="flex items-center gap-3 shrink-0">
-          <img 
-            src="/logo/whisperrnote.png" 
-            alt="Whisperrnote Logo" 
+          <img
+            src="/logo/whisperrnote.png"
+            alt="Whisperrnote Logo"
             className="w-8 h-8 rounded-lg shadow-lg"
           />
           <h1 className="hidden sm:block text-xl font-black text-foreground bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
@@ -132,12 +132,12 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
         <div className="flex-1 max-w-md mx-4">
           <TopBarSearch />
         </div>
-        
+
         {/* Right: AI Generate Button (Desktop) + Account Menu */}
         <div className="relative flex items-center gap-3 shrink-0">
           {/* AI Generate Button - Desktop Only */}
           <div className="hidden md:block">
-            <Button 
+            <Button
               onClick={handleAIGenerateClick}
               disabled={aiLoading || aiGenerating}
               className={`gap-2 ${aiLoading ? 'opacity-60 cursor-wait' : ''}`}
@@ -174,7 +174,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
           {isAppsMenuOpen && (
             <>
-              <div 
+              <div
                 className="fixed inset-0 z-10"
                 onClick={() => setIsAppsMenuOpen(false)}
               />
@@ -194,11 +194,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         type="button"
                         onClick={() => handleAppClick(app.subdomain)}
                         disabled={isActive}
-                        className={`flex min-w-[60px] flex-col items-center gap-2 rounded-2xl px-1 py-2 text-[10px] font-semibold transition duration-150 shadow-sm shadow-black/20 ${
-                          isActive
+                        className={`flex min-w-[60px] flex-col items-center gap-2 rounded-2xl px-1 py-2 text-[10px] font-semibold transition duration-150 shadow-sm shadow-black/20 ${isActive
                             ? 'cursor-default opacity-70'
                             : 'text-foreground hover:text-foreground hover:bg-yellow-50 dark:hover:bg-yellow-500/20 active:bg-yellow-100 dark:active:bg-yellow-400/20'
-                        }`}
+                          }`}
                       >
                         <img
                           src="/logo/whisperrnote.png"
@@ -216,56 +215,56 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             </>
           )}
 
-           {/* Account Menu Button - Mobile Only */}
-           <button
-             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-             className="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
-           >
-             {/* Render profile picture if available, otherwise fallback to initials */}
-             {smallProfileUrl ? (
-               <img
-                 src={smallProfileUrl}
-                 alt={user?.name || user?.email || 'Account'}
-                 className="h-5 w-5 rounded-full object-cover"
-               />
-             ) : (
-               <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
-                 {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
-               </div>
-             )}
-             <span className="hidden sm:inline text-sm font-medium text-foreground">
-               {user?.name || user?.email || 'Account'}
-             </span>
-           </button>
+          {/* Account Menu Button - Mobile Only */}
+          <button
+            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+            className="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
+          >
+            {/* Render profile picture if available, otherwise fallback to initials */}
+            {smallProfileUrl ? (
+              <img
+                src={smallProfileUrl}
+                alt={user?.name || user?.email || 'Account'}
+                className="h-5 w-5 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
+                {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+              </div>
+            )}
+            <span className="hidden sm:inline text-sm font-medium text-foreground">
+              {user?.name || user?.email || 'Account'}
+            </span>
+          </button>
 
           {/* Account Dropdown Menu */}
           {isAccountMenuOpen && (
             <>
               {/* Backdrop */}
-              <div 
+              <div
                 className="fixed inset-0 z-10"
                 onClick={() => setIsAccountMenuOpen(false)}
               />
-              
+
               {/* Menu */}
               <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-lg z-20 py-2">
                 <a
-                  href="/settings"
+                  href={`https://${process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN}.${process.env.NEXT_PUBLIC_DOMAIN}/settings?source=${encodeURIComponent(window.location.origin)}`}
                   onClick={() => setIsAccountMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
                 >
                   <Cog6ToothIcon className="h-4 w-4" />
                   <span className="text-sm font-medium">Settings</span>
                 </a>
-                
+
                 {/* Theme Toggle */}
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm font-medium text-foreground">Theme</span>
                   <ThemeToggle size="sm" />
                 </div>
-                
+
                 <div className="border-t border-border my-1"></div>
-                
+
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
