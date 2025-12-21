@@ -29,10 +29,10 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
   const navLinks = [
-    { icon: HomeIcon, href: '/notes' },
-    { icon: ShareIcon, href: '/shared' },
-    { icon: TagIcon, href: '/tags' },
-    { icon: PuzzlePieceIcon, href: '/extensions' },
+    { icon: HomeIcon, href: '/notes', label: 'Vault' },
+    { icon: ShareIcon, href: '/shared', label: 'Links' },
+    { icon: TagIcon, href: '/tags', label: 'Tags' },
+    { icon: PuzzlePieceIcon, href: '/extensions', label: 'Caps' },
   ];
 
   return (
@@ -43,11 +43,10 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-                isActive(href)
+              className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${isActive(href)
                   ? 'text-white bg-accent shadow-lg transform -translate-y-0.5'
                   : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-              }`}
+                }`}
             >
               <Icon className="h-6 w-6" />
             </Link>
@@ -101,18 +100,17 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({ className = '' }) =>
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
   const navItems = [
-    { icon: HomeIcon, label: 'My Notes', path: '/notes' },
-    { icon: ShareIcon, label: 'Shared', path: '/shared' },
-    { icon: TagIcon, label: 'Tags', path: '/tags' },
-    { icon: PuzzlePieceIcon, label: 'Extensions', path: '/extensions' },
-    { icon: Cog6ToothIcon, label: 'Settings', path: '/settings' },
+    { icon: HomeIcon, label: 'Neural Vault', path: '/notes' },
+    { icon: ShareIcon, label: 'Sovereign Links', path: '/shared' },
+    { icon: TagIcon, label: 'Taxonomy', path: '/tags' },
+    { icon: PuzzlePieceIcon, label: 'Capabilities', path: '/extensions' },
+    { icon: Cog6ToothIcon, label: 'Vault Settings', path: '/settings' },
   ];
 
   return (
     <aside
-      className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 z-20 ${
-        isCollapsed ? 'w-16' : 'w-64'
-      } ${className}`}
+      className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 z-20 ${isCollapsed ? 'w-16' : 'w-64'
+        } ${className}`}
     >
       <div className="flex items-center justify-end p-4 border-b border-light-border dark:border-dark-border">
         <button
@@ -132,11 +130,10 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({ className = '' }) =>
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group ${
-                active
+              className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group ${active
                   ? 'bg-accent text-white shadow-lg transform translate-x-1'
                   : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:translate-x-0.5'
-              } ${isCollapsed ? 'justify-center px-3' : ''}`}
+                } ${isCollapsed ? 'justify-center px-3' : ''}`}
             >
               <Icon className="h-6 w-6 flex-shrink-0" />
               {!isCollapsed && <span className="font-semibold">{item.label}</span>}
@@ -175,9 +172,8 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({ className = '' }) =>
         {isAuthenticated && (
           <button
             onClick={() => logout()}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-sm ${
-              isCollapsed ? 'justify-center px-2' : ''
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-sm ${isCollapsed ? 'justify-center px-2' : ''
+              }`}
           >
             <PowerIcon className="h-5 w-5" />
             {!isCollapsed && <span className="font-medium">Logout</span>}

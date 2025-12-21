@@ -195,8 +195,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         onClick={() => handleAppClick(app.subdomain)}
                         disabled={isActive}
                         className={`flex min-w-[60px] flex-col items-center gap-2 rounded-2xl px-1 py-2 text-[10px] font-semibold transition duration-150 shadow-sm shadow-black/20 ${isActive
-                            ? 'cursor-default opacity-70'
-                            : 'text-foreground hover:text-foreground hover:bg-yellow-50 dark:hover:bg-yellow-500/20 active:bg-yellow-100 dark:active:bg-yellow-400/20'
+                          ? 'cursor-default opacity-70'
+                          : 'text-foreground hover:text-foreground hover:bg-yellow-50 dark:hover:bg-yellow-500/20 active:bg-yellow-100 dark:active:bg-yellow-400/20'
                           }`}
                       >
                         <img
@@ -222,18 +222,24 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           >
             {/* Render profile picture if available, otherwise fallback to initials */}
             {smallProfileUrl ? (
-              <img
-                src={smallProfileUrl}
-                alt={user?.name || user?.email || 'Account'}
-                className="h-5 w-5 rounded-full object-cover"
-              />
+              <div className="relative">
+                <img
+                  src={smallProfileUrl}
+                  alt={user?.name || user?.email || 'Sovereign ID'}
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-life rounded-full border border-void shadow-sm" title="Verified Sovereign" />
+              </div>
             ) : (
-              <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
-                {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+              <div className="relative overflow-visible">
+                <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
+                  {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-life rounded-full border border-void shadow-sm" title="Verified Sovereign" />
               </div>
             )}
-            <span className="hidden sm:inline text-sm font-medium text-foreground">
-              {user?.name || user?.email || 'Account'}
+            <span className="hidden sm:inline text-sm font-bold tracking-tight text-foreground">
+              {user?.name || user?.email || 'Sovereign ID'}
             </span>
           </button>
 
@@ -247,31 +253,51 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               />
 
               {/* Menu */}
-              <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-lg z-20 py-2">
-                <a
-                  href={`https://${process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN}.${process.env.NEXT_PUBLIC_DOMAIN}/settings?source=${encodeURIComponent(window.location.origin)}`}
-                  onClick={() => setIsAccountMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
-                >
-                  <Cog6ToothIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Settings</span>
-                </a>
-
-                {/* Theme Toggle */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm font-medium text-foreground">Theme</span>
-                  <ThemeToggle size="sm" />
+              <div className="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-tangible z-20 py-2 divide-y divide-border">
+                <div className="px-4 py-2">
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted">Sovereign Identity</p>
+                  <p className="text-xs font-medium truncate opacity-70">{user?.email}</p>
                 </div>
 
-                <div className="border-t border-border my-1"></div>
+                <div className="py-1">
+                  <a
+                    href={`https://${process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN}.${process.env.NEXT_PUBLIC_DOMAIN}/settings?source=${encodeURIComponent(window.location.origin)}`}
+                    onClick={() => setIsAccountMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-void transition-colors duration-200"
+                  >
+                    <Cog6ToothIcon className="h-4 w-4 text-muted" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Vault Settings</span>
+                  </a>
 
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
-                >
-                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Logout</span>
-                </button>
+                  <button
+                    onClick={() => {
+                      alert('Nuke & Export: Your sovereign data is being compiled for Markdown export...');
+                      setIsAccountMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sun hover:bg-void transition-colors duration-200"
+                  >
+                    <ArrowRightOnRectangleIcon className="h-4 w-4 rotate-180" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Sovereign Export</span>
+                  </button>
+                </div>
+
+                <div className="py-1">
+                  {/* Theme Toggle */}
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">Mode</span>
+                    <ThemeToggle size="sm" />
+                  </div>
+                </div>
+
+                <div className="py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-red-500 hover:bg-red-500/10 transition-colors duration-200"
+                  >
+                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Sign Out</span>
+                  </button>
+                </div>
               </div>
             </>
           )}

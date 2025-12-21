@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 interface SidebarContextType {
   isCollapsed: boolean;
-  setIsCollapsed: (collapsed: boolean) => void;
+  setIsCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -24,7 +24,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, isCollapsed ? 'true' : 'false');
   }, [isCollapsed]);
 
-  const setCollapsed = useCallback((collapsed: boolean) => {
+  const setCollapsed = useCallback((collapsed: boolean | ((prev: boolean) => boolean)) => {
     setIsCollapsed(collapsed);
   }, []);
 

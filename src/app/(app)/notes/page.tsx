@@ -103,7 +103,7 @@ export default function NotesPage() {
   useEffect(() => {
     const openCreateNote = typeof window !== 'undefined' ? sessionStorage.getItem('open-create-note') : null;
     if (openCreateNote) {
-      try { sessionStorage.removeItem('open-create-note'); } catch {}
+      try { sessionStorage.removeItem('open-create-note'); } catch { }
       openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
     }
   }, [openOverlay, handleNoteCreated]);
@@ -127,7 +127,7 @@ export default function NotesPage() {
   }, [upsertNote]);
 
   const handleToggleSidebar = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
+    setIsCollapsed((prev: boolean) => !prev);
   }, [setIsCollapsed]);
 
   const handleNoteDeleted = useCallback(async (noteId: string) => {
@@ -148,7 +148,7 @@ export default function NotesPage() {
       const params = new URLSearchParams(window.location.search);
       params.delete('openNoteId');
       const path = `/notes${params.toString() ? `?${params.toString()}` : ''}`;
-      router.replace(path, { forceOptimisticNavigation: true });
+      router.replace(path);
     };
 
     if (!targetNote) {
@@ -205,165 +205,165 @@ export default function NotesPage() {
 
         {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-black text-foreground mb-2">
-            My Notes
-          </h1>
-          <p className="text-lg text-muted">
-            {allNotes.length < totalNotes && !hasSearchResults ? (
-              <>Loaded {allNotes.length} of {totalNotes} notes</>
-            ) : (
-              <>{hasSearchResults ? `${totalCount} ${totalCount === 1 ? 'note' : 'notes'} (filtered from ${totalNotes})` : `${totalNotes} ${totalNotes === 1 ? 'note' : 'notes'} in your collection`}</>
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleSidebar}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            {...sidebarIgnoreProps}
-          >
-            {isCollapsed ? (
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
-            ) : (
-              <ArrowLeftOnRectangleIcon className="h-5 w-5" />
-            )}
-          </Button>
-          <Button onClick={handleCreateNoteClick} size="icon" {...sidebarIgnoreProps}>
-            <PlusCircleIcon className="h-5 w-5" />
-          </Button>
-        </div>
-      </header>
-
-      {/* Tags Filter */}
-      {tags.length > 0 && (
-        <div className="mb-6 flex gap-3 overflow-x-auto pb-2 items-center">
-          {tags.map((tag, index) => (
-            <Button 
-              key={index} 
-              variant={searchQuery === tag ? 'default' : 'secondary'} 
-              size="sm" 
-              className="whitespace-nowrap"
-              aria-pressed={searchQuery === tag}
-              onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
+          <div>
+            <h1 className="text-4xl font-black text-foreground mb-2">
+              Neural Vault
+            </h1>
+            <p className="text-lg text-muted">
+              {allNotes.length < totalNotes && !hasSearchResults ? (
+                <>Syncing <span className="font-mono">{allNotes.length}</span> of <span className="font-mono">{totalNotes}</span> volumes</>
+              ) : (
+                <>{hasSearchResults ? `<span className="font-mono">${totalCount}</span> ${totalCount === 1 ? 'fragment' : 'fragments'} identified` : `<span className="font-mono">${totalNotes}</span> ${totalNotes === 1 ? 'sovereign volume' : 'sovereign volumes'} secured`}</>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleSidebar}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               {...sidebarIgnoreProps}
             >
-              {tag}
+              {isCollapsed ? (
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              ) : (
+                <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+              )}
             </Button>
-          ))}
-
-          {hasSearchResults && (
-            <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2" {...sidebarIgnoreProps}>
-              Clear
+            <Button onClick={handleCreateNoteClick} size="icon" {...sidebarIgnoreProps}>
+              <PlusCircleIcon className="h-5 w-5" />
             </Button>
-          )}
-        </div>
-      )}
+          </div>
+        </header>
 
-      {/* Top Pagination */}
-      {totalPages > 1 && (
-        <div className="mb-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            hasNextPage={hasNextPage}
-            hasPreviousPage={hasPreviousPage}
-            onPageChange={goToPage}
-            onNextPage={nextPage}
-            onPreviousPage={previousPage}
-            totalCount={hasSearchResults ? totalCount : allNotes.length}
-            pageSize={paginationConfig.pageSize}
-            compact={false}
-          />
-        </div>
-      )}
+        {/* Tags Filter */}
+        {tags.length > 0 && (
+          <div className="mb-6 flex gap-3 overflow-x-auto pb-2 items-center">
+            {tags.map((tag, index) => (
+              <Button
+                key={index}
+                variant={searchQuery === tag ? 'default' : 'secondary'}
+                size="sm"
+                className="whitespace-nowrap"
+                aria-pressed={searchQuery === tag}
+                onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
+                {...sidebarIgnoreProps}
+              >
+                {tag}
+              </Button>
+            ))}
 
-      {/* Error State */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
-          <p className="text-red-700 dark:text-red-300">{error}</p>
-        </div>
-      )}
-
-      {/* Notes Grid */}
-      {isInitialLoading ? (
-        <NoteGridSkeleton count={12} />
-      ) : paginatedNotes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
-            {hasSearchResults ? (
-              <MagnifyingGlassIcon className="h-12 w-12 text-muted" />
-            ) : (
-              <PlusCircleIcon className="h-12 w-12 text-muted" />
+            {hasSearchResults && (
+              <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2" {...sidebarIgnoreProps}>
+                Clear
+              </Button>
             )}
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
-            {hasSearchResults ? 'No notes found' : 'No notes yet'}
-          </h3>
-          <p className="text-muted mb-6 max-w-md">
-            {hasSearchResults 
-              ? `No notes match "${searchQuery}". Try different keywords or create a new note.`
-              : 'Start your knowledge journey by creating your first note. Capture ideas, thoughts, and insights.'
-            }
-          </p>
-          {hasSearchResults ? (
-            <div className="flex gap-3">
-              <Button variant="secondary" onClick={clearSearch}>
-                Clear Search
-              </Button>
+        )}
+
+        {/* Top Pagination */}
+        {totalPages > 1 && (
+          <div className="mb-6">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onPageChange={goToPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              totalCount={hasSearchResults ? totalCount : allNotes.length}
+              pageSize={paginationConfig.pageSize}
+              compact={false}
+            />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
+            <p className="text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
+        {/* Notes Grid */}
+        {isInitialLoading ? (
+          <NoteGridSkeleton count={12} />
+        ) : paginatedNotes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+              {hasSearchResults ? (
+                <MagnifyingGlassIcon className="h-12 w-12 text-muted" />
+              ) : (
+                <PlusCircleIcon className="h-12 w-12 text-muted" />
+              )}
+            </div>
+            <h3 className="text-2xl font-black text-foreground mb-3 font-mono">
+              {hasSearchResults ? 'QUERY_NULL' : 'VAULT_EMPTY'}
+            </h3>
+            <p className="text-muted mb-6 max-w-md font-medium">
+              {hasSearchResults
+                ? `The void returns no matches for "${searchQuery}". Refine your query or expand the search.`
+                : 'Your resistance starts with a single thought. Capture your sovereign insights here before they are lost to the walled gardens.'
+              }
+            </p>
+            {hasSearchResults ? (
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={clearSearch}>
+                  Clear Search
+                </Button>
+                <Button onClick={handleCreateNoteClick} className="gap-2">
+                  <PlusCircleIcon className="h-5 w-5" />
+                  Create Note
+                </Button>
+              </div>
+            ) : (
               <Button onClick={handleCreateNoteClick} className="gap-2">
                 <PlusCircleIcon className="h-5 w-5" />
-                Create Note
+                Create Your First Note
               </Button>
-            </div>
-          ) : (
-            <Button onClick={handleCreateNoteClick} className="gap-2">
-              <PlusCircleIcon className="h-5 w-5" />
-              Create Your First Note
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          <div className={getGridClasses()}>
-            {paginatedNotes.map((note) => (
-              <NoteCard 
-                key={note.$id} 
-                note={note} 
-                onUpdate={handleNoteUpdated}
-                onDelete={handleNoteDeleted}
-              />
-            ))}
+            )}
           </div>
-          {hasMore && !isInitialLoading && (
-            <div className="flex justify-center">
-              <Button variant="secondary" onClick={loadMore} {...sidebarIgnoreProps}>
-                Load More
-              </Button>
+        ) : (
+          <div className="flex flex-col gap-6">
+            <div className={getGridClasses()}>
+              {paginatedNotes.map((note) => (
+                <NoteCard
+                  key={note.$id}
+                  note={note}
+                  onUpdate={handleNoteUpdated}
+                  onDelete={handleNoteDeleted}
+                />
+              ))}
             </div>
-          )}
-        </div>
-      )}
+            {hasMore && !isInitialLoading && (
+              <div className="flex justify-center">
+                <Button variant="secondary" onClick={loadMore} {...sidebarIgnoreProps}>
+                  Load More
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* Bottom Pagination */}
+        {/* Bottom Pagination */}
         {totalPages > 1 && paginatedNotes.length > 0 && (
-        <div className="mt-8">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            hasNextPage={hasNextPage}
-            hasPreviousPage={hasPreviousPage}
-            onPageChange={goToPage}
-            onNextPage={nextPage}
-            onPreviousPage={previousPage}
-            totalCount={hasSearchResults ? totalCount : allNotes.length}
-            pageSize={paginationConfig.pageSize}
-            compact={false}
-          />
-        </div>
-      )}
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onPageChange={goToPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              totalCount={hasSearchResults ? totalCount : allNotes.length}
+              pageSize={paginationConfig.pageSize}
+              compact={false}
+            />
+          </div>
+        )}
 
         {/* Mobile Bottom Navigation */}
         <MobileBottomNav />
