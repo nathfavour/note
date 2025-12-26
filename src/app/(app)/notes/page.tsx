@@ -174,7 +174,7 @@ export default function NotesPage() {
   };
 
   // Calculate available space and determine optimal card size
-  const getGridClasses = () => {
+  const gridClasses = useMemo(() => {
     if (!isCollapsed && isDynamicSidebarOpen) {
       return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]';
     } else if (!isCollapsed || isDynamicSidebarOpen) {
@@ -182,11 +182,13 @@ export default function NotesPage() {
     } else {
       return 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]';
     }
-  };
+  }, [isCollapsed, isDynamicSidebarOpen]);
 
   // Get tags from existing notes for filtering
-  const existingTags = Array.from(new Set(allNotes.flatMap(note => note.tags || [])));
-  const tags = existingTags.length > 0 ? existingTags.slice(0, 8) : ['Personal', 'Work', 'Ideas', 'To-Do'];
+  const tags = useMemo(() => {
+    const existingTags = Array.from(new Set(allNotes.flatMap(note => note.tags || [])));
+    return existingTags.length > 0 ? existingTags.slice(0, 8) : ['Personal', 'Work', 'Ideas', 'To-Do'];
+  }, [allNotes]);
 
   return (
     <NotesErrorBoundary>
@@ -331,7 +333,7 @@ export default function NotesPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            <div className={getGridClasses()}>
+            <div className={gridClasses}>
               {paginatedNotes.map((note) => (
                 <NoteCard
                   key={note.$id}
