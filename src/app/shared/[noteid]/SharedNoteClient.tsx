@@ -9,6 +9,25 @@ import { useAuth } from '@/components/ui/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
 import Image from 'next/image';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Container, 
+  Paper, 
+  Avatar, 
+  IconButton, 
+  Menu, 
+  MenuItem, 
+  Divider, 
+  Chip, 
+  CircularProgress,
+  AppBar,
+  Toolbar,
+  Link as MuiLink,
+  alpha
+} from '@mui/material';
+import Link from 'next/link';
 
 interface SharedNoteClientProps {
    noteId: string;
@@ -16,74 +35,120 @@ interface SharedNoteClientProps {
 
 function SharedNoteHeader() {
   const { user, logout } = useAuth();
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
 
   const handleLogout = () => {
-    setIsAccountMenuOpen(false);
+    handleCloseMenu();
     logout();
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border">
-      <div className="flex items-center justify-between px-6 py-3 gap-4">
-        <div className="flex items-center gap-3 shrink-0">
-          <img 
+    <AppBar 
+      position="fixed" 
+      sx={{ 
+        bgcolor: 'rgba(0, 0, 0, 0.7)', 
+        backdropFilter: 'blur(20px)', 
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        boxShadow: 'none'
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
+        <Box component={Link} href="/" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none' }}>
+          <Box 
+            component="img"
             src="/logo/whisperrnote.png" 
             alt="Whisperrnote Logo" 
-            className="w-8 h-8 rounded-lg shadow-lg"
+            sx={{ width: 32, height: 32, borderRadius: 1, boxShadow: '0 4px 12px rgba(0, 240, 255, 0.2)' }}
           />
-          <h1 className="hidden sm:block text-xl font-black text-foreground bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              display: { xs: 'none', sm: 'block' },
+              fontWeight: 900,
+              fontFamily: 'var(--font-space-grotesk)',
+              background: 'linear-gradient(90deg, #00F0FF 0%, #00A3FF 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
             Whisperrnote
-          </h1>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className="flex-1" />
-
-        <div className="relative flex items-center gap-3 shrink-0">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <ThemeToggle size="sm" />
 
-          <button
-            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
+          <Button
+            onClick={handleOpenMenu}
+            variant="outlined"
+            sx={{
+              borderRadius: '12px',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              textTransform: 'none',
+              px: 1.5,
+              py: 0.75,
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)', borderColor: 'primary.main' }
+            }}
+            startIcon={
+              <Avatar 
+                sx={{ 
+                  width: 24, 
+                  height: 24, 
+                  bgcolor: 'primary.main', 
+                  color: 'background.default',
+                  fontSize: '0.75rem',
+                  fontWeight: 700
+                }}
+              >
+                {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+              </Avatar>
+            }
           >
-            <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
-              {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
-            </div>
-            <span className="hidden sm:inline text-sm font-medium text-foreground">
+            <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'inline' }, fontWeight: 600 }}>
               {user?.name || user?.email || 'Account'}
-            </span>
-          </button>
+            </Typography>
+          </Button>
 
-          {isAccountMenuOpen && (
-            <>
-              <div 
-                className="fixed inset-0 z-10"
-                onClick={() => setIsAccountMenuOpen(false)}
-              />
-              
-              <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-lg z-20 py-2">
-                <a
-                  href="/settings"
-                  onClick={() => setIsAccountMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
-                >
-                  <span className="text-sm font-medium">Settings</span>
-                </a>
-                
-                <div className="border-t border-border my-1"></div>
-                
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
-                >
-                  <span className="text-sm font-medium">Logout</span>
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            PaperProps={{
+              sx: {
+                mt: 1.5,
+                minWidth: 180,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+              }
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem component={Link} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Settings</Typography>
+            </MenuItem>
+            <Divider sx={{ my: 1 }} />
+            <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Logout</Typography>
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
 
@@ -119,30 +184,30 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   if (!verifiedNote) {
     return (
-      <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4">
-        <div className="max-w-md w-full space-y-6 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Loading shared note</h1>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', alignItems: 'center', justifyCenter: 'center', p: 4 }}>
+        <Box sx={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Loading shared note</Typography>
           {error ? (
-            <div className="space-y-4">
-              <p className="text-muted">{error}</p>
-              <button
-                type="button"
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>{error}</Typography>
+              <Button
+                variant="contained"
                 onClick={fetchSharedNote}
-                className="inline-flex items-center justify-center rounded-lg px-4 py-2 bg-accent text-white text-sm font-medium"
+                sx={{ borderRadius: '12px' }}
               >
                 Retry loading note
-              </button>
-            </div>
+              </Button>
+            </Box>
           ) : (
-            <p className="text-muted">Fetching the shared note. Please wait.</p>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>Fetching the shared note. Please wait.</Typography>
           )}
           {isLoadingNote && (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress size={32} sx={{ color: 'primary.main' }} />
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
@@ -154,9 +219,9 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-2 border-accent border-t-transparent"></div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress sx={{ color: 'primary.main' }} />
+      </Box>
     );
   }
 
