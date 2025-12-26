@@ -1,185 +1,80 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Reset and base styles for WhisperrNote - The Glass Monolith */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
 
-@layer base {
-  :root {
-    /* Solar (Light) Theme - Derived from the Nigerian Landscape */
-    --void: #FAF8F6;
-    /* Brownish White / Paper */
-    --matter: #EADDD3;
-    /* Sand / Light Laterite */
-    --matter-highlight: #D8C8BD;
-    --tungsten: #FFC107;
-    --shadow-indigo: 26, 35, 126;
+:root {
+  --color-void: #000000;
+  --color-surface: #0A0A0A;
+  --color-surface-2: #141414;
+  --color-titanium: #F2F2F2;
+  --color-gunmetal: #A1A1AA;
+  --color-electric: #00F0FF;
+  --border-subtle: #222222;
+  --border-active: #404040;
 
-    --background: var(--void);
-    --foreground: #1B1C20;
-    /* Deep Ash text in light mode */
-    --card: var(--matter);
-    --border: rgba(26, 35, 126, 0.1);
-    --accent: var(--tungsten);
-    --accent-rgb: 255, 193, 7;
-    --muted: #8D7B6D;
+  --background: var(--color-void);
+  --foreground: var(--color-titanium);
+}
 
-    /* Organic Realism: Radii */
-    --radius-micro: 12px;
-    --radius-macro: 24px;
-    --radius-mega: 32px;
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-void);
+  color: var(--color-titanium);
+  min-height: 100vh;
+}
 
-    /* Organic Realism: Shadows (Dual-Layer Adire Indigo) */
-    --shadow-resting: 0px 2px 4px rgba(var(--shadow-indigo), 0.2), 0px 8px 16px rgba(var(--shadow-indigo), 0.1);
-    --shadow-hover: 0px 4px 8px rgba(var(--shadow-indigo), 0.4), 0px 12px 24px rgba(var(--shadow-indigo), 0.2);
-    --shadow-floating: 0px 8px 16px rgba(var(--shadow-indigo), 0.3), 0px 24px 48px rgba(0, 0, 0, 0.2);
+/* Glassmorphism 2.0 */
+.glass-panel {
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-    /* Surface Physics: Ceramic Highlight */
-    --shadow-ceramic: inset 0px 1px 0px rgba(255, 193, 7, 0.2);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 12px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-active);
+}
+
+/* Selection styles */
+::selection {
+  background-color: rgba(0, 240, 255, 0.2);
+  color: var(--color-electric);
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
-
-  .dark {
-    /* The Void (Dark) Theme */
-    --void: #1B1C20;
-    --matter: #2D2421;
-    --matter-highlight: #484A3B;
-    --tungsten: #FFC107;
-    --shadow-indigo: 26, 35, 126;
-
-    --background: var(--void);
-    --foreground: #FAF8F6;
-    --card: var(--matter);
-    --border: #3D3D3D;
-    --accent: var(--tungsten);
-    --accent-rgb: 255, 193, 7;
-    --muted: #A69080;
-
-    --shadow-resting: 0px 2px 4px rgba(0, 0, 0, 0.4), 0px 8px 16px rgba(var(--shadow-indigo), 0.2);
-    --shadow-hover: 0px 4px 8px rgba(0, 0, 0, 0.6), 0px 12px 24px rgba(var(--shadow-indigo), 0.4);
-    --shadow-floating: 0px 8px 16px rgba(0, 0, 0, 0.8), 0px 24px 48px rgba(var(--shadow-indigo), 0.6);
-  }
-
-  /* Adaptive theme substrate (Void / Solar) */
-  html,
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  body {
-    @apply antialiased font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    /* Objects slide into place with physical decay */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-mono;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  h1 {
-    @apply text-4xl lg:text-5xl font-extrabold;
-  }
-
-  h2 {
-    @apply text-3xl lg:text-4xl;
-  }
-
-  /* Organic Realism: Round Macro Containers */
-  .card-3d {
-    background-color: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-macro);
-    box-shadow: var(--shadow-resting), var(--shadow-ceramic);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .card-3d:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover), var(--shadow-ceramic);
-    border-color: var(--matter-highlight);
-  }
-
-  /* Organic Realism: Soft touch targets */
-  .btn-3d {
-    @apply font-mono font-bold uppercase tracking-widest text-sm;
-    background-color: var(--tungsten);
-    color: #1B1C20;
-    padding: 0.85rem 1.75rem;
-    border-radius: var(--radius-micro);
-    box-shadow: var(--shadow-resting), var(--shadow-ceramic);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .btn-3d:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover), var(--shadow-ceramic);
-  }
-
-  .btn-3d:active {
+  to {
+    opacity: 1;
     transform: translateY(0);
-    box-shadow: var(--shadow-resting), var(--shadow-ceramic);
   }
+}
 
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Loading animations for InitialLoadingScreen */
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes scale-in {
-    from {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes loading-bar {
-    0% {
-      width: 0%;
-      margin-left: 0%;
-    }
-
-    50% {
-      width: 100%;
-      margin-left: 0%;
-    }
-
-    100% {
-      width: 0%;
-      margin-left: 100%;
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.2s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scale-in 0.3s ease-out forwards;
-  }
-
-  .animate-loading-bar {
-    animation: loading-bar 1.2s ease-in-out infinite;
-  }
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }

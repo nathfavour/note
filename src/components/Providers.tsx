@@ -13,14 +13,11 @@ import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
 import GlobalShortcuts from "@/components/GlobalShortcuts";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
-import { darkTheme, lightTheme } from "@/theme/theme";
+import { darkTheme } from "@/theme/theme";
 
 function MuiThemeWrapper({ children }: { children: React.ReactNode }) {
-    const { theme } = useTheme();
-    const muiTheme = theme === 'dark' ? darkTheme : lightTheme;
-
     return (
-        <MuiThemeProvider theme={muiTheme}>
+        <MuiThemeProvider theme={darkTheme}>
             <CssBaseline />
             {children}
         </MuiThemeProvider>
