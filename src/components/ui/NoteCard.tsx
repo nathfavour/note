@@ -1,22 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './Card';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  Typography, 
+  Box, 
+  IconButton, 
+  Chip, 
+  Tooltip,
+  alpha,
+  useTheme
+} from '@mui/material';
 import { useContextMenu } from './ContextMenuContext';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
 import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions/notes';
 import type { Notes } from '@/types/appwrite';
-import { Button } from './Button';
 import { DoodleStroke } from '@/types/notes';
 import {
-  TrashIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
-  ClipboardDocumentIcon,
-  UserGroupIcon,
-  EllipsisVerticalIcon
-} from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
+  Delete as TrashIcon,
+  Public as GlobeAltIcon,
+  Lock as LockClosedIcon,
+  ContentCopy as ClipboardDocumentIcon,
+  Group as UserGroupIcon,
+  MoreVert as EllipsisVerticalIcon,
+  Check as CheckIcon,
+  AttachFile as AttachFileIcon
+} from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 interface NoteCardProps {
@@ -28,13 +39,13 @@ interface NoteCardProps {
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSelect, className }) => {
-  // context menu managed globally
   const [showShareModal, setShowShareModal] = useState(false);
   const { openMenu, closeMenu } = useContextMenu();
   const { openSidebar } = useDynamicSidebar();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const copyFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
+  const theme = useTheme();
 
   // Render doodle preview on canvas
   useEffect(() => {
@@ -144,17 +155,17 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
   const contextMenuItems = [
     {
       label: 'Share With',
-      icon: <UserGroupIcon className="w-4 h-4" />,
+      icon: <UserGroupIcon sx={{ fontSize: 18 }} />,
       onClick: handleShareWith
     },
     {
       label: noteIsPublic ? 'Make Private' : 'Make Public',
-      icon: noteIsPublic ? <LockClosedIcon className="w-4 h-4" /> : <GlobeAltIcon className="w-4 h-4" />,
+      icon: noteIsPublic ? <LockClosedIcon sx={{ fontSize: 18 }} /> : <GlobeAltIcon sx={{ fontSize: 18 }} />,
       onClick: handleToggleVisibility
     },
     ...(noteIsPublic ? [{
       label: 'Copy Share Link',
-      icon: <ClipboardDocumentIcon className="w-4 h-4" />,
+      icon: <ClipboardDocumentIcon sx={{ fontSize: 18 }} />,
       onClick: () => {
         handleCopyShareLink();
         closeMenu();
@@ -162,7 +173,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
     }] : []),
     {
       label: 'Delete',
-      icon: <TrashIcon className="w-4 h-4" />,
+      icon: <TrashIcon sx={{ fontSize: 18 }} />,
       onClick: handleDelete,
       variant: 'destructive' as const
     }
@@ -172,112 +183,173 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
     <>
       <Card
         {...sidebarIgnoreProps}
-        className={`relative flex flex-col bg-card border-border note-card h-48 sm:h-52 md:h-56 lg:h-60 cursor-pointer ${className || ''}`}
         onClick={handleClick}
         onContextMenu={handleRightClick}
+        sx={{
+          height: { xs: 192, sm: 208, md: 224, lg: 240 },
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: 'pointer',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
       >
-        <CardHeader className="flex-shrink-0 pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base sm:text-lg font-bold text-foreground line-clamp-2 flex-1">
-              {note.title}
-            </CardTitle>
-
-            <div className="flex items-center gap-2">
-              {note.attachments && note.attachments.length > 0 && (
-                <div title={`${note.attachments.length} attachment${note.attachments.length > 1 ? 's' : ''}`}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider border border-secondary/20 shadow-ceramic">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
-                    <path d="M21.44 11.05 12.97 19.5a5 5 0 0 1-7.07-7.07l8.47-8.46a3 3 0 0 1 4.24 4.24l-8.48 8.47a1 1 0 0 1-1.42-1.42l7.78-7.78" />
-                  </svg>
-                  {note.attachments.length}
-                </div>
-              )}
-              {noteIsPublic && (
-                <div className="flex-shrink-0">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-sun/10 text-sun border border-sun/30 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-ceramic">
-                    <GlobeAltIcon className="h-3 w-3" />
-                    Public
-                  </span>
-                </div>
-              )}
-
-              {/* Visible menu button to open context menu (useful on mobile) */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-xl"
-                aria-label="Open note menu"
-                onClick={(e) => {
-                  // Prevent parent card click which opens the detail sidebar
-                  e.stopPropagation();
-                  // Position menu near the button using its bounding rect
-                  const target = e.currentTarget as HTMLElement;
-                  const rect = target.getBoundingClientRect();
-                  openMenu({
-                    x: Math.round(rect.left + rect.width / 2),
-                    y: Math.round(rect.top + rect.height + 8),
-                    items: contextMenuItems
-                  });
+        <CardHeader
+          sx={{ pb: 1 }}
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontSize: { xs: '1rem', sm: '1.125rem' }, 
+                  fontWeight: 700,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  flex: 1
                 }}
               >
-                <EllipsisVerticalIcon className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col justify-between min-h-0 overflow-hidden relative">
+                {note.title}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {note.attachments && note.attachments.length > 0 && (
+                  <Tooltip title={`${note.attachments.length} attachment${note.attachments.length > 1 ? 's' : ''}`}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 0.5, 
+                      px: 1, 
+                      py: 0.5, 
+                      borderRadius: 2, 
+                      bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                      color: 'secondary.main',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                    }}>
+                      <AttachFileIcon sx={{ fontSize: 12 }} />
+                      {note.attachments.length}
+                    </Box>
+                  </Tooltip>
+                )}
+                {noteIsPublic && (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 0.5, 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: 2, 
+                    bgcolor: 'rgba(255, 245, 0, 0.1)',
+                    color: '#FFD700',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    border: '1px solid rgba(255, 245, 0, 0.2)'
+                  }}>
+                    <GlobeAltIcon sx={{ fontSize: 12 }} />
+                    Public
+                  </Box>
+                )}
+
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const target = e.currentTarget as HTMLElement;
+                    const rect = target.getBoundingClientRect();
+                    openMenu({
+                      x: Math.round(rect.left + rect.width / 2),
+                      y: Math.round(rect.top + rect.height + 8),
+                      items: contextMenuItems
+                    });
+                  }}
+                  sx={{ borderRadius: 2 }}
+                >
+                  <EllipsisVerticalIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          }
+        />
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 0, position: 'relative' }}>
           {note.format === 'doodle' ? (
-            <div className="flex-1 rounded-xl border border-border overflow-hidden bg-white shadow-inner">
+            <Box sx={{ 
+              flex: 1, 
+              borderRadius: 3, 
+              border: '1px solid rgba(255,255,255,0.1)', 
+              overflow: 'hidden', 
+              bgcolor: '#fff' 
+            }}>
               <canvas
                 ref={canvasRef}
                 width={300}
                 height={200}
-                className="w-full h-full block"
+                style={{ width: '100%', height: '100%', display: 'block' }}
               />
-            </div>
+            </Box>
           ) : (
-            <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden whitespace-pre-wrap">
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                display: '-webkit-box',
+                WebkitLineClamp: { xs: 4, sm: 5, md: 6 },
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                whiteSpace: 'pre-wrap'
+              }}
+            >
               {note.content}
-            </p>
+            </Typography>
           )}
-          {note.tags && note.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1 overflow-hidden">
-              {note.tags.slice(0, 3).map((tag: string, index: number) => (
-                <span
-                  key={index}
-                  className="rounded-xl bg-accent/10 px-2 py-1 text-xs text-accent whitespace-nowrap border border-accent/20"
-                >
-                  {tag}
-                </span>
-              ))}
-              {note.tags.length > 3 && (
-                <span className="text-xs text-foreground/50 self-center">
-                  +{note.tags.length - 3} more
-                </span>
-              )}
-            </div>
-          )}
+          
+          <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5, overflow: 'hidden' }}>
+            {note.tags && note.tags.slice(0, 3).map((tag: string, index: number) => (
+              <Chip
+                key={index}
+                label={tag}
+                size="small"
+                sx={{ 
+                  height: 20, 
+                  fontSize: '10px', 
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  '& .MuiChip-label': { px: 1 }
+                }}
+              />
+            ))}
+            {note.tags && note.tags.length > 3 && (
+              <Typography variant="caption" sx={{ color: 'text.disabled', alignSelf: 'center', ml: 0.5 }}>
+                +{note.tags.length - 3}
+              </Typography>
+            )}
+          </Box>
+
           {noteIsPublic && (
-            <button
-              type="button"
+            <IconButton
               onClick={(e) => {
                 e.stopPropagation();
                 handleCopyShareLink();
               }}
-              className="absolute bottom-3 right-3 p-2 rounded-xl bg-accent text-void hover:bg-accent/90 transition-all duration-200 shadow-resting hover:shadow-hover hover:-translate-y-0.5"
-              title={isCopySuccess ? 'Copied!' : 'Copy shared note link'}
+              sx={{
+                position: 'absolute',
+                bottom: 12,
+                right: 12,
+                bgcolor: 'primary.main',
+                color: 'background.default',
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.8) },
+                width: 32,
+                height: 32
+              }}
             >
-              {isCopySuccess ? (
-                <CheckIcon className="h-4 w-4" />
-              ) : (
-                <ClipboardDocumentIcon className="h-4 w-4" />
-              )}
-            </button>
+              {isCopySuccess ? <CheckIcon sx={{ fontSize: 16 }} /> : <ClipboardDocumentIcon sx={{ fontSize: 16 }} />}
+            </IconButton>
           )}
         </CardContent>
       </Card>
-
-
 
       {showShareModal && note.$id && (
         <ShareNoteModal
@@ -290,5 +362,8 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
     </>
   );
 };
+
+export default NoteCard;
+
 
 export default NoteCard;
