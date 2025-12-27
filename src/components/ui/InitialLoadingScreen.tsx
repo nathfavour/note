@@ -1,40 +1,94 @@
 'use client';
 
 import React from 'react';
+import { Box, Typography, LinearProgress, Paper } from '@mui/material';
 
 interface InitialLoadingScreenProps {
   show?: boolean;
 }
 
-// Simplified loading screen without framer-motion to reduce initial bundle
 export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
   show = true
 }) => {
   if (!show) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-void"
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'rgba(10, 10, 10, 1)',
+      }}
     >
-      <div className="bg-matter border border-border p-12 shadow-tangible max-w-sm w-full mx-4 animate-scale-in">
-        <div className="flex flex-col items-center space-y-6">
-          <div className="w-24 h-24 bg-void border border-border flex items-center justify-center shadow-inner-physical">
-            <img
-              src="/logo/whisperrnote.png"
-              alt="WhisperNote logo"
-              className="w-18 h-18 opacity-80"
-            />
-          </div>
+      <Paper
+        elevation={0}
+        sx={{
+          bgcolor: 'rgba(20, 20, 20, 0.8)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          p: 6,
+          borderRadius: '32px',
+          maxWidth: 320,
+          width: '100%',
+          mx: 2,
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
+        <Box
+          sx={{
+            width: 96,
+            height: 96,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <img
+            src="/logo/whisperrnote.png"
+            alt="WhisperNote logo"
+            style={{ width: 72, height: 72, opacity: 0.8 }}
+          />
+        </Box>
 
-          <p className="font-mono text-xs font-bold uppercase tracking-[0.4em] text-foreground/50">
-            Initializing Void
-          </p>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            letterSpacing: '0.4em',
+            color: 'rgba(255, 255, 255, 0.4)',
+            fontFamily: 'var(--font-space-grotesk)',
+          }}
+        >
+          Initializing
+        </Typography>
 
-          <div className="w-full h-1 bg-void border border-border overflow-hidden">
-            <div className="h-full bg-sun animate-loading-bar" />
-          </div>
-        </div>
-      </div>
-    </div>
+        <Box sx={{ width: '100%', px: 2 }}>
+          <LinearProgress 
+            sx={{ 
+              height: 4, 
+              borderRadius: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              '& .MuiLinearProgress-bar': {
+                bgcolor: '#00F5FF',
+                borderRadius: 2,
+              }
+            }} 
+          />
+        </Box>
+      </Paper>
+    </Box>
   );
 };

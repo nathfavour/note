@@ -1,29 +1,38 @@
 'use client';
 
 import React from 'react';
+import { Box, Skeleton, Grid2 as Grid } from '@mui/material';
 
 export const NoteCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-sm border border-light-border dark:border-dark-border animate-pulse">
+    <Box 
+      sx={{ 
+        bgcolor: 'rgba(255, 255, 255, 0.03)', 
+        borderRadius: '24px', 
+        p: 3, 
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        height: '100%'
+      }}
+    >
       {/* Title skeleton */}
-      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4 w-3/4"></div>
+      <Skeleton variant="text" width="75%" height={32} sx={{ mb: 2, borderRadius: '8px' }} />
       
       {/* Content skeleton - 3 lines */}
-      <div className="space-y-2 mb-4">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
-      </div>
+      <Box sx={{ mb: 2 }}>
+        <Skeleton variant="text" width="100%" height={20} sx={{ mb: 0.5, borderRadius: '4px' }} />
+        <Skeleton variant="text" width="85%" height={20} sx={{ mb: 0.5, borderRadius: '4px' }} />
+        <Skeleton variant="text" width="65%" height={20} sx={{ borderRadius: '4px' }} />
+      </Box>
       
       {/* Tags skeleton */}
-      <div className="flex gap-2 mb-4">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-16"></div>
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-12"></div>
-      </div>
+      <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <Skeleton variant="rectangular" width={60} height={24} sx={{ borderRadius: '12px' }} />
+        <Skeleton variant="rectangular" width={45} height={24} sx={{ borderRadius: '12px' }} />
+      </Box>
       
       {/* Date skeleton */}
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-    </div>
+      <Skeleton variant="text" width={100} height={16} sx={{ borderRadius: '4px' }} />
+    </Box>
   );
 };
 
@@ -33,11 +42,13 @@ interface NoteGridSkeletonProps {
 
 export const NoteGridSkeleton: React.FC<NoteGridSkeletonProps> = ({ count = 12 }) => {
   return (
-    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <Grid container spacing={3}>
       {Array.from({ length: count }).map((_, index) => (
-        <NoteCardSkeleton key={index} />
+        <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+          <NoteCardSkeleton />
+        </Grid>
       ))}
-    </div>
+    </Grid>
   );
 };
 

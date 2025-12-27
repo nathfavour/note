@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Notes, Tags } from '@/types/appwrite';
 import { getNotesByTag } from '@/lib/appwrite';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { Box, Typography, IconButton, Stack, Alert, CircularProgress } from '@mui/material';
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import NoteCard from '@/components/ui/NoteCard';
 import { NoteCardSkeleton } from './NoteCardSkeleton';
@@ -81,21 +82,25 @@ export function TagNotesListSidebar({
     }
 
     return (
-      <div className="py-4 space-y-4">
+      <Box sx={{ py: 2 }}>
         {loading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <NoteCardSkeleton key={index} />
-          ))
+          <Stack spacing={2}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <NoteCardSkeleton key={index} />
+            ))}
+          </Stack>
         ) : error ? (
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
-            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-          </div>
+          <Alert severity="error" sx={{ borderRadius: '16px' }}>
+            {error}
+          </Alert>
         ) : notes.length === 0 ? (
-          <div className="p-4 text-center">
-            <p className="text-foreground/60 text-sm">No notes with this tag</p>
-          </div>
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              No notes with this tag
+            </Typography>
+          </Box>
         ) : (
-          <div className="flex flex-col gap-4">
+          <Stack spacing={2}>
             {notes.map((note) => (
               <NoteCard
                 key={note.$id}
@@ -105,29 +110,38 @@ export function TagNotesListSidebar({
                 onNoteSelect={setSelectedNote}
               />
             ))}
-          </div>
+          </Stack>
         )}
-      </div>
+      </Box>
     );
   };
 
   return (
-    <div className="flex flex-col h-full p-4">
-      <div className="flex items-center gap-2 pb-4 border-b border-border">
-        <button
-          onClick={handleHeaderBack}
-          className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors"
+    <Box sx={{ display: 'flex', flexDirection: 'column', h: '100%', p: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1, 
+        pb: 2, 
+        borderBottom: '1px solid', 
+        borderColor: 'divider' 
+      }}>
+        <IconButton 
+          onClick={handleHeaderBack} 
+          size="small"
+          sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
         >
-          <ArrowLeftIcon className="h-5 w-5" />
-          <span className="text-sm font-medium">
-            {selectedNote ? 'Back to notes' : 'Back'}
-          </span>
-        </button>
-      </div>
+          <ArrowBackIcon fontSize="small" />
+        </IconButton>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          {selectedNote ? 'Back to notes' : 'Back'}
+        </Typography>
+      </Box>
 
-      <div className="flex-1 overflow-y-auto min-h-0 -mr-4 pr-4">
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {renderContent()}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
+

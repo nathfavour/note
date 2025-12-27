@@ -2,6 +2,8 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from './Button';
+import { Box, Typography, Paper, Stack } from '@mui/material';
+import { Warning as WarningIcon, Description as DescriptionIcon } from '@mui/icons-material';
 
 interface Props {
   children: ReactNode;
@@ -38,11 +40,6 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
-    // In production, you might want to send this to an error reporting service
-    if (process.env.NODE_ENV === 'production') {
-      // Example: sendErrorToService(error, errorInfo);
-    }
   }
 
   handleRetry = () => {
@@ -58,58 +55,55 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div className="min-h-[200px] flex items-center justify-center p-6">
-          <div className="text-center max-w-md">
-            <div className="mb-4">
-              <svg
-                className="mx-auto h-12 w-12 text-red-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
+        <Box sx={{ minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+          <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
+            <WarningIcon sx={{ fontSize: 48, color: 'error.main', mb: 2 }} />
 
-            <h3 className="text-lg font-medium text-foreground mb-2">
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
               Something went wrong
-            </h3>
+            </Typography>
 
-            <p className="text-sm text-foreground/70 mb-4">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               We encountered an unexpected error. You can try refreshing this section or contact support if the problem persists.
-            </p>
+            </Typography>
 
             {this.props.showDetails && this.state.error && (
-              <details className="mb-4 text-left">
-                <summary className="text-sm cursor-pointer text-accent hover:text-accent-hover mb-2">
+              <Box sx={{ mb: 3, textAlign: 'left' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer', display: 'block', mb: 1 }}>
                   Error Details
-                </summary>
-                <pre className="text-xs bg-card p-2 rounded border overflow-auto max-h-32">
-                  {this.state.error.message}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
-              </details>
+                </Typography>
+                <Paper 
+                  variant="outlined" 
+                  sx={{ 
+                    p: 1.5, 
+                    bgcolor: 'rgba(255, 255, 255, 0.03)', 
+                    borderRadius: '12px',
+                    maxHeight: 128,
+                    overflow: 'auto'
+                  }}
+                >
+                  <Typography component="pre" sx={{ fontSize: '0.7rem', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                    {this.state.error.message}
+                    {this.state.errorInfo?.componentStack}
+                  </Typography>
+                </Paper>
+              </Box>
             )}
 
-            <div className="flex gap-2 justify-center">
-              <Button onClick={this.handleRetry} size="sm">
+            <Stack direction="row" spacing={2} justifyContent="center">
+              <Button onClick={this.handleRetry} size="small">
                 Try Again
               </Button>
               <Button
                 onClick={() => window.location.reload()}
-                variant="secondary"
-                size="sm"
+                variant="outlined"
+                size="small"
               >
                 Reload Page
               </Button>
-            </div>
-          </div>
-        </div>
+            </Stack>
+          </Box>
+        </Box>
       );
     }
 
@@ -122,35 +116,27 @@ export const NotesErrorBoundary: React.FC<{ children: ReactNode }> = ({ children
   <ErrorBoundary
     onError={(error, errorInfo) => {
       console.error('Notes section error:', error, errorInfo);
-      // Could send to analytics service
     }}
     fallback={
-      <div className="p-8 text-center">
-        <div className="mb-4">
-          <svg className="mx-auto h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">Notes Unavailable</h3>
-        <p className="text-sm text-foreground/70 mb-4">
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <DescriptionIcon sx={{ fontSize: 32, color: 'warning.main', mb: 2 }} />
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Notes Unavailable</Typography>
+        <Typography variant="body2" color="text.secondary">
           We're having trouble loading your notes. This might be a temporary issue.
-        </p>
-      </div>
+        </Typography>
+      </Box>
     }
   >
     {children}
   </ErrorBoundary>
 );
 
-// Deprecated: Do not render auth-specific fallback UI in generic flows
 export const AuthErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
   <>{children}</>
 );
 
-// Hook for using error boundary in functional components
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: { componentStack?: string }) => {
     console.error('Error caught by hook:', error, errorInfo);
-    // Could integrate with error reporting service
   };
 };
