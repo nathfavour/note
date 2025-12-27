@@ -1,3 +1,5 @@
+import { Link } from '@mui/material';
+
 /**
  * Custom link component for ReactMarkdown that styles links in green
  * Used for post-render formatting of markdown links
@@ -6,13 +8,23 @@ export function LinkComponent({ href, children }: { href?: string; children?: Re
   if (!href) return <span>{children}</span>;
   
   return (
-    <a
+    <Link
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-green-600 dark:text-green-400 underline hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors duration-200"
+      sx={{
+        color: 'primary.main',
+        textDecoration: 'underline',
+        fontWeight: 500,
+        transition: 'all 0.2s',
+        '&:hover': {
+          color: 'primary.light',
+          opacity: 0.8
+        }
+      }}
     >
       {children}
-    </a>
+    </Link>
   );
 }
+

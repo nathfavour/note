@@ -2,8 +2,8 @@
 
 import React, { useRef, useEffect } from 'react';
 import { DoodleStroke } from '@/types/notes';
-import { Button } from '@/components/ui/Button';
-import { Edit2 } from 'lucide-react';
+import { Box, Typography, Button, Paper } from '@mui/material';
+import { Edit as EditIcon } from '@mui/icons-material';
 
 interface DoodleViewerProps {
   data: string;
@@ -55,27 +55,47 @@ export default function DoodleViewer({ data, onEdit, title }: DoodleViewerProps)
   };
 
   return (
-    <div className="w-full space-y-2">
-      {title && <h3 className="font-semibold text-sm">{title}</h3>}
-      <div className="relative rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {title && (
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          {title}
+        </Typography>
+      )}
+      <Paper 
+        sx={{ 
+          position: 'relative', 
+          borderRadius: 3, 
+          border: '1px solid rgba(255, 255, 255, 0.1)', 
+          overflow: 'hidden', 
+          bgcolor: '#fff' 
+        }}
+      >
         <canvas
           ref={canvasRef}
           width={800}
           height={600}
-          className="w-full h-auto"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
         />
         {onEdit && (
           <Button
-            variant="outline"
-            size="sm"
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon />}
             onClick={onEdit}
-            className="absolute top-2 right-2 gap-2"
+            sx={{ 
+              position: 'absolute', 
+              top: 8, 
+              right: 8, 
+              bgcolor: 'rgba(255,255,255,0.9)', 
+              color: '#000',
+              '&:hover': { bgcolor: '#fff' }
+            }}
           >
-            <Edit2 className="w-4 h-4" />
             Edit
           </Button>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 }
+

@@ -3,9 +3,35 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
-import { TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { Button } from './Button';
-import { Modal } from './modal';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  IconButton, 
+  TextField, 
+  ToggleButtonGroup, 
+  ToggleButton, 
+  Chip, 
+  Divider, 
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  alpha,
+  useTheme,
+  CircularProgress
+} from '@mui/material';
+import { 
+  Delete as TrashIcon, 
+  Person as UserIcon, 
+  ContentCopy as ClipboardDocumentIcon, 
+  AttachFile as PaperClipIcon, 
+  OpenInNew as ArrowTopRightOnSquareIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Close as CloseIcon
+} from '@mui/icons-material';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
@@ -69,6 +95,7 @@ export function NoteDetailSidebar({
   const contentIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasEditingRef = useRef(isEditing);
   const prevNoteIdRef = useRef(note.$id);
+  const theme = useTheme();
 
   const { showSuccess, showError } = useToast();
   const router = useRouter();
@@ -354,300 +381,375 @@ export function NoteDetailSidebar({
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex items-center justify-end gap-2">
+    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
         {showExpandButton && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleOpenFullPage();
-            }}
-            className="h-9 w-9 hidden md:inline-flex"
-            aria-label="Open full page"
-          >
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-          </Button>
+          <Tooltip title="Open full page">
+            <IconButton 
+              onClick={(event) => {
+                event.stopPropagation();
+                handleOpenFullPage();
+              }}
+              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+            >
+              <ArrowTopRightOnSquareIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
         {showHeaderDeleteButton && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
+          <Tooltip title="Delete note">
+            <IconButton 
+              onClick={() => setShowDeleteConfirm(true)}
+              sx={{ color: 'error.main', '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.1) } }}
+            >
+              <TrashIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
-      </div>
+      </Box>
 
-      <div
+      <Box
         ref={titleContainerRef}
-        className="rounded-2xl border border-border bg-card shadow-sm p-4 transition focus-within:ring-2 focus-within:ring-accent/40"
+        sx={{
+          borderRadius: 4,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(255, 255, 255, 0.03)',
+          p: 3,
+          transition: 'all 0.2s',
+          '&:focus-within': {
+            borderColor: 'primary.main',
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+          }
+        }}
       >
-        <div className="flex items-center justify-between text-sm text-muted mb-1">
-          <span className="font-medium">Title</span>
-          <span className="text-xs text-muted-foreground">Tap to edit</span>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Title
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+            Tap to edit
+          </Typography>
+        </Box>
         {isEditingTitle ? (
-          <input
-            ref={titleInputRef}
-            type="text"
+          <TextField
+            fullWidth
+            variant="standard"
             value={title || ''}
             onChange={(e) => {
               setTitle(e.target.value);
               resetTitleIdleTimer();
             }}
-            onFocus={() => setIsEditingTitle(true)}
-            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+            inputRef={titleInputRef}
+            InputProps={{
+              disableUnderline: true,
+              sx: { fontSize: '1.5rem', fontWeight: 900, color: 'text.primary' }
+            }}
           />
         ) : (
-          <div
-            role="button"
-            tabIndex={0}
+          <Typography
+            variant="h4"
             onClick={activateTitleEditing}
-            onFocus={activateTitleEditing}
-            className="text-xl font-bold text-foreground cursor-text"
+            sx={{ fontWeight: 900, cursor: 'text', color: 'text.primary' }}
           >
             {displayTitle}
-          </div>
+          </Typography>
         )}
-      </div>
+      </Box>
 
-      <div
+      <Box
         ref={contentContainerRef}
-        className="space-y-3 rounded-2xl border border-border bg-card shadow-sm p-4 transition focus-within:ring-2 focus-within:ring-accent/40"
+        sx={{
+          borderRadius: 4,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(255, 255, 255, 0.03)',
+          p: 3,
+          transition: 'all 0.2s',
+          '&:focus-within': {
+            borderColor: 'primary.main',
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+          }
+        }}
       >
-        <div className="flex items-center justify-between text-sm text-muted">
-          <span className="font-medium">Content</span>
-          <span className="text-xs text-muted-foreground">Click inside to edit</span>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Content
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+            Click inside to edit
+          </Typography>
+        </Box>
+        
         {isEditingContent ? (
-          <div className="space-y-4">
-            <div className="flex gap-2 bg-muted rounded-lg p-1">
-              <button
-                onClick={() => setFormat('text')}
-                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                  format === 'text'
-                    ? 'bg-accent text-white'
-                    : 'text-foreground hover:bg-accent/20'
-                }`}
-              >
-                Text
-              </button>
-              <button
-                onClick={() => setFormat('doodle')}
-                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
-                  format === 'doodle'
-                    ? 'bg-accent text-white'
-                    : 'text-foreground hover:bg-accent/20'
-                }`}
-              >
-                Doodle
-              </button>
-            </div>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <ToggleButtonGroup
+              value={format}
+              exclusive
+              onChange={(_, newFormat) => newFormat && setFormat(newFormat)}
+              fullWidth
+              size="small"
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.05)',
+                p: 0.5,
+                borderRadius: 2,
+                '& .MuiToggleButton-root': {
+                  border: 'none',
+                  borderRadius: 1.5,
+                  color: 'text.secondary',
+                  '&.Mui-selected': {
+                    bgcolor: 'primary.main',
+                    color: 'background.default',
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.8) }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="text">Text</ToggleButton>
+              <ToggleButton value="doodle">Doodle</ToggleButton>
+            </ToggleButtonGroup>
 
             {format === 'text' ? (
-              <textarea
-                ref={contentTextareaRef}
+              <TextField
+                fullWidth
+                multiline
+                rows={12}
+                variant="standard"
                 value={content || ''}
                 onChange={(e) => {
                   setContent(e.target.value);
                   resetContentIdleTimer();
                 }}
-                rows={12}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+                inputRef={contentTextareaRef}
+                InputProps={{
+                  disableUnderline: true,
+                  sx: { fontSize: '0.875rem', color: 'text.primary', lineHeight: 1.6 }
+                }}
               />
             ) : (
-              <div className="space-y-3">
+              <Box>
                 {content ? (
-                  <div className="border border-border rounded-lg overflow-hidden">
+                  <Box sx={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
                     <NoteContentDisplay
                       content={content}
                       format="doodle"
-                      className="w-full"
                       onEditDoodle={() => setShowDoodleEditor(true)}
                     />
-                  </div>
+                  </Box>
                 ) : (
-                  <button
-                    type="button"
+                  <Button
+                    fullWidth
+                    variant="outlined"
                     onClick={() => setShowDoodleEditor(true)}
-                    className="w-full h-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:bg-accent/5 transition-colors"
+                    sx={{ 
+                      height: 128, 
+                      borderStyle: 'dashed', 
+                      borderRadius: 3,
+                      borderColor: 'rgba(255,255,255,0.1)',
+                      color: 'text.disabled'
+                    }}
                   >
-                    <span className="text-sm text-muted">Click to draw</span>
-                  </button>
+                    Click to draw
+                  </Button>
                 )}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         ) : (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={activateContentEditing}
-            onFocus={activateContentEditing}
-            className="space-y-3 cursor-text"
-          >
+          <Box onClick={activateContentEditing} sx={{ cursor: 'text' }}>
             <NoteContentRenderer
               content={displayContent}
               format={displayFormat}
               textClassName="text-foreground"
               doodleClassName="rounded-lg border border-border mb-2"
-              emptyFallback={<span className="italic text-muted">No content</span>}
+              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.disabled' }}>No content</Typography>}
               onEditDoodle={displayFormat === 'doodle' ? activateContentEditing : undefined}
             />
 
             {displayFormat !== 'doodle' && displayContent && (
-              <div className="pt-2">
+              <Box sx={{ pt: 2 }}>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onMouseDown={(event) => event.stopPropagation()}
-                  onFocus={(event) => event.stopPropagation()}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ClipboardDocumentIcon />}
                   onClick={async (event) => {
                     event.stopPropagation();
                     try {
                       await navigator.clipboard.writeText(displayContent);
                       showSuccess('Copied', 'Content copied to clipboard');
                     } catch (err) {
-                      console.error('Failed to copy note content', err);
                       showError('Copy failed', 'Could not copy content to clipboard');
                     }
                   }}
+                  sx={{ 
+                    borderRadius: 2, 
+                    borderColor: 'rgba(255,255,255,0.1)', 
+                    color: 'text.secondary',
+                    '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
+                  }}
                 >
-                  <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                   Copy
                 </Button>
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* Tags */}
-      <div>
-        <label className="block text-sm font-medium text-muted mb-2">
+      <Box>
+        <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Tags
-        </label>
+        </Typography>
         {isEditing ? (
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Separate tags with commas"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="Separate tags with commas"
-            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                bgcolor: 'rgba(255,255,255,0.03)',
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+              }
+            }}
           />
         ) : (
-            <div className="flex flex-wrap gap-2">
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {displayTags.map((tag: string, index: number) => (
-              <span
+              <Chip
                 key={`${tag}-${index}`}
-                className="px-2 py-1 bg-accent/20 text-accent rounded-full text-xs"
-              >
-                {tag}
-              </span>
+                label={tag}
+                size="small"
+                sx={{ 
+                  bgcolor: alpha(theme.palette.primary.main, 0.1), 
+                  color: 'primary.main',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  fontWeight: 600
+                }}
+              />
             ))}
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* Attachments */}
-      <div>
-        <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
+      <Box>
+        <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Attachments
+        </Typography>
         {isEditing && (
-          <div className="mb-3">
+          <Box sx={{ mb: 2 }}>
             <input
               type="file"
               id="attachment-input"
               multiple
               onChange={handleAttachmentUpload}
               disabled={isUploadingAttachment}
-              className="hidden"
+              style={{ display: 'none' }}
             />
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              fullWidth
+              variant="outlined"
+              startIcon={isUploadingAttachment ? <CircularProgress size={16} /> : <PaperClipIcon />}
               onClick={() => document.getElementById('attachment-input')?.click()}
               disabled={isUploadingAttachment}
-              className="w-full"
+              sx={{ borderRadius: 3, borderColor: 'rgba(255,255,255,0.1)', color: 'text.primary' }}
             >
-              <PaperClipIcon className="h-4 w-4 mr-2" />
               {isUploadingAttachment ? 'Uploading...' : 'Add Attachments'}
             </Button>
             {attachmentErrors.length > 0 && (
-              <div className="mt-2 space-y-1">
+              <Box sx={{ mt: 1 }}>
                 {attachmentErrors.map((err, i) => (
-                  <div key={i} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                  <Typography key={i} variant="caption" sx={{ display: 'block', color: 'error.main', bgcolor: alpha(theme.palette.error.main, 0.1), p: 1, borderRadius: 1, mt: 0.5 }}>
                     {err}
-                  </div>
+                  </Typography>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
         {currentAttachments.length > 0 ? (
-          <ul className="space-y-1 max-h-40 overflow-auto pr-1">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 160, overflow: 'auto' }}>
             {currentAttachments.map((a: any) => (
-              <li key={a.id} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded px-2 py-1">
-                <div className="flex flex-col min-w-0">
-                  <a href={`/notes/${note.$id}/${a.id}`} className="truncate font-medium text-accent hover:underline" title={a.name}>{a.name}</a>
-                  <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <a
-                    href={`/notes/${note.$id}/${a.id}`}
-                    className="text-accent hover:underline"
-                    title="Open attachment"
-                  >Open</a>
-                </div>
-              </li>
+              <Box key={a.id} sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                gap: 2, 
+                p: 1.5, 
+                borderRadius: 2, 
+                bgcolor: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {a.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                    {formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}
+                  </Typography>
+                </Box>
+                <Button 
+                  size="small" 
+                  href={`/notes/${note.$id}/${a.id}`}
+                  sx={{ color: 'primary.main', fontWeight: 700 }}
+                >
+                  Open
+                </Button>
+              </Box>
             ))}
-          </ul>
+          </Box>
         ) : (
-          <p className="text-xs text-muted italic">No attachments</p>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.disabled' }}>No attachments</Typography>
         )}
-      </div>
+      </Box>
 
       {/* Metadata */}
-      <div className="pt-4 border-t border-border space-y-2">
-        <div className="text-sm text-muted">
+      <Box sx={{ pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
           Created: {formatNoteCreatedDate(note)}
-        </div>
-        <div className="text-sm text-muted">
+        </Typography>
+        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
           Updated: {formatNoteUpdatedDate(note)}
-        </div>
+        </Typography>
 
         {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
-          <div className="pt-2 border-t border-border">
-            <div className="flex items-center gap-2 text-sm text-muted">
-              <UserIcon className="h-4 w-4" />
-              <span>
+          <Box sx={{ pt: 2, mt: 1, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+              <UserIcon sx={{ fontSize: 16 }} />
+              <Typography variant="caption">
                 Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
-              </span>
-            </div>
+              </Typography>
+            </Box>
             {enhancedNote.sharePermission && (
-              <div className="text-xs text-muted mt-1">
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.disabled', ml: 3 }}>
                 Permission: {enhancedNote.sharePermission}
-              </div>
+              </Typography>
             )}
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* Edit Actions */}
       {isEditing && (
-        <div className="flex flex-col gap-3 pt-4 border-t border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{isAutosaving ? 'Saving changes…' : 'All changes saved'}</span>
-            {isAutosaving && <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />}
-          </div>
-          <Button variant="ghost" onClick={handleCancel} className="w-full">
+        <Box sx={{ pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+              {isAutosaving ? 'Saving changes…' : 'All changes saved'}
+            </Typography>
+            {isAutosaving && <CircularProgress size={12} color="primary" />}
+          </Box>
+          <Button 
+            fullWidth 
+            variant="outlined" 
+            onClick={handleCancel}
+            sx={{ borderRadius: 3, borderColor: 'rgba(255,255,255,0.1)', color: 'text.primary' }}
+          >
             Cancel
           </Button>
-        </div>
+        </Box>
       )}
 
       {/* Doodle Editor Modal */}
@@ -660,32 +762,47 @@ export function NoteDetailSidebar({
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteConfirm}
+      <Dialog
+        open={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        title="Delete Note"
+        PaperProps={{
+          sx: {
+            borderRadius: 6,
+            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backgroundImage: 'none',
+            p: 2
+          }
+        }}
       >
-        <div className="space-y-4">
-          <p className="text-foreground">
+        <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem' }}>Delete Note</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: 'text.secondary' }}>
             Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action cannot be undone.
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              className="flex-1"
-            >
-              Delete Note
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setShowDeleteConfirm(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      </Modal>
-    </div>
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, gap: 2 }}>
+          <Button 
+            variant="contained" 
+            color="error"
+            fullWidth
+            onClick={handleDelete}
+            sx={{ borderRadius: 3 }}
+          >
+            Delete Note
+          </Button>
+          <Button 
+            variant="outlined" 
+            fullWidth
+            onClick={() => setShowDeleteConfirm(false)}
+            sx={{ borderRadius: 3, borderColor: 'rgba(255, 255, 255, 0.1)', color: 'text.primary' }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
+
