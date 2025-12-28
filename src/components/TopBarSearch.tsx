@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Notes } from '@/types/appwrite';
 import { formatNoteCreatedDate } from '@/lib/date-utils';
 import { useNotes } from '@/contexts/NotesContext';
@@ -12,15 +11,11 @@ import { deleteNote } from '@/lib/appwrite';
 import { Button } from '@/components/ui/Button';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 
-interface TopBarSearchProps {
-  className?: string;
-}
-
 import { Box, InputBase, Paper, List, ListItemButton, Typography, Chip, CircularProgress, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 
-export function TopBarSearch({ className = '' }: TopBarSearchProps) {
+export function TopBarSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -235,7 +230,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
                     }}
                   >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 0.5 }}>
-                      <Typography className="note-title" variant="subtitle2" sx={{ fontWeight: 700, transition: 'color 0.2s' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, transition: 'color 0.2s' }}>
                         {note.title || 'Untitled Note'}
                       </Typography>
                       <Typography variant="caption" sx={{ 

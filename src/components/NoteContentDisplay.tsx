@@ -2,12 +2,12 @@
 
 import React, { useRef, useEffect, useMemo } from 'react';
 import { DoodleStroke } from '@/types/notes';
-import DoodleCanvas from '@/components/DoodleCanvas';
+import { Box, Typography, alpha } from '@mui/material';
+import { Brush as BrushIcon } from '@mui/icons-material';
 
 interface NoteContentDisplayProps {
   content: string;
   format?: 'text' | 'doodle';
-  className?: string;
   preview?: boolean;
   onEditDoodle?: () => void;
 }
@@ -15,7 +15,6 @@ interface NoteContentDisplayProps {
 export function NoteContentDisplay({
   content,
   format = 'text',
-  className = '',
   preview = false,
   onEditDoodle,
 }: NoteContentDisplayProps) {
@@ -41,8 +40,8 @@ export function NoteContentDisplay({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Fill white background
-    ctx.fillStyle = '#ffffff';
+    // Fill black background for consistency
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw all strokes
@@ -71,30 +70,77 @@ export function NoteContentDisplay({
   if (format === 'doodle') {
     if (!doodleData) {
       return (
-        <div className={`text-center py-6 text-muted ${className}`}>
-          <p>Invalid doodle data</p>
-        </div>
+        <Box sx={{ textAlign: 'center', py: 4, color: 'rgba(255, 255, 255, 0.3)' }}>
+          <Typography variant="body2">Invalid doodle data</Typography>
+        </Box>
       );
     }
 
     return (
-      <div className={`relative rounded-lg overflow-hidden ${className}`}>
+      <Box 
+        sx={{ 
+          position: 'relative', 
+          borderRadius: '24px', 
+          overflow: 'hidden',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: '#000',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            borderColor: alpha('#00F5FF', 0.3),
+            transform: preview ? 'none' : 'scale(1.005)'
+          }
+        }}
+      >
         <canvas
           ref={canvasRef}
-          width={preview ? 400 : 800}
-          height={preview ? 300 : 600}
-          className={`w-full ${!preview ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+          width={preview ? 400 : 1200}
+          height={preview ? 300 : 800}
+          style={{ 
+            width: '100%', 
+            height: 'auto', 
+            display: 'block',
+            cursor: !preview && onEditDoodle ? 'pointer' : 'default'
+          }}
           onClick={!preview && onEditDoodle ? onEditDoodle : undefined}
-          style={{ display: 'block' }}
         />
+        
         {!preview && onEditDoodle && (
-          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center pointer-events-none">
-            <span className="bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium opacity-0 hover:opacity-100 transition-opacity pointer-events-auto">
-              Click to edit
-            </span>
-          </div>
+          <Box sx={{ 
+            position: 'absolute', 
+            inset: 0, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            bgcolor: 'rgba(0, 0, 0, 0)',
+            transition: 'background-color 0.3s',
+            pointerEvents: 'none',
+            '&:hover': {
+              bgcolor: 'rgba(0, 0, 0, 0.2)'
+            }
+          }}>
+            <Box sx={{ 
+              bgcolor: '#00F5FF', 
+              color: '#000', 
+              px: 2, 
+              py: 1, 
+              borderRadius: '10px', 
+              fontSize: '0.875rem', 
+              fontWeight: 800,
+              opacity: 0,
+              transition: 'opacity 0.3s',
+              pointerEvents: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              boxShadow: '0 8px 24px rgba(0, 245, 255, 0.4)',
+              '.MuiBox-root:hover &': { opacity: 1 }
+            }}>
+              <BrushIcon sx={{ fontSize: 18 }} />
+              Edit Doodle
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     );
   }
 
@@ -103,3 +149,4 @@ export function NoteContentDisplay({
 }
 
 export default NoteContentDisplay;
+

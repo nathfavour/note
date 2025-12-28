@@ -3,7 +3,6 @@ import { validatePublicNoteAccess } from '@/lib/appwrite/permissions/notes';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import type { Notes } from '@/types/appwrite.d';
 import { preProcessMarkdown } from '@/lib/markdown';
-import { ClockIcon, EyeIcon, TagIcon, ExclamationTriangleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import SharedNoteClient from './SharedNoteClient';
 import { headers } from 'next/headers';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit-middleware';

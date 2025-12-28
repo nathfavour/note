@@ -1,7 +1,7 @@
-import { Link } from '@mui/material';
+import { Link, alpha } from '@mui/material';
 
 /**
- * Custom link component for ReactMarkdown that styles links in green
+ * Custom link component for ReactMarkdown that styles links in Electric Teal
  * Used for post-render formatting of markdown links
  */
 export function LinkComponent({ href, children }: { href?: string; children?: React.ReactNode }) {
@@ -13,13 +13,18 @@ export function LinkComponent({ href, children }: { href?: string; children?: Re
       target="_blank"
       rel="noopener noreferrer"
       sx={{
-        color: 'primary.main',
-        textDecoration: 'underline',
-        fontWeight: 500,
-        transition: 'all 0.2s',
+        color: '#00F5FF',
+        textDecoration: 'none',
+        fontWeight: 700,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        borderBottom: '1px solid transparent',
         '&:hover': {
-          color: 'primary.light',
-          opacity: 0.8
+          color: alpha('#00F5FF', 0.8),
+          borderBottomColor: alpha('#00F5FF', 0.4),
+          bgcolor: alpha('#00F5FF', 0.05),
+          borderRadius: '4px',
+          px: 0.5,
+          mx: -0.5
         }
       }}
     >
@@ -27,4 +32,5 @@ export function LinkComponent({ href, children }: { href?: string; children?: Re
     </Link>
   );
 }
+
 

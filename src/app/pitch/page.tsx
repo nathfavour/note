@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Box, Typography, Stack, IconButton, Container, alpha } from '@mui/material';
+import { 
+  ArrowBackIosNew as ArrowLeftIcon, 
+  ArrowForwardIos as ArrowRightIcon 
+} from '@mui/icons-material';
 
 const slides = [
   {
@@ -8,30 +13,88 @@ const slides = [
     title: "Whisperrnote",
     subtitle: "AI × Secure Intelligence",
     content: (
-      <div className="space-y-12">
-        <div className="w-40 h-40 mx-auto bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center text-8xl shadow-2xl shadow-blue-500/30 animate-pulse">
+      <Stack spacing={6} alignItems="center">
+        <Box 
+          sx={{ 
+            width: 160, 
+            height: 160, 
+            mx: 'auto', 
+            background: 'linear-gradient(135deg, #00F5FF 0%, #00D1FF 100%)',
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontSize: '5rem',
+            boxShadow: '0 20px 40px rgba(0, 245, 255, 0.3)',
+            animation: 'pulse 2s infinite ease-in-out',
+            '@keyframes pulse': {
+              '0%': { transform: 'scale(1)', boxShadow: '0 20px 40px rgba(0, 245, 255, 0.3)' },
+              '50%': { transform: 'scale(1.05)', boxShadow: '0 25px 50px rgba(0, 245, 255, 0.5)' },
+              '100%': { transform: 'scale(1)', boxShadow: '0 20px 40px rgba(0, 245, 255, 0.3)' }
+            }
+          }}
+        >
           🧠
-        </div>
+        </Box>
         
-        <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
-            <div className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">73%</div>
-            <div className="text-lg opacity-80">Want AI Notes</div>
-          </div>
-          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
-            <div className="text-5xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">$4.5M</div>
-            <div className="text-lg opacity-80">Breach Cost</div>
-          </div>
-          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
-            <div className="text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">0</div>
-            <div className="text-lg opacity-80">AI+Security</div>
-          </div>
-        </div>
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+            gap: 3, 
+            maxWidth: 896, 
+            width: '100%',
+            mx: 'auto' 
+          }}
+        >
+          {[
+            { val: '73%', label: 'Want AI Notes', colors: ['#00F5FF', '#00D1FF'] },
+            { val: '$4.5M', label: 'Breach Cost', colors: ['#00D1FF', '#A855F7'] },
+            { val: '0', label: 'AI+Security', colors: ['#A855F7', '#EC4899'] }
+          ].map((stat, i) => (
+            <Box 
+              key={i}
+              sx={{ 
+                textAlign: 'center', 
+                p: 3, 
+                bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                backdropFilter: 'blur(10px)', 
+                borderRadius: '24px', 
+                border: '1px solid rgba(255, 255, 255, 0.1)' 
+              }}
+            >
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  fontWeight: 900, 
+                  fontFamily: 'var(--font-space-grotesk)',
+                  background: `linear-gradient(90deg, ${stat.colors[0]}, ${stat.colors[1]})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                {stat.val}
+              </Typography>
+              <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 600 }}>
+                {stat.label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
         
-        <div className="text-2xl font-light opacity-90 max-w-3xl mx-auto">
-          The first <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">AI-powered notes</span> platform
-        </div>
-      </div>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 300, 
+            opacity: 0.9, 
+            maxWidth: 672, 
+            mx: 'auto',
+            textAlign: 'center'
+          }}
+        >
+          The first <Box component="span" sx={{ fontWeight: 900, background: 'linear-gradient(90deg, #00F5FF, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI-powered notes</Box> platform
+        </Typography>
+      </Stack>
     )
   },
   {
@@ -39,39 +102,64 @@ const slides = [
     title: "The Problem",
     subtitle: "Security vs Intelligence",
     content: (
-      <div className="grid grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
-        <div className="space-y-8">
-          <div className="bg-red-500/20 border border-red-500/30 rounded-3xl p-8 backdrop-blur">
-            <div className="text-6xl mb-4">⚠️</div>
-            <div className="text-2xl font-bold mb-4">Traditional Notes</div>
-            <div className="space-y-2 text-lg opacity-90">
-              <div>• Data breaches</div>
-              <div>• No AI enhancement</div>
-              <div>• Centralized control</div>
-            </div>
-          </div>
+      <Box 
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gap: 8, 
+          alignItems: 'center', 
+          maxWidth: 1152, 
+          mx: 'auto' 
+        }}
+      >
+        <Stack spacing={4}>
+          <Box 
+            sx={{ 
+              bgcolor: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', 
+              borderRadius: '32px', 
+              p: 4, 
+              backdropFilter: 'blur(10px)' 
+            }}
+          >
+            <Typography variant="h2" sx={{ mb: 2 }}>⚠️</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)' }}>Traditional Notes</Typography>
+            <Stack spacing={1}>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• Data breaches</Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• No AI enhancement</Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• Centralized control</Typography>
+            </Stack>
+          </Box>
           
-          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-3xl p-8 backdrop-blur">
-            <div className="text-6xl mb-4">🤖</div>
-            <div className="text-2xl font-bold mb-4">AI Tools</div>
-            <div className="space-y-2 text-lg opacity-90">
-              <div>• Privacy concerns</div>
-              <div>• Data mining</div>
-              <div>• Limited features</div>
-            </div>
-          </div>
-        </div>
+          <Box 
+            sx={{ 
+              bgcolor: 'rgba(234, 179, 8, 0.1)', 
+              border: '1px solid rgba(234, 179, 8, 0.2)', 
+              borderRadius: '32px', 
+              p: 4, 
+              backdropFilter: 'blur(10px)' 
+            }}
+          >
+            <Typography variant="h2" sx={{ mb: 2 }}>🤖</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)' }}>AI Tools</Typography>
+            <Stack spacing={1}>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• Privacy concerns</Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• Data mining</Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9 }}>• Limited features</Typography>
+            </Stack>
+          </Box>
+        </Stack>
         
-        <div className="text-center">
-          <div className="text-8xl mb-8 animate-pulse">💔</div>
-          <div className="text-3xl font-bold mb-6">Choose One:</div>
-          <div className="text-xl opacity-80 space-y-3">
-            <div>🛡️ Security</div>
-            <div className="text-2xl font-black">OR</div>
-            <div>🧠 Intelligence</div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h1" sx={{ mb: 4, animation: 'pulse 2s infinite' }}>💔</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, mb: 3, fontFamily: 'var(--font-space-grotesk)' }}>Choose One:</Typography>
+          <Stack spacing={1.5}>
+            <Typography variant="h5" sx={{ opacity: 0.8 }}>🛡️ Security</Typography>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: '#00F5FF' }}>OR</Typography>
+            <Typography variant="h5" sx={{ opacity: 0.8 }}>🧠 Intelligence</Typography>
+          </Stack>
+        </Box>
+      </Box>
     )
   },
   {
@@ -79,34 +167,78 @@ const slides = [
     title: "Our Solution",
     subtitle: "Best of Both Worlds",
     content: (
-      <div className="space-y-16">
-        <div className="flex justify-center items-center relative">
-          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center shadow-2xl shadow-cyan-500/40">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-2">🧠</div>
-              <div className="text-lg font-bold">AI Layer</div>
-            </div>
-          </div>
+      <Stack spacing={8} alignItems="center">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <Box 
+            sx={{ 
+              width: 192, 
+              height: 192, 
+              borderRadius: '50%', 
+              background: 'linear-gradient(135deg, #00F5FF 0%, #00D1FF 100%)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              boxShadow: '0 20px 40px rgba(0, 245, 255, 0.4)',
+              zIndex: 2
+            }}
+          >
+            <Box sx={{ textAlign: 'center', color: 'black' }}>
+              <Typography variant="h3" sx={{ mb: 1 }}>🧠</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>AI Layer</Typography>
+            </Box>
+          </Box>
           
-          <div className="absolute w-24 h-1 bg-gradient-to-r from-cyan-400 to-purple-600 animate-pulse"></div>
+          <Box 
+            sx={{ 
+              position: 'absolute', 
+              width: 96, 
+              height: 4, 
+              background: 'linear-gradient(90deg, #00F5FF, #A855F7)', 
+              animation: 'pulse 1.5s infinite',
+              zIndex: 1
+            }} 
+          />
           
-          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center ml-24 shadow-2xl shadow-purple-500/40">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-2">🔗</div>
-              <div className="text-lg font-bold">Security</div>
-            </div>
-          </div>
-        </div>
+          <Box 
+            sx={{ 
+              width: 192, 
+              height: 192, 
+              borderRadius: '50%', 
+              background: 'linear-gradient(135deg, #A855F7 0%, #EC4899 100%)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              ml: 12, 
+              boxShadow: '0 20px 40px rgba(168, 85, 247, 0.4)',
+              zIndex: 2
+            }}
+          >
+            <Box sx={{ textAlign: 'center', color: 'white' }}>
+              <Typography variant="h3" sx={{ mb: 1 }}>🔗</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>Security</Typography>
+            </Box>
+          </Box>
+        </Box>
         
-        <div className="text-center">
-          <div className="text-4xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 900, 
+              mb: 3, 
+              fontFamily: 'var(--font-space-grotesk)',
+              background: 'linear-gradient(90deg, #00F5FF, #A855F7)', 
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent' 
+            }}
+          >
             = Secure Intelligence
-          </div>
-          <div className="text-xl opacity-90 max-w-2xl mx-auto">
+          </Typography>
+          <Typography variant="h5" sx={{ opacity: 0.9, maxWidth: 672, mx: 'auto', fontWeight: 500 }}>
             AI enhances your thoughts while powerful encryption protects them
-          </div>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Stack>
     )
   },
   {
@@ -114,31 +246,39 @@ const slides = [
     title: "Core Features",
     subtitle: "Advanced Technology",
     content: (
-      <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto">
-        <div className="bg-gradient-to-br from-cyan-500/20 to-blue-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
-          <div className="text-6xl mb-4">🤖</div>
-          <div className="text-2xl font-bold mb-3">Multi-AI Engine</div>
-          <div className="text-lg opacity-90">GPT-4.1, Gemini, auto-failover</div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
-          <div className="text-6xl mb-4">🔐</div>
-          <div className="text-2xl font-bold mb-3">End-to-End Encryption</div>
-          <div className="text-lg opacity-90">Military-grade security</div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-blue-500/20 to-purple-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
-          <div className="text-6xl mb-4">⚡</div>
-          <div className="text-2xl font-bold mb-3">Smart Automation</div>
-          <div className="text-lg opacity-90">Auto-tagging, enhancement</div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-pink-500/20 to-red-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
-          <div className="text-6xl mb-4">🌍</div>
-          <div className="text-2xl font-bold mb-3">Universal Access</div>
-          <div className="text-lg opacity-90">Web, mobile, desktop</div>
-        </div>
-      </div>
+      <Box 
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gap: 4, 
+          maxWidth: 960, 
+          mx: 'auto' 
+        }}
+      >
+        {[
+          { icon: '🤖', title: 'Multi-AI Engine', desc: 'GPT-4.1, Gemini, auto-failover', colors: ['rgba(0, 245, 255, 0.1)', 'rgba(0, 209, 255, 0.1)'] },
+          { icon: '🔐', title: 'End-to-End Encryption', desc: 'Military-grade security', colors: ['rgba(168, 85, 247, 0.1)', 'rgba(236, 72, 153, 0.1)'] },
+          { icon: '⚡', title: 'Smart Automation', desc: 'Auto-tagging, enhancement', colors: ['rgba(59, 130, 246, 0.1)', 'rgba(168, 85, 247, 0.1)'] },
+          { icon: '🌍', title: 'Universal Access', desc: 'Web, mobile, desktop', colors: ['rgba(236, 72, 153, 0.1)', 'rgba(239, 68, 68, 0.1)'] }
+        ].map((feature, i) => (
+          <Box 
+            key={i}
+            sx={{ 
+              background: `linear-gradient(135deg, ${feature.colors[0]}, ${feature.colors[1]})`, 
+              backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              borderRadius: '32px', 
+              p: 4, 
+              transition: 'all 0.5s ease',
+              '&:hover': { transform: 'scale(1.05)', borderColor: '#00F5FF' }
+            }}
+          >
+            <Typography variant="h2" sx={{ mb: 2 }}>{feature.icon}</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, mb: 1.5, fontFamily: 'var(--font-space-grotesk)' }}>{feature.title}</Typography>
+            <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>{feature.desc}</Typography>
+          </Box>
+        ))}
+      </Box>
     )
   },
   {
@@ -146,36 +286,91 @@ const slides = [
     title: "Market Opportunity",
     subtitle: "$135B+ TAM",
     content: (
-      <div className="space-y-12">
-        <div className="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
-            <div className="text-6xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">$45B</div>
-            <div className="text-xl opacity-80 mt-2">Note-taking</div>
-          </div>
-          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
-            <div className="text-6xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">$67B</div>
-            <div className="text-xl opacity-80 mt-2">AI Software</div>
-          </div>
-          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
-            <div className="text-6xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">$23B</div>
-            <div className="text-xl opacity-80 mt-2">Security</div>
-          </div>
-        </div>
+      <Stack spacing={6} alignItems="center">
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+            gap: 4, 
+            maxWidth: 1024, 
+            width: '100%',
+            mx: 'auto' 
+          }}
+        >
+          {[
+            { val: '$45B', label: 'Note-taking', colors: ['#00F5FF', '#00D1FF'] },
+            { val: '$67B', label: 'AI Software', colors: ['#00D1FF', '#A855F7'] },
+            { val: '$23B', label: 'Security', colors: ['#A855F7', '#EC4899'] }
+          ].map((market, i) => (
+            <Box 
+              key={i}
+              sx={{ 
+                textAlign: 'center', 
+                p: 4, 
+                bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                backdropFilter: 'blur(10px)', 
+                borderRadius: '32px', 
+                border: '1px solid rgba(255, 255, 255, 0.1)' 
+              }}
+            >
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 900, 
+                  fontFamily: 'var(--font-space-grotesk)',
+                  background: `linear-gradient(90deg, ${market.colors[0]}, ${market.colors[1]})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                {market.val}
+              </Typography>
+              <Typography variant="h5" sx={{ opacity: 0.8, mt: 1, fontWeight: 700 }}>
+                {market.label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
         
-        <div className="grid grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl p-6">
-            <div className="text-3xl mb-3">🎯</div>
-            <div className="text-xl font-bold mb-2">First Mover</div>
-            <div className="text-lg opacity-90">No AI+Security notes exist</div>
-          </div>
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+            gap: 4, 
+            maxWidth: 896, 
+            width: '100%',
+            mx: 'auto' 
+          }}
+        >
+          <Box 
+            sx={{ 
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))', 
+              backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              borderRadius: '32px', 
+              p: 3 
+            }}
+          >
+            <Typography variant="h4" sx={{ mb: 1.5 }}>🎯</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-space-grotesk)' }}>First Mover</Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>No AI+Security notes exist</Typography>
+          </Box>
           
-          <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl p-6">
-            <div className="text-3xl mb-3">💰</div>
-            <div className="text-xl font-bold mb-2">Revenue Model</div>
-            <div className="text-lg opacity-90">Freemium + Enterprise</div>
-          </div>
-        </div>
-      </div>
+          <Box 
+            sx={{ 
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1))', 
+              backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              borderRadius: '32px', 
+              p: 3 
+            }}
+          >
+            <Typography variant="h4" sx={{ mb: 1.5 }}>💰</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-space-grotesk)' }}>Revenue Model</Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>Freemium + Enterprise</Typography>
+          </Box>
+        </Box>
+      </Stack>
     )
   },
   {
@@ -183,25 +378,47 @@ const slides = [
     title: "Traction",
     subtitle: "Building Momentum",
     content: (
-      <div className="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <div className="text-center p-8 bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl">
-          <div className="text-6xl mb-4">🚀</div>
-          <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent mb-2">Live</div>
-          <div className="text-lg opacity-90">Product deployed</div>
-        </div>
-        
-        <div className="text-center p-8 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl">
-          <div className="text-6xl mb-4">👥</div>
-          <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent mb-2">Users</div>
-          <div className="text-lg opacity-90">Growing community</div>
-        </div>
-        
-        <div className="text-center p-8 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl">
-          <div className="text-6xl mb-4">🏆</div>
-          <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-2">Awards</div>
-          <div className="text-lg opacity-90">Tech recognition</div>
-        </div>
-      </div>
+      <Box 
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+          gap: 4, 
+          maxWidth: 1024, 
+          mx: 'auto' 
+        }}
+      >
+        {[
+          { icon: '🚀', title: 'Live', desc: 'Product deployed', colors: ['rgba(34, 197, 94, 0.1)', 'rgba(16, 185, 129, 0.1)'], text: '#4ade80' },
+          { icon: '👥', title: 'Users', desc: 'Growing community', colors: ['rgba(59, 130, 246, 0.1)', 'rgba(6, 182, 212, 0.1)'], text: '#60a5fa' },
+          { icon: '🏆', title: 'Awards', desc: 'Tech recognition', colors: ['rgba(168, 85, 247, 0.1)', 'rgba(236, 72, 153, 0.1)'], text: '#c084fc' }
+        ].map((item, i) => (
+          <Box 
+            key={i}
+            sx={{ 
+              textAlign: 'center', 
+              p: 4, 
+              background: `linear-gradient(135deg, ${item.colors[0]}, ${item.colors[1]})`, 
+              backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              borderRadius: '32px' 
+            }}
+          >
+            <Typography variant="h2" sx={{ mb: 2 }}>{item.icon}</Typography>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                mb: 1, 
+                fontFamily: 'var(--font-space-grotesk)',
+                color: item.text
+              }}
+            >
+              {item.title}
+            </Typography>
+            <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 600 }}>{item.desc}</Typography>
+          </Box>
+        ))}
+      </Box>
     )
   },
   {
@@ -209,50 +426,114 @@ const slides = [
     title: "Join Us",
     subtitle: "Shape the Future",
     content: (
-      <div className="space-y-12">
-        <div className="w-32 h-32 mx-auto bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center text-6xl shadow-2xl shadow-blue-500/30 animate-pulse">
+      <Stack spacing={6} alignItems="center">
+        <Box 
+          sx={{ 
+            width: 128, 
+            height: 128, 
+            mx: 'auto', 
+            background: 'linear-gradient(135deg, #00F5FF 0%, #A855F7 100%)',
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontSize: '4rem',
+            boxShadow: '0 20px 40px rgba(0, 245, 255, 0.3)',
+            animation: 'pulse 2s infinite ease-in-out'
+          }}
+        >
           🚀
-        </div>
+        </Box>
         
-        <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="text-center p-6 bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl">
-            <div className="text-4xl mb-3">💰</div>
-            <div className="text-xl font-bold">Investors</div>
-            <div className="text-lg opacity-90">$2M seed</div>
-          </div>
-          
-          <div className="text-center p-6 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl">
-            <div className="text-4xl mb-3">🤝</div>
-            <div className="text-xl font-bold">Partners</div>
-            <div className="text-lg opacity-90">Strategic alliances</div>
-          </div>
-          
-          <div className="text-center p-6 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl">
-            <div className="text-4xl mb-3">⭐</div>
-            <div className="text-xl font-bold">Talent</div>
-            <div className="text-lg opacity-90">Join our team</div>
-          </div>
-        </div>
+        <Box 
+          sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+            gap: 3, 
+            maxWidth: 896, 
+            width: '100%',
+            mx: 'auto' 
+          }}
+        >
+          {[
+            { icon: '💰', title: 'Investors', desc: '$2M seed', colors: ['rgba(34, 197, 94, 0.1)', 'rgba(16, 185, 129, 0.1)'] },
+            { icon: '🤝', title: 'Partners', desc: 'Strategic alliances', colors: ['rgba(59, 130, 246, 0.1)', 'rgba(6, 182, 212, 0.1)'] },
+            { icon: '⭐', title: 'Talent', desc: 'Join our team', colors: ['rgba(168, 85, 247, 0.1)', 'rgba(236, 72, 153, 0.1)'] }
+          ].map((item, i) => (
+            <Box 
+              key={i}
+              sx={{ 
+                textAlign: 'center', 
+                p: 3, 
+                background: `linear-gradient(135deg, ${item.colors[0]}, ${item.colors[1]})`, 
+                backdropFilter: 'blur(10px)', 
+                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                borderRadius: '32px' 
+              }}
+            >
+              <Typography variant="h4" sx={{ mb: 1.5 }}>{item.icon}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 900, mb: 0.5, fontFamily: 'var(--font-space-grotesk)' }}>{item.title}</Typography>
+              <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>{item.desc}</Typography>
+            </Box>
+          ))}
+        </Box>
         
-        <div className="space-x-6">
-          <a 
+        <Stack direction="row" spacing={3}>
+          <Box 
+            component="a" 
             href="https://whisperrnote.space" 
-            className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-10 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:shadow-2xl shadow-lg"
+            sx={{ 
+              display: 'inline-block', 
+              background: 'linear-gradient(90deg, #00F5FF, #A855F7)', 
+              color: 'black', 
+              px: 5, 
+              py: 2, 
+              borderRadius: '50px', 
+              fontSize: '1.25rem', 
+              fontWeight: 900, 
+              textDecoration: 'none',
+              transition: 'all 0.3s', 
+              '&:hover': { transform: 'scale(1.1)', boxShadow: '0 10px 30px rgba(0, 245, 255, 0.4)' } 
+            }}
           >
             Try Now →
-          </a>
-          <a 
+          </Box>
+          <Box 
+            component="a" 
             href="mailto:team@whisperrnote.space" 
-            className="inline-block bg-white/10 backdrop-blur border border-white/30 text-white px-10 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:bg-white/20"
+            sx={{ 
+              display: 'inline-block', 
+              bgcolor: 'rgba(255, 255, 255, 0.05)', 
+              backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(255, 255, 255, 0.2)', 
+              color: 'white', 
+              px: 5, 
+              py: 2, 
+              borderRadius: '50px', 
+              fontSize: '1.25rem', 
+              fontWeight: 900, 
+              textDecoration: 'none',
+              transition: 'all 0.3s', 
+              '&:hover': { transform: 'scale(1.1)', bgcolor: 'rgba(255, 255, 255, 0.1)' } 
+            }}
           >
             Contact Us
-          </a>
-        </div>
+          </Box>
+        </Stack>
         
-        <div className="text-xl font-light opacity-90 max-w-2xl mx-auto">
-          The future of knowledge is <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">secure, intelligent, and yours</span>
-        </div>
-      </div>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontWeight: 300, 
+            opacity: 0.9, 
+            maxWidth: 672, 
+            mx: 'auto',
+            textAlign: 'center'
+          }}
+        >
+          The future of knowledge is <Box component="span" sx={{ fontWeight: 900, background: 'linear-gradient(90deg, #00F5FF, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>secure, intelligent, and yours</Box>
+        </Typography>
+      </Stack>
     )
   }
 ];
@@ -304,85 +585,204 @@ export default function PitchPage() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+    <Box 
+      sx={{ 
+        height: '100vh', 
+        bgcolor: '#0a0a0a', 
+        color: 'white', 
+        overflow: 'hidden', 
+        position: 'relative',
+        background: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%)'
+      }}
+    >
       {/* Enhanced Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900 via-slate-900 to-slate-900" />
-      <div 
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
+      <Box 
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          opacity: 0.4,
+          pointerEvents: 'none',
           background: `
-            radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.2) 0%, transparent 50%)
+            radial-gradient(circle at 20% 80%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)
           `
         }}
       />
       
       {/* Animated Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none" />
+      <Box 
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+          pointerEvents: 'none'
+        }}
+      />
       
       {/* Main Content */}
-      <div className={`h-full flex flex-col justify-center items-center p-8 z-10 relative transition-all duration-300 ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <div className="max-w-7xl w-full text-center">
-          <h1 className="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent drop-shadow-2xl tracking-tight">
-            {currentSlideData.title}
-          </h1>
-          <p className="text-xl md:text-2xl opacity-90 mb-12 font-light tracking-wide">
-            {currentSlideData.subtitle}
-          </p>
-          {currentSlideData.content}
-        </div>
-      </div>
+      <Box 
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: 4,
+          zIndex: 10,
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          opacity: isTransitioning ? 0 : 1,
+          transform: isTransitioning ? 'scale(0.95)' : 'scale(1)'
+        }}
+      >
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography 
+              variant="h1" 
+              sx={{ 
+                fontSize: { xs: '3.5rem', md: '6rem' }, 
+                fontWeight: 900, 
+                mb: 2, 
+                fontFamily: 'var(--font-space-grotesk)',
+                background: 'linear-gradient(90deg, #fff, #00F5FF, #A855F7)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.02em'
+              }}
+            >
+              {currentSlideData.title}
+            </Typography>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                opacity: 0.8, 
+                mb: 8, 
+                fontWeight: 300, 
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
+            >
+              {currentSlideData.subtitle}
+            </Typography>
+            {currentSlideData.content}
+          </Box>
+        </Container>
+      </Box>
       
       {/* Navigation Arrows */}
-      <button
+      <IconButton
         onClick={prevSlide}
         disabled={currentSlide === 0}
-        className={`absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
-          currentSlide === 0 
-            ? 'opacity-30 cursor-not-allowed' 
-            : 'hover:bg-black/30 hover:scale-110 cursor-pointer hover:border-white/40'
-        }`}
+        sx={{
+          position: 'absolute',
+          left: 32,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 64,
+          height: 64,
+          bgcolor: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'white',
+          zIndex: 20,
+          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)', transform: 'translateY(-50%) scale(1.1)' },
+          '&.Mui-disabled': { opacity: 0.2 }
+        }}
       >
-        ←
-      </button>
+        <ArrowLeftIcon />
+      </IconButton>
       
-      <button
+      <IconButton
         onClick={nextSlide}
         disabled={currentSlide === slides.length - 1}
-        className={`absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
-          currentSlide === slides.length - 1 
-            ? 'opacity-30 cursor-not-allowed' 
-            : 'hover:bg-black/30 hover:scale-110 cursor-pointer hover:border-white/40'
-        }`}
+        sx={{
+          position: 'absolute',
+          right: 32,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 64,
+          height: 64,
+          bgcolor: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'white',
+          zIndex: 20,
+          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)', transform: 'translateY(-50%) scale(1.1)' },
+          '&.Mui-disabled': { opacity: 0.2 }
+        }}
       >
-        →
-      </button>
+        <ArrowRightIcon />
+      </IconButton>
       
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
+      <Stack 
+        direction="row" 
+        spacing={1.5} 
+        sx={{ 
+          position: 'absolute', 
+          bottom: 32, 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          zIndex: 20 
+        }}
+      >
         {slides.map((_, index) => (
-          <button
+          <Box
             key={index}
+            component="button"
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSlide === index 
-                ? 'bg-white scale-125 shadow-lg' 
-                : 'bg-white/40 hover:bg-white/70 hover:scale-110'
-            }`}
+            sx={{
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              bgcolor: currentSlide === index ? 'white' : 'rgba(255, 255, 255, 0.3)',
+              transform: currentSlide === index ? 'scale(1.3)' : 'scale(1)',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.6)' }
+            }}
           />
         ))}
-      </div>
+      </Stack>
       
       {/* Slide Counter */}
-      <div className="absolute top-8 right-8 bg-black/20 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 z-20">
-        <span className="text-lg font-semibold">{currentSlide + 1} / {slides.length}</span>
-      </div>
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: 32, 
+          right: 32, 
+          bgcolor: 'rgba(255, 255, 255, 0.05)', 
+          backdropFilter: 'blur(20px)', 
+          border: '1px solid rgba(255, 255, 255, 0.1)', 
+          borderRadius: '50px', 
+          px: 3, 
+          py: 1, 
+          zIndex: 20 
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 800, fontFamily: 'monospace' }}>
+          {currentSlide + 1} / {slides.length}
+        </Typography>
+      </Box>
       
       {/* Instructions */}
-      <div className="absolute bottom-8 right-8 text-sm opacity-50 z-20">
-        <p>Use ← → arrows or 1-7 keys</p>
-      </div>
-    </div>
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          position: 'absolute', 
+          bottom: 32, 
+          right: 32, 
+          opacity: 0.5, 
+          zIndex: 20,
+          fontWeight: 700,
+          letterSpacing: '0.1em'
+        }}
+      >
+        USE ARROWS OR 1-7 KEYS
+      </Typography>
+    </Box>
   );
 }

@@ -15,18 +15,12 @@ const nextConfig: NextConfig = {
     '@mui/icons-material': {
       transform: '@mui/icons-material/{{member}}',
     },
-    '@heroicons/react/24/outline': {
-      transform: '@heroicons/react/24/outline/{{member}}',
-    },
-    '@heroicons/react/24/solid': {
-      transform: '@heroicons/react/24/solid/{{member}}',
-    },
     'lodash': {
       transform: 'lodash/{{member}}',
     },
   },
   experimental: {
-    optimizePackageImports: ['framer-motion', 'lucide-react', '@heroicons/react'],
+    optimizePackageImports: ['framer-motion'],
   },
 
   // async rewrites() {

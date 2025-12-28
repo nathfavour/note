@@ -68,22 +68,25 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.4em',
-            color: 'rgba(255, 255, 255, 0.4)',
-            fontFamily: 'var(--font-space-grotesk)',
+            color: '#00F5FF',
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: '0.7rem',
+            opacity: 0.8
           }}
         >
           Initializing
         </Typography>
 
-        <Box sx={{ width: '100%', px: 2 }}>
+        <Box sx={{ width: '100%', px: 4 }}>
           <LinearProgress 
             sx={{ 
-              height: 4, 
-              borderRadius: 2,
+              height: 2, 
+              borderRadius: 1,
               bgcolor: 'rgba(255, 255, 255, 0.05)',
               '& .MuiLinearProgress-bar': {
                 bgcolor: '#00F5FF',
-                borderRadius: 2,
+                borderRadius: 1,
+                boxShadow: '0 0 15px rgba(0, 245, 255, 0.5)'
               }
             }} 
           />

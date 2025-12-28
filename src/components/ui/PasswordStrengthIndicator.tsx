@@ -1,93 +1,152 @@
 'use client';
 
 import React from 'react';
+import { 
+  Box, 
+  Typography, 
+  LinearProgress, 
+  TextField, 
+  IconButton, 
+  InputAdornment,
+  Stack
+} from '@mui/material';
+import { 
+  Visibility as VisibilityIcon, 
+  VisibilityOff as VisibilityOffIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon
+} from '@mui/icons-material';
 import { validatePasswordStrength, getPasswordStrengthLabel, getPasswordStrengthColor, type PasswordStrength } from '@/lib/passwordUtils';
 
 interface PasswordStrengthIndicatorProps {
   password: string;
   showRequirements?: boolean;
-  className?: string;
 }
 
 export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
   password,
   showRequirements = true,
-  className = ''
 }) => {
   const strength = validatePasswordStrength(password);
 
   if (!password) return null;
 
+  const getProgressColor = (score: number) => {
+    switch (score) {
+      case 0: return '#FF453A';
+      case 1: return '#FF9F0A';
+      case 2: return '#FFD60A';
+      case 3: return '#30D158';
+      case 4: return '#00F5FF';
+      default: return '#FF453A';
+    }
+  };
+
+  const getProgressValue = (score: number) => {
+    return ((score + 1) / 5) * 100;
+  };
+
   return (
-    <div className={`space-y-2 ${className}`}>
-      {/* Strength Bar */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-          <div
-            className={`h-full transition-all duration-300 ${
-              strength.score === 0 ? 'bg-red-500 w-1/4' :
-              strength.score === 1 ? 'bg-orange-500 w-2/4' :
-              strength.score === 2 ? 'bg-yellow-500 w-3/4' :
-              strength.score === 3 ? 'bg-blue-500 w-4/4' :
-              'bg-green-500 w-full'
-            }`}
-          />
-        </div>
-        <span className={`text-sm font-medium ${getPasswordStrengthColor(strength.score)}`}>
+    <Box sx={{ mt: 1.5 }}>
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
+        <LinearProgress 
+          variant="determinate" 
+          value={getProgressValue(strength.score)} 
+          sx={{ 
+            flex: 1, 
+            height: 6, 
+            borderRadius: 3,
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            '& .MuiLinearProgress-bar': {
+              bgcolor: getProgressColor(strength.score),
+              borderRadius: 3,
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }
+          }}
+        />
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            fontWeight: 900, 
+            color: getProgressColor(strength.score),
+            minWidth: 70,
+            textAlign: 'right',
+            fontFamily: '"Space Grotesk", sans-serif',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontSize: '0.65rem'
+          }}
+        >
           {getPasswordStrengthLabel(strength.score)}
-        </span>
-      </div>
+        </Typography>
+      </Stack>
 
-      {/* Requirements */}
       {showRequirements && strength.feedback.length > 0 && (
-        <div className="space-y-1">
-          {strength.feedback.map((requirement, index) => (
-            <div key={index} className="flex items-center gap-2 text-xs">
-              <div className={`w-1.5 h-1.5 rounded-full ${
-                requirement.includes('must') && !strength.isValid
-                  ? 'bg-red-500'
-                  : 'bg-green-500'
-              }`} />
-              <span className={
-                requirement.includes('must') && !strength.isValid
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-green-600 dark:text-green-400'
-              }>
-                {requirement}
-              </span>
-            </div>
-          ))}
-        </div>
+        <Stack spacing={0.75} sx={{ mt: 1 }}>
+          {strength.feedback.map((requirement, index) => {
+            const isError = requirement.includes('must') && !strength.isValid;
+            return (
+              <Stack key={index} direction="row" alignItems="center" spacing={1}>
+                {isError ? (
+                  <ErrorIcon sx={{ fontSize: 14, color: '#FF453A' }} />
+                ) : (
+                  <CheckCircleIcon sx={{ fontSize: 14, color: '#00F5FF' }} />
+                )}
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: isError ? 'rgba(255, 69, 58, 0.8)' : 'rgba(0, 245, 255, 0.8)',
+                    fontFamily: '"Inter", sans-serif',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  {requirement}
+                </Typography>
+              </Stack>
+            );
+          })}
+        </Stack>
       )}
 
-      {/* Success Message */}
       {strength.isValid && (
-        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-          <span>Password meets all requirements</span>
-        </div>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+          <CheckCircleIcon sx={{ fontSize: 14, color: '#00F5FF' }} />
+          <Typography variant="caption" sx={{ color: '#00F5FF', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
+            Password meets all requirements
+          </Typography>
+        </Stack>
       )}
-    </div>
+    </Box>
   );
 };
 
-interface PasswordInputWithStrengthProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  showStrengthIndicator?: boolean;
+interface PasswordInputWithStrengthProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStrengthChange?: (strength: PasswordStrength) => void;
+  label?: string;
+  placeholder?: string;
+  showStrengthIndicator?: boolean;
+  fullWidth?: boolean;
+  required?: boolean;
+  name?: string;
 }
 
 export const PasswordInputWithStrength: React.FC<PasswordInputWithStrengthProps> = ({
-  showStrengthIndicator = true,
+  value,
+  onChange,
   onStrengthChange,
-  className = '',
-  ...props
+  label = "Password",
+  placeholder = "Enter your password",
+  showStrengthIndicator = true,
+  fullWidth = true,
+  required = false,
+  name = "password"
 }) => {
-  const [password, setPassword] = React.useState(props.value as string || '');
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const strength = React.useMemo(() => validatePasswordStrength(password), [password]);
+  const strength = React.useMemo(() => validatePasswordStrength(value), [value]);
 
-  // Only notify parent when the derived scalar values change to avoid loops
   const lastNotifiedRef = React.useRef<{ score: number; isValid: boolean } | null>(null);
   React.useEffect(() => {
     if (!onStrengthChange) return;
@@ -99,45 +158,52 @@ export const PasswordInputWithStrength: React.FC<PasswordInputWithStrengthProps>
     }
   }, [strength.score, strength.isValid, onStrengthChange]);
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    if (props.onChange) {
-      props.onChange(e);
-    }
-  };
-
   return (
-    <div className="space-y-2">
-      <div className="relative">
-        <input
-          {...props}
-          type={showPassword ? 'text' : 'password'}
-          value={password}
-          onChange={handlePasswordChange}
-          className={`w-full px-3 py-2 pr-10 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${className}`}
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
-        >
-          {showPassword ? (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          )}
-        </button>
-      </div>
+    <Box>
+      <TextField
+        fullWidth={fullWidth}
+        label={label}
+        placeholder={placeholder}
+        type={showPassword ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        required={required}
+        name={name}
+        variant="outlined"
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+            '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+            '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
+          },
+          '& .MuiInputLabel-root': {
+            color: 'rgba(255, 255, 255, 0.5)',
+            '&.Mui-focused': { color: '#00F5FF' }
+          }
+        }}
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                  size="small"
+                  sx={{ color: 'rgba(255, 255, 255, 0.4)' }}
+                >
+                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }
+        }}
+      />
 
-      {showStrengthIndicator && password && (
-        <PasswordStrengthIndicator password={password} />
+      {showStrengthIndicator && value && (
+        <PasswordStrengthIndicator password={value} />
       )}
-    </div>
+    </Box>
   );
 };

@@ -1,7 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button, 
+  Typography, 
+  Box, 
+  TextField, 
+  Alert,
+  CircularProgress,
+  Paper
+} from '@mui/material';
 
 interface MFASettingsModalProps {
   isOpen: boolean;
@@ -24,7 +36,6 @@ export const MFASettingsModal: React.FC<MFASettingsModalProps> = ({
   onEnable,
   onDisable,
   onVerify,
-  totpSecret,
   totpQrCode,
   totpManualEntry,
 }) => {
@@ -33,8 +44,6 @@ export const MFASettingsModal: React.FC<MFASettingsModalProps> = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [step, setStep] = useState<'confirm' | 'setup' | 'verify'>('confirm');
-
-  if (!isOpen) return null;
 
   const handleEnable = async () => {
     if (factor === 'totp') {
@@ -105,131 +114,278 @@ export const MFASettingsModal: React.FC<MFASettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-bold text-foreground mb-4">
-          {factor === 'totp' ? 'Authenticator App (TOTP)' : 'Email OTP'} MFA
-        </h3>
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          backgroundImage: 'none',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5)',
+        }
+      }}
+    >
+      <DialogTitle sx={{ 
+        fontWeight: 900, 
+        fontFamily: '"Space Grotesk", sans-serif',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        color: '#00F5FF',
+        pt: 3
+      }}>
+        {factor === 'totp' ? 'Authenticator App' : 'Email OTP'} MFA
+      </DialogTitle>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-          </div>
-        )}
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                borderRadius: '12px',
+                bgcolor: 'rgba(255, 69, 58, 0.1)',
+                color: '#FF453A',
+                border: '1px solid rgba(255, 69, 58, 0.2)',
+                '& .MuiAlert-icon': { color: '#FF453A' }
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert 
+              severity="success" 
+              sx={{ 
+                borderRadius: '12px',
+                bgcolor: 'rgba(0, 245, 255, 0.1)',
+                color: '#00F5FF',
+                border: '1px solid rgba(0, 245, 255, 0.2)',
+                '& .MuiAlert-icon': { color: '#00F5FF' }
+              }}
+            >
+              {success}
+            </Alert>
+          )}
 
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
-            <p className="text-sm text-green-700 dark:text-green-300">{success}</p>
-          </div>
-        )}
-
-        {step === 'confirm' && (
-          <div className="space-y-4">
-            <p className="text-sm text-foreground/70">
+          {step === 'confirm' && (
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: '"Inter", sans-serif' }}>
               {isEnabled
                 ? `${factor === 'totp' ? 'TOTP' : 'Email'} MFA is currently enabled. You can disable it if you no longer need it.`
                 : `Enable ${factor === 'totp' ? 'TOTP' : 'Email'} MFA to add an extra layer of security to your account.`}
-            </p>
-            <div className="flex gap-3">
-              <Button variant="secondary" onClick={handleClose} disabled={loading}>
-                Cancel
-              </Button>
-              {isEnabled ? (
-                <Button
-                  variant="destructive"
-                  onClick={handleDisable}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  {loading ? 'Disabling...' : 'Disable MFA'}
-                </Button>
-              ) : (
-                <Button onClick={handleEnable} disabled={loading} className="flex-1">
-                  {loading ? 'Enabling...' : 'Enable MFA'}
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+            </Typography>
+          )}
 
-        {step === 'setup' && factor === 'totp' && (
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-medium text-foreground mb-3">
+          {step === 'setup' && factor === 'totp' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.9)', fontFamily: '"Inter", sans-serif' }}>
                 Scan this QR code with your authenticator app:
-              </p>
+              </Typography>
               {totpQrCode && (
-                <div className="bg-white p-4 rounded-lg flex justify-center">
-                  <img src={totpQrCode} alt="TOTP QR Code" className="w-48 h-48" />
-                </div>
+                <Paper sx={{ 
+                  p: 2, 
+                  bgcolor: '#fff', 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  borderRadius: '16px',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
+                }}>
+                  <img src={totpQrCode} alt="TOTP QR Code" style={{ width: 192, height: 192 }} />
+                </Paper>
               )}
-            </div>
-
-            {totpManualEntry && (
-              <div>
-                <p className="text-sm font-medium text-foreground mb-2">Or enter this code manually:</p>
-                <code className="block bg-background p-3 rounded-lg text-sm text-foreground break-all border border-border">
-                  {totpManualEntry}
-                </code>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Enter 6-digit code from your authenticator:
-              </label>
-              <input
-                type="text"
-                maxLength={6}
+              {totpManualEntry && (
+                <Box>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600 }}>
+                    Or enter this code manually:
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      p: 1.5, 
+                      bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                      borderRadius: '12px', 
+                      fontFamily: 'monospace',
+                      wordBreak: 'break-all',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: '#00F5FF',
+                      textAlign: 'center',
+                      letterSpacing: '0.1em'
+                    }}
+                  >
+                    {totpManualEntry}
+                  </Typography>
+                </Box>
+              )}
+              <TextField
+                fullWidth
+                label="6-digit code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-accent"
+                slotProps={{ 
+                  htmlInput: { 
+                    maxLength: 6, 
+                    style: { 
+                      textAlign: 'center', 
+                      letterSpacing: '0.5em', 
+                      fontSize: '1.5rem', 
+                      fontWeight: 900,
+                      fontFamily: '"Space Grotesk", sans-serif',
+                      color: '#00F5FF'
+                    } 
+                  },
+                  inputLabel: {
+                    sx: {
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      '&.Mui-focused': { color: '#00F5FF' }
+                    }
+                  }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                    '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
+                  }
+                }}
+                variant="outlined"
               />
-            </div>
+            </Box>
+          )}
 
-            <div className="flex gap-3">
-              <Button variant="secondary" onClick={handleClose} disabled={loading}>
-                Cancel
-              </Button>
-              <Button onClick={handleVerifyTOTP} disabled={loading || otp.length !== 6} className="flex-1">
-                {loading ? 'Verifying...' : 'Verify & Enable'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 'verify' && factor === 'email' && (
-          <div className="space-y-4">
-            <p className="text-sm text-foreground/70">
-              A verification code has been sent to your email. Please enter it below:
-            </p>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Enter verification code:
-              </label>
-              <input
-                type="text"
-                maxLength={6}
+          {step === 'verify' && factor === 'email' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: '"Inter", sans-serif' }}>
+                A verification code has been sent to your email. Please enter it below:
+              </Typography>
+              <TextField
+                fullWidth
+                label="Verification code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-accent"
+                slotProps={{ 
+                  htmlInput: { 
+                    maxLength: 6, 
+                    style: { 
+                      textAlign: 'center', 
+                      letterSpacing: '0.5em', 
+                      fontSize: '1.5rem', 
+                      fontWeight: 900,
+                      fontFamily: '"Space Grotesk", sans-serif',
+                      color: '#00F5FF'
+                    } 
+                  },
+                  inputLabel: {
+                    sx: {
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      '&.Mui-focused': { color: '#00F5FF' }
+                    }
+                  }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                    '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
+                  }
+                }}
+                variant="outlined"
               />
-            </div>
+            </Box>
+          )}
+        </Box>
+      </DialogContent>
 
-            <div className="flex gap-3">
-              <Button variant="secondary" onClick={handleClose} disabled={loading}>
-                Cancel
-              </Button>
-              <Button onClick={handleVerifyTOTP} disabled={loading || otp.length !== 6} className="flex-1">
-                {loading ? 'Verifying...' : 'Verify & Enable'}
-              </Button>
-            </div>
-          </div>
+      <DialogActions sx={{ p: 3, pt: 1, gap: 1.5 }}>
+        <Button 
+          onClick={handleClose} 
+          disabled={loading} 
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontWeight: 700,
+            fontFamily: '"Space Grotesk", sans-serif',
+            textTransform: 'uppercase'
+          }}
+        >
+          Cancel
+        </Button>
+        {step === 'confirm' ? (
+          isEnabled ? (
+            <Button 
+              variant="contained" 
+              onClick={handleDisable} 
+              disabled={loading}
+              sx={{ 
+                borderRadius: '12px', 
+                flex: 1,
+                bgcolor: 'rgba(255, 69, 58, 0.1)',
+                color: '#FF453A',
+                border: '1px solid rgba(255, 69, 58, 0.2)',
+                fontWeight: 900,
+                fontFamily: '"Space Grotesk", sans-serif',
+                textTransform: 'uppercase',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 69, 58, 0.2)',
+                }
+              }}
+            >
+              {loading ? <CircularProgress size={20} sx={{ color: '#FF453A' }} /> : 'Disable MFA'}
+            </Button>
+          ) : (
+            <Button 
+              variant="contained" 
+              onClick={handleEnable} 
+              disabled={loading}
+              sx={{ 
+                borderRadius: '12px', 
+                flex: 1,
+                bgcolor: '#00F5FF',
+                color: '#000',
+                fontWeight: 900,
+                fontFamily: '"Space Grotesk", sans-serif',
+                textTransform: 'uppercase',
+                '&:hover': {
+                  bgcolor: '#00D1D9',
+                }
+              }}
+            >
+              {loading ? <CircularProgress size={20} sx={{ color: '#000' }} /> : 'Enable MFA'}
+            </Button>
+          )
+        ) : (
+          <Button 
+            variant="contained" 
+            onClick={handleVerifyTOTP} 
+            disabled={loading || otp.length !== 6}
+            sx={{ 
+              borderRadius: '12px', 
+              flex: 1,
+              bgcolor: '#00F5FF',
+              color: '#000',
+              fontWeight: 900,
+              fontFamily: '"Space Grotesk", sans-serif',
+              textTransform: 'uppercase',
+              '&:hover': {
+                bgcolor: '#00D1D9',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.2)'
+              }
+            }}
+          >
+            {loading ? <CircularProgress size={20} sx={{ color: '#000' }} /> : 'Verify & Enable'}
+          </Button>
         )}
-      </div>
-    </div>
+      </DialogActions>
+    </Dialog>
   );
 };
+

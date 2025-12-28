@@ -1,9 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input';
-import { Modal } from '@/components/ui/modal';
+import { 
+  Box, 
+  Typography, 
+  Stack, 
+  Button, 
+  TextField, 
+  Tabs, 
+  Tab, 
+  Grid, 
+  CircularProgress, 
+  Container,
+  Card,
+  CardContent,
+  IconButton,
+  Chip,
+  alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from '@mui/material';
+import { 
+  Add as AddIcon, 
+  Search as SearchIcon, 
+  Extension as ExtensionIcon,
+  Person as PersonIcon,
+  Download as DownloadIcon,
+  Settings as SettingsIcon
+} from '@mui/icons-material';
 import { Extensions } from '@/types/appwrite';
 import { listExtensions, createExtension, updateExtension, getCurrentUser } from '@/lib/appwrite';
 
@@ -14,7 +40,7 @@ interface ExtensionTemplate {
   icon: string;
   category: string;
   hooks: string[];
-   settings: Record<string, unknown>;
+  settings: Record<string, unknown>;
   code: string;
 }
 
@@ -128,9 +154,9 @@ export default function ExtensionsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ExtensionTemplate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'marketplace' | 'installed' | 'templates'>('marketplace');
+  const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
-   const [user, setUser] = useState<{ $id?: string } | null>(null);
+  const [user, setUser] = useState<{ $id?: string } | null>(null);
 
   useEffect(() => {
     loadExtensions();
@@ -193,123 +219,166 @@ export default function ExtensionsPage() {
 
   const installedExtensions = extensions.filter(ext => ext.enabled);
 
+  const tabs = [
+    { label: 'Marketplace', count: extensions.length },
+    { label: 'Installed', count: installedExtensions.length },
+    { label: 'Templates', count: extensionTemplates.length }
+  ];
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
+    <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', color: 'white', p: { xs: 2, md: 6 } }}>
+      <Container maxWidth="xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+        <Stack 
+          direction={{ xs: 'column', md: 'row' }} 
+          justifyContent="space-between" 
+          alignItems={{ xs: 'flex-start', md: 'center' }} 
+          spacing={3} 
+          sx={{ mb: 6 }}
+        >
+          <Box>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                fontFamily: 'var(--font-space-grotesk)',
+                background: 'linear-gradient(90deg, #fff, #00F5FF)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1
+              }}
+            >
               Extensions Marketplace
-            </h1>
-            <p className="text-muted">
+            </Typography>
+            <Typography variant="h6" sx={{ opacity: 0.6, fontWeight: 400 }}>
               Extend Whisperrnote with powerful plugins and automations
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Button
+            variant="contained"
+            startIcon={<AddIcon />}
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+            sx={{
+              bgcolor: '#00F5FF',
+              color: 'black',
+              fontWeight: 900,
+              px: 4,
+              py: 1.5,
+              borderRadius: '12px',
+              '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+            }}
           >
-            <span className="mr-2">+</span>
             Create Extension
           </Button>
-        </div>
+        </Stack>
 
-        {/* Tabs */}
-        <div className="flex space-x-1 mb-6">
-          {[
-            { id: 'marketplace', label: 'Marketplace', count: extensions.length },
-            { id: 'installed', label: 'Installed', count: installedExtensions.length },
-            { id: 'templates', label: 'Templates', count: extensionTemplates.length }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-               onClick={() => setActiveTab(tab.id as 'marketplace' | 'installed' | 'templates')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-muted hover:text-foreground'
-              }` }
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
+        {/* Tabs & Search */}
+        <Stack spacing={4} sx={{ mb: 6 }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(_, v) => setActiveTab(v)}
+            sx={{
+              '& .MuiTabs-indicator': { bgcolor: '#00F5FF' },
+              '& .MuiTab-root': { 
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontWeight: 700,
+                fontSize: '1rem',
+                '&.Mui-selected': { color: '#00F5FF' }
+              }
+            }}
+          >
+            {tabs.map((tab, i) => (
+              <Tab key={i} label={`${tab.label} (${tab.count})`} />
+            ))}
+          </Tabs>
 
-        {/* Search */}
-        <div className="mb-6">
-          <Input
+          <TextField
+            fullWidth
             placeholder="Search extensions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-md"
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, opacity: 0.5 }} />,
+              sx: {
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '16px',
+                color: 'white',
+                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+              }
+            }}
+            sx={{ maxWidth: 500 }}
           />
-        </div>
+        </Stack>
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-          </div>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
+            <CircularProgress sx={{ color: '#00F5FF' }} />
+          </Box>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeTab === 'marketplace' && filteredExtensions.map((extension) => (
-              <ExtensionCard
-                key={extension.$id}
-                extension={extension}
-                onToggle={handleToggleExtension}
-                isOwner={extension.authorId === user?.$id}
-              />
+          <Grid container spacing={3}>
+            {activeTab === 0 && filteredExtensions.map((extension) => (
+              <Grid item xs={12} md={6} lg={4} key={extension.$id}>
+                <ExtensionCard
+                  extension={extension}
+                  onToggle={handleToggleExtension}
+                  isOwner={extension.authorId === user?.$id}
+                />
+              </Grid>
             ))}
 
-            {activeTab === 'installed' && installedExtensions.map((extension) => (
-              <ExtensionCard
-                key={extension.$id}
-                extension={extension}
-                onToggle={handleToggleExtension}
-                isOwner={extension.authorId === user?.$id}
-              />
+            {activeTab === 1 && installedExtensions.map((extension) => (
+              <Grid item xs={12} md={6} lg={4} key={extension.$id}>
+                <ExtensionCard
+                  extension={extension}
+                  onToggle={handleToggleExtension}
+                  isOwner={extension.authorId === user?.$id}
+                />
+              </Grid>
             ))}
 
-            {activeTab === 'templates' && extensionTemplates
+            {activeTab === 2 && extensionTemplates
               .filter(template =>
                 template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 template.description.toLowerCase().includes(searchQuery.toLowerCase())
               )
               .map((template) => (
-                <TemplateCard
-                  key={template.id}
-                  template={template}
-                  onUse={() => {
-                    setSelectedTemplate(template);
-                    setIsCreateModalOpen(true);
-                  }}
-                />
+                <Grid item xs={12} md={6} lg={4} key={template.id}>
+                  <TemplateCard
+                    template={template}
+                    onUse={() => {
+                      setSelectedTemplate(template);
+                      setIsCreateModalOpen(true);
+                    }}
+                  />
+                </Grid>
               ))}
-          </div>
+          </Grid>
         )}
 
         {/* Empty State */}
         {!loading && (
-          (activeTab === 'marketplace' && filteredExtensions.length === 0) ||
-          (activeTab === 'installed' && installedExtensions.length === 0) ||
-          (activeTab === 'templates' && extensionTemplates.length === 0)
+          (activeTab === 0 && filteredExtensions.length === 0) ||
+          (activeTab === 1 && installedExtensions.length === 0) ||
+          (activeTab === 2 && extensionTemplates.length === 0)
         ) && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-medium text-muted mb-2">
-              {activeTab === 'marketplace' && 'No extensions found'}
-              {activeTab === 'installed' && 'No extensions installed'}
-              {activeTab === 'templates' && 'No templates available'}
-            </h3>
-            <p className="text-muted">
-              {activeTab === 'marketplace' && 'Try adjusting your search or create a new extension'}
-              {activeTab === 'installed' && 'Browse the marketplace to install extensions'}
-              {activeTab === 'templates' && 'Check back later for new templates'}
-            </p>
-          </div>
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Typography variant="h1" sx={{ mb: 2 }}>📦</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+              {activeTab === 0 && 'No extensions found'}
+              {activeTab === 1 && 'No extensions installed'}
+              {activeTab === 2 && 'No templates available'}
+            </Typography>
+            <Typography sx={{ opacity: 0.6 }}>
+              {activeTab === 0 && 'Try adjusting your search or create a new extension'}
+              {activeTab === 1 && 'Browse the marketplace to install extensions'}
+              {activeTab === 2 && 'Check back later for new templates'}
+            </Typography>
+          </Box>
         )}
-      </div>
+      </Container>
 
       {/* Create Extension Modal */}
       <CreateExtensionModal
@@ -321,7 +390,7 @@ export default function ExtensionsPage() {
         onSubmit={handleCreateExtension}
         template={selectedTemplate}
       />
-    </div>
+    </Box>
   );
 }
 
@@ -331,42 +400,100 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   isOwner: boolean;
 }) {
   return (
-    <div className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <span className="text-white text-lg">📦</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground">{extension.name}</h3>
-            <p className="text-sm text-muted">v{extension.version}</p>
-          </div>
-        </div>
-        {isOwner && (
-          <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full">
-            Owner
-          </span>
-        )}
-      </div>
+    <Card 
+      sx={{ 
+        bgcolor: 'rgba(10, 10, 10, 0.95)', 
+        backdropFilter: 'blur(25px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        height: '100%',
+        transition: 'all 0.3s ease',
+        '&:hover': { 
+          transform: 'translateY(-4px)', 
+          borderColor: alpha('#00F5FF', 0.3),
+          boxShadow: `0 8px 32px ${alpha('#00F5FF', 0.1)}`
+        }
+      }}
+    >
+      <CardContent sx={{ p: 4 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box 
+              sx={{ 
+                width: 48, 
+                height: 48, 
+                borderRadius: '12px', 
+                bgcolor: alpha('#00F5FF', 0.1),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#00F5FF'
+              }}
+            >
+              <ExtensionIcon />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+                {extension.name}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+                v{extension.version}
+              </Typography>
+            </Box>
+          </Stack>
+          {isOwner && (
+            <Chip 
+              label="Owner" 
+              size="small" 
+              sx={{ 
+                bgcolor: alpha('#00F5FF', 0.1), 
+                color: '#00F5FF', 
+                fontWeight: 800,
+                fontSize: '0.65rem'
+              }} 
+            />
+          )}
+        </Stack>
 
-      <p className="text-muted text-sm mb-4 line-clamp-3">
-        {extension.description}
-      </p>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 text-sm text-muted">
-          <span>👤</span>
-          <span>Author</span>
-        </div>
-        <Button
-          onClick={() => onToggle(extension)}
-          variant={extension.enabled ? "destructive" : "default"}
-          size="sm"
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            opacity: 0.7, 
+            mb: 4, 
+            minHeight: 60,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
         >
-          {extension.enabled ? 'Disable' : 'Enable'}
-        </Button>
-      </div>
-    </div>
+          {extension.description}
+        </Typography>
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ opacity: 0.5 }}>
+            <PersonIcon sx={{ fontSize: 16 }} />
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>Author</Typography>
+          </Stack>
+          <Button
+            onClick={() => onToggle(extension)}
+            variant="contained"
+            size="small"
+            sx={{
+              bgcolor: extension.enabled ? alpha('#ff4444', 0.1) : alpha('#00F5FF', 0.1),
+              color: extension.enabled ? '#ff4444' : '#00F5FF',
+              fontWeight: 900,
+              borderRadius: '8px',
+              '&:hover': { 
+                bgcolor: extension.enabled ? alpha('#ff4444', 0.2) : alpha('#00F5FF', 0.2) 
+              }
+            }}
+          >
+            {extension.enabled ? 'Disable' : 'Enable'}
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -375,42 +502,110 @@ function TemplateCard({ template, onUse }: {
   onUse: () => void;
 }) {
   return (
-    <div className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-            <span className="text-white text-lg">{template.icon}</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground">{template.name}</h3>
-            <p className="text-sm text-muted">{template.category}</p>
-          </div>
-        </div>
-        <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full">
-          Template
-        </span>
-      </div>
+    <Card 
+      sx={{ 
+        bgcolor: 'rgba(10, 10, 10, 0.95)', 
+        backdropFilter: 'blur(25px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        height: '100%',
+        transition: 'all 0.3s ease',
+        '&:hover': { 
+          transform: 'translateY(-4px)', 
+          borderColor: alpha('#A855F7', 0.3),
+          boxShadow: `0 8px 32px ${alpha('#A855F7', 0.1)}`
+        }
+      }}
+    >
+      <CardContent sx={{ p: 4 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box 
+              sx={{ 
+                width: 48, 
+                height: 48, 
+                borderRadius: '12px', 
+                bgcolor: alpha('#A855F7', 0.1),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem'
+              }}
+            >
+              {template.icon}
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+                {template.name}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+                {template.category}
+              </Typography>
+            </Box>
+          </Stack>
+          <Chip 
+            label="Template" 
+            size="small" 
+            sx={{ 
+              bgcolor: alpha('#4ade80', 0.1), 
+              color: '#4ade80', 
+              fontWeight: 800,
+              fontSize: '0.65rem'
+            }} 
+          />
+        </Stack>
 
-      <p className="text-light-600 dark:text-dark-300 text-sm mb-4 line-clamp-3">
-        {template.description}
-      </p>
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            opacity: 0.7, 
+            mb: 3, 
+            minHeight: 60,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
+          {template.description}
+        </Typography>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {template.hooks.map((hook) => (
-          <span
-            key={hook}
-            className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-full"
-          >
-            {hook}
-          </span>
-        ))}
-      </div>
+        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 4 }}>
+          {template.hooks.map((hook) => (
+            <Chip 
+              key={hook} 
+              label={hook} 
+              size="small" 
+              sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                color: 'white', 
+                fontSize: '0.65rem',
+                fontWeight: 600
+              }} 
+            />
+          ))}
+        </Stack>
 
-      <Button onClick={onUse} className="w-full" variant="outline">
-        <span className="mr-2">⬇️</span>
-        Use Template
-      </Button>
-    </div>
+        <Button 
+          fullWidth 
+          onClick={onUse} 
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          sx={{
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            fontWeight: 800,
+            borderRadius: '12px',
+            '&:hover': { 
+              borderColor: '#00F5FF',
+              bgcolor: alpha('#00F5FF', 0.05)
+            }
+          }}
+        >
+          Use Template
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -454,68 +649,147 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Extension">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-light-700 dark:text-dark-300 mb-2">
-            Extension Name
-          </label>
-          <Input
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="My Awesome Extension"
-          />
-        </div>
+    <Dialog 
+      open={isOpen} 
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          color: 'white',
+          maxWidth: 'sm',
+          fullWidth: true
+        }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', fontSize: '1.5rem' }}>
+        Create Extension
+      </DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} sx={{ mt: 1 }}>
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+              Extension Name
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="My Awesome Extension"
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                }
+              }}
+            />
+          </Box>
 
-        <div>
-          <label className="block text-sm font-medium text-light-700 dark:text-dark-300 mb-2">
-            Description
-          </label>
-          <textarea
-            required
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Describe what your extension does..."
-            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
-            rows={3}
-          />
-        </div>
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe what your extension does..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                }
+              }}
+            />
+          </Box>
 
-        <div>
-          <label className="block text-sm font-medium text-light-700 dark:text-dark-300 mb-2">
-            Version
-          </label>
-          <Input
-            required
-            value={formData.version}
-            onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-            placeholder="1.0.0"
-          />
-        </div>
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+              Version
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              value={formData.version}
+              onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+              placeholder="1.0.0"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                }
+              }}
+            />
+          </Box>
 
-        <div>
-          <label className="block text-sm font-medium text-light-700 dark:text-dark-300 mb-2">
-            Settings (JSON)
-          </label>
-          <textarea
-            value={formData.settings}
-            onChange={(e) => setFormData({ ...formData, settings: e.target.value })}
-            placeholder='{"setting1": "value1"}'
-            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground font-mono text-sm"
-            rows={6}
-          />
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
-            Create Extension
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+              Settings (JSON)
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={6}
+              value={formData.settings}
+              onChange={(e) => setFormData({ ...formData, settings: e.target.value })}
+              placeholder='{"setting1": "value1"}'
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                }
+              }}
+            />
+          </Box>
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ p: 3, pt: 0 }}>
+        <Button 
+          onClick={onClose} 
+          sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            bgcolor: '#00F5FF',
+            color: 'black',
+            fontWeight: 900,
+            px: 3,
+            borderRadius: '10px',
+            '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+          }}
+        >
+          Create Extension
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

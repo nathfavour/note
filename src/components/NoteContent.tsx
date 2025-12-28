@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import DoodleCanvas from '@/components/DoodleCanvas';
 import DoodleViewer from '@/components/DoodleViewer';
-import { Box, Typography, Button, TextField, Paper } from '@mui/material';
-import { Edit as EditIcon, Brush as BrushIcon } from '@mui/icons-material';
+import { Box, Typography, Button, TextField, Paper, alpha } from '@mui/material';
+import { Edit as EditIcon, Brush as BrushIcon, TextFields as TextIcon } from '@mui/icons-material';
 
 interface NoteContentProps {
   format?: 'text' | 'doodle';
@@ -44,7 +44,7 @@ export default function NoteContent({
 
   if (format === 'doodle') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {content && (
           <DoodleViewer data={content} onEdit={handleEditDoodle} />
         )}
@@ -54,13 +54,17 @@ export default function NoteContent({
             variant="outlined" 
             sx={{ 
               textAlign: 'center', 
-              py: 6, 
-              borderRadius: 3, 
+              py: 8, 
+              borderRadius: '24px', 
               borderStyle: 'dashed',
-              bgcolor: 'transparent'
+              borderWidth: 2,
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              bgcolor: 'rgba(255, 255, 255, 0.02)',
+              backdropFilter: 'blur(10px)'
             }}
           >
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
+            <BrushIcon sx={{ fontSize: 48, color: 'rgba(255, 255, 255, 0.2)', mb: 2 }} />
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 3, fontWeight: 500 }}>
               No doodle yet
             </Typography>
             <Button 
@@ -68,19 +72,34 @@ export default function NoteContent({
               onClick={handleSwitchToDoodle} 
               disabled={disabled}
               startIcon={<BrushIcon />}
+              sx={{
+                bgcolor: '#00F5FF',
+                color: '#000',
+                fontWeight: 900,
+                borderRadius: '12px',
+                px: 3,
+                '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+              }}
             >
               Create Doodle
             </Button>
           </Paper>
         )}
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           {content && (
             <Button
               variant="outlined"
               onClick={handleEditDoodle}
               disabled={disabled}
               startIcon={<EditIcon />}
+              sx={{
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 700,
+                '&:hover': { borderColor: '#00F5FF', color: '#00F5FF', bgcolor: alpha('#00F5FF', 0.05) }
+              }}
             >
               Edit Doodle
             </Button>
@@ -89,7 +108,12 @@ export default function NoteContent({
             variant="text"
             onClick={handleSwitchToText}
             disabled={disabled}
-            size="small"
+            startIcon={<TextIcon />}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontWeight: 700,
+              '&:hover': { color: 'white' }
+            }}
           >
             Switch to Text
           </Button>
@@ -114,33 +138,57 @@ export default function NoteContent({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         multiline
-        minRows={8}
+        minRows={12}
         fullWidth
         inputProps={{ maxLength: 65000 }}
         sx={{
           '& .MuiOutlinedInput-root': {
-            borderRadius: 3,
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '24px',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            p: 3,
+            fontSize: '1.1rem',
+            lineHeight: 1.6,
+            color: 'rgba(255, 255, 255, 0.9)',
             '& fieldset': {
-              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(255, 255, 255, 0.05)',
+              transition: 'border-color 0.3s'
             },
+            '&:hover fieldset': {
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: alpha('#00F5FF', 0.3),
+              borderWidth: '1px'
+            }
           },
+          '& .MuiInputBase-input::placeholder': {
+            color: 'rgba(255, 255, 255, 0.2)',
+            opacity: 1
+          }
         }}
       />
 
-      <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'right' }}>
-        {content.length}/65000 characters
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Button
+          variant="outlined"
+          onClick={handleSwitchToDoodle}
+          disabled={disabled}
+          startIcon={<BrushIcon />}
+          sx={{
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            borderRadius: '12px',
+            fontWeight: 700,
+            '&:hover': { borderColor: '#00F5FF', color: '#00F5FF', bgcolor: alpha('#00F5FF', 0.05) }
+          }}
+        >
+          Create Doodle
+        </Button>
 
-      <Button
-        variant="outlined"
-        onClick={handleSwitchToDoodle}
-        disabled={disabled}
-        startIcon={<BrushIcon />}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        Create Doodle
-      </Button>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 600, letterSpacing: '0.05em' }}>
+          {content.length.toLocaleString()} / 65,000
+        </Typography>
+      </Box>
 
       {showDoodleEditor && (
         <DoodleCanvas
@@ -152,4 +200,5 @@ export default function NoteContent({
     </Box>
   );
 }
+
 

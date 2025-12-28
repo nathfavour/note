@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import rehypeSanitize from 'rehype-sanitize';
+import { Box, Typography, alpha } from '@mui/material';
 import NoteContentDisplay from '@/components/NoteContentDisplay';
 import { LinkComponent } from '@/components/LinkRenderer';
 import { preProcessMarkdown } from '@/lib/markdown';
@@ -12,23 +13,15 @@ import { preProcessMarkdown } from '@/lib/markdown';
 interface NoteContentRendererProps {
   content?: string | null;
   format?: 'text' | 'doodle' | null;
-  className?: string;
-  textClassName?: string;
-  doodleClassName?: string;
   emptyFallback?: React.ReactNode;
   preview?: boolean;
   onEditDoodle?: () => void;
 }
 
-const BASE_PROSE = 'prose prose-lg max-w-none dark:prose-invert [&>*]:leading-relaxed [&>p]:mb-6 [&>h1]:mb-8 [&>h1]:mt-8 [&>h2]:mb-6 [&>h2]:mt-7 [&>h3]:mb-4 [&>h3]:mt-6 [&>ul]:mb-6 [&>ol]:mb-6 [&>ol>li]:marker:font-bold [&>blockquote]:mb-6 [&>pre]:mb-6 [&>*:first-child]:mt-0 [&_ol]:list-decimal [&_ul]:list-disc [&_li]:ml-4';
-
 export function NoteContentRenderer({
   content,
   format = 'text',
-  className = '',
-  textClassName = '',
-  doodleClassName = '',
-  emptyFallback = <span className="italic text-muted">This note is empty.</span>,
+  emptyFallback = <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)' }}>This note is empty.</Typography>,
   preview = false,
   onEditDoodle,
 }: NoteContentRendererProps) {
@@ -39,7 +32,6 @@ export function NoteContentRenderer({
       <NoteContentDisplay
         content={content || ''}
         format="doodle"
-        className={`${className} ${doodleClassName}`.trim()}
         preview={preview}
         onEditDoodle={onEditDoodle}
       />
@@ -48,11 +40,85 @@ export function NoteContentRenderer({
 
   const trimmed = content?.trim();
   if (!trimmed) {
-    return <div className={className}>{emptyFallback}</div>;
+    return <Box>{emptyFallback}</Box>;
   }
 
   return (
-    <div className={`${BASE_PROSE} ${className} ${textClassName}`.trim()}>
+    <Box 
+      sx={{
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontSize: '1.125rem',
+        lineHeight: 1.75,
+        '& p': { mb: 3 },
+        '& h1': { 
+          fontSize: '2.25rem', 
+          fontWeight: 900, 
+          mb: 4, 
+          mt: 4, 
+          color: 'white',
+          letterSpacing: '-0.02em'
+        },
+        '& h2': { 
+          fontSize: '1.875rem', 
+          fontWeight: 800, 
+          mb: 3, 
+          mt: 4, 
+          color: 'white',
+          letterSpacing: '-0.01em'
+        },
+        '& h3': { 
+          fontSize: '1.5rem', 
+          fontWeight: 700, 
+          mb: 2, 
+          mt: 3, 
+          color: 'white' 
+        },
+        '& ul, & ol': { mb: 3, pl: 4 },
+        '& li': { mb: 1 },
+        '& blockquote': {
+          borderLeft: '4px solid #00F5FF',
+          pl: 3,
+          py: 1,
+          my: 4,
+          bgcolor: alpha('#00F5FF', 0.05),
+          borderRadius: '0 12px 12px 0',
+          fontStyle: 'italic',
+          color: 'rgba(255, 255, 255, 0.8)'
+        },
+        '& code': {
+          bgcolor: 'rgba(255, 255, 255, 0.1)',
+          px: 1,
+          py: 0.5,
+          borderRadius: '6px',
+          fontSize: '0.9em',
+          fontFamily: 'monospace',
+          color: '#00F5FF'
+        },
+        '& pre': {
+          bgcolor: 'rgba(0, 0, 0, 0.3)',
+          p: 3,
+          borderRadius: '16px',
+          overflowX: 'auto',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          my: 4,
+          '& code': {
+            bgcolor: 'transparent',
+            p: 0,
+            color: 'inherit'
+          }
+        },
+        '& img': {
+          maxWidth: '100%',
+          borderRadius: '16px',
+          my: 4
+        },
+        '& hr': {
+          border: 'none',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          my: 6
+        }
+      }}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}
@@ -62,8 +128,9 @@ export function NoteContentRenderer({
       >
         {preProcessMarkdown(trimmed)}
       </ReactMarkdown>
-    </div>
+    </Box>
   );
 }
 
 export default NoteContentRenderer;
+

@@ -1,10 +1,31 @@
+'use client';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  IconButton, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemIcon,
+  LinearProgress,
+  Paper,
+  Stack,
+  Alert,
+  CircularProgress,
+  alpha,
+  useTheme
+} from '@mui/material';
+import { 
+  CloudUpload as UploadIcon, 
+  Delete as DeleteIcon, 
+  OpenInNew as OpenIcon,
+  Refresh as RefreshIcon,
+  AttachFile as FileIcon
+} from '@mui/icons-material';
 import { formatFileSize } from '@/lib/utils';
-// Simple className join helper (local)
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ');
-}
 
 interface AttachmentMeta {
   id: string;
@@ -16,7 +37,6 @@ interface AttachmentMeta {
 
 interface AttachmentsManagerProps {
   noteId: string;
-  className?: string;
 }
 
 interface UploadingFile {
@@ -27,13 +47,14 @@ interface UploadingFile {
   error?: string;
 }
 
-export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, className }) => {
+export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId }) => {
   const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const theme = useTheme();
 
   const fetchAttachments = useCallback(async () => {
     try {
@@ -52,7 +73,6 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
   useEffect(() => {
     if (noteId) {
       fetchAttachments();
-      // Reset transient uploading state when note changes
       setUploading([]);
       setError(null);
     }
@@ -66,7 +86,6 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
       progress: 0,
       status: 'uploading'
     }));
-    // Pre-add batch immutably
     setUploading(prev => [...prev, ...batch]);
 
     for (const temp of batch) {
@@ -80,11 +99,9 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
         setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 100, status: 'error', error: e.message || 'Upload failed' } : u));
       }
     }
-    // After all done, prune successful; keep errors for retry for a bit then remove
     setTimeout(() => {
       setUploading(cur => cur.filter(u => u.status === 'error'));
     }, 1200);
-    // Remove errors after longer delay (user saw them)
     setTimeout(() => {
       setUploading(cur => cur.filter(u => u.status !== 'error'));
     }, 8000);
@@ -117,101 +134,234 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     }
   };
 
-
-
   return (
-    <div className={cn('space-y-4', className)}>
-      <div
-        className={cn('border-2 border-dashed rounded-xl p-4 text-center transition-colors cursor-pointer bg-muted/30', dragActive ? 'border-accent bg-accent/10' : 'border-border')}
-        onClick={triggerSelect}
+    <Stack spacing={3}>
+      <Paper
+        variant="outlined"
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
+        onClick={triggerSelect}
+        sx={{
+          p: 4,
+          textAlign: 'center',
+          cursor: 'pointer',
+          borderStyle: 'dashed',
+          borderWidth: 2,
+          borderColor: dragActive ? '#00F5FF' : 'rgba(255, 255, 255, 0.1)',
+          bgcolor: dragActive ? alpha('#00F5FF', 0.05) : 'rgba(255, 255, 255, 0.02)',
+          borderRadius: '24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          backdropFilter: 'blur(10px)',
+          '&:hover': {
+            borderColor: '#00F5FF',
+            bgcolor: alpha('#00F5FF', 0.05),
+            transform: 'translateY(-2px)',
+            boxShadow: `0 8px 24px ${alpha('#00F5FF', 0.1)}`
+          }
+        }}
       >
-        <input ref={inputRef} type="file" className="hidden" onChange={onInputChange} />
-        <p className="text-sm font-medium">Drag & drop or click to upload</p>
-        <p className="text-xs text-muted-foreground mt-1">Per-file size limited by your plan.</p>
-      </div>
+        <input ref={inputRef} type="file" style={{ display: 'none' }} onChange={onInputChange} multiple />
+        <UploadIcon sx={{ fontSize: 48, color: '#00F5FF', mb: 2, opacity: 0.8 }} />
+        <Typography variant="body1" sx={{ fontWeight: 800, color: 'white', mb: 0.5 }}>
+          Drag & drop or click to upload
+        </Typography>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>
+          Per-file size limited by your plan.
+        </Typography>
+      </Paper>
 
       {uploading.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Uploading</p>
+        <Stack spacing={1.5}>
+          <Typography variant="caption" sx={{ fontWeight: 900, textTransform: 'uppercase', color: '#00F5FF', letterSpacing: '0.1em' }}>
+            Uploading
+          </Typography>
           {uploading.map(u => (
-            <div key={u.tempId} className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-xs">
-              <div className="truncate max-w-[50%]">{u.file.name}</div>
-              <div className="flex items-center gap-2">
-                <div className="w-32 h-1 bg-border rounded overflow-hidden">
-                  <div className={cn('h-full bg-accent transition-all', u.status === 'error' && 'bg-destructive')} style={{ width: `${u.progress}%` }} />
-                </div>
-                <span>
-                  {u.status === 'error' ? 'Error' : (u.progress === 100 ? (u.status === 'done' ? 'Done' : 'Fin') : `${u.progress}%`)}
-                </span>
+            <Paper 
+              key={u.tempId} 
+              sx={{ 
+                p: 2, 
+                bgcolor: 'rgba(255, 255, 255, 0.03)', 
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography variant="body2" sx={{ flex: 1, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {u.file.name}
+                </Typography>
+                <Box sx={{ width: 120 }}>
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={u.progress} 
+                    sx={{ 
+                      height: 6, 
+                      borderRadius: 3,
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      '& .MuiLinearProgress-bar': {
+                        bgcolor: u.status === 'error' ? '#FF3B30' : '#00F5FF',
+                        borderRadius: 3
+                      }
+                    }}
+                  />
+                </Box>
+                <Typography variant="caption" sx={{ minWidth: 40, textAlign: 'right', fontWeight: 700, color: u.status === 'error' ? '#FF3B30' : '#00F5FF' }}>
+                  {u.status === 'error' ? 'Error' : `${u.progress}%`}
+                </Typography>
                 {u.status === 'error' && (
-                  <button
-                    onClick={() => {
-                      // Retry single file
+                  <Button 
+                    size="small" 
+                    variant="text"
+                    sx={{ color: '#00F5FF', fontWeight: 800, minWidth: 'auto', p: 0 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
                       const fileList = { 0: u.file, length: 1, item: (i: number) => (i === 0 ? u.file : null) } as any as FileList;
-                      // Remove before retry
                       setUploading(cur => cur.filter(x => x.tempId !== u.tempId));
                       handleFiles(fileList);
                     }}
-                    className="text-accent hover:underline"
-                  >Retry</button>
+                  >
+                    Retry
+                  </Button>
                 )}
-              </div>
-            </div>
+              </Stack>
+            </Paper>
           ))}
-        </div>
+        </Stack>
       )}
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Attachments</p>
-          <Button size="sm" variant="outline" onClick={fetchAttachments} disabled={loading}>Refresh</Button>
-        </div>
-        {loading && <div className="text-xs text-muted-foreground">Loading...</div>}
-        {!loading && attachments.length === 0 && <div className="text-xs text-muted-foreground">No attachments yet.</div>}
-        <ul className="divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
-          {attachments.map(a => (
-            <li key={a.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs hover:bg-muted/40">
-              <div className="flex flex-col min-w-0">
-                <span className="truncate font-medium">{a.name}</span>
-                <a href={`/notes/${noteId}/${a.id}`} className="text-[10px] text-accent hover:underline">Open</a>
-                <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)} • {a.mime || 'unknown'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(`/api/notes/${noteId}/attachments/${a.id}`, { credentials: 'include' });
-                      if (!res.ok) throw new Error('Failed to get attachment URL');
-                      const data = await res.json();
-                      const url = data?.url;
-                      if (url) {
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                      } else {
-                        // Fallback: if no signed URL (disabled), attempt direct legacy route (will likely 404 if not implemented)
-                        window.open(`/api/notes/${noteId}/attachments/${a.id}?raw=1`, '_blank', 'noopener,noreferrer');
-                      }
-                    } catch (err) {
-                      setError((err as any)?.message || 'Failed to open attachment');
-                    }
-                  }}
-                  className="text-accent hover:underline"
-                >View</button>
-                <button
-                  onClick={() => deleteAttachment(a.id)}
-                  className="px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20"
-                >Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Box>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Typography variant="caption" sx={{ fontWeight: 900, textTransform: 'uppercase', color: '#00F5FF', letterSpacing: '0.1em' }}>
+            Attachments
+          </Typography>
+          <IconButton 
+            size="small" 
+            onClick={fetchAttachments} 
+            disabled={loading}
+            sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#00F5FF' } }}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Stack>
 
-      {error && <div className="text-xs text-destructive bg-destructive/10 p-2 rounded">{error}</div>}
-    </div>
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress size={32} sx={{ color: '#00F5FF' }} />
+          </Box>
+        )}
+
+        {!loading && attachments.length === 0 && (
+          <Paper sx={{ 
+            p: 4, 
+            textAlign: 'center', 
+            bgcolor: 'rgba(255, 255, 255, 0.02)', 
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}>
+            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontWeight: 500 }}>
+              No attachments yet.
+            </Typography>
+          </Paper>
+        )}
+
+        <List sx={{ 
+          bgcolor: 'rgba(10, 10, 10, 0.4)', 
+          borderRadius: '24px', 
+          border: '1px solid rgba(255, 255, 255, 0.05)', 
+          overflow: 'hidden', 
+          p: 0,
+          backdropFilter: 'blur(10px)'
+        }}>
+          {attachments.map((a, index) => (
+            <ListItem
+              key={a.id}
+              divider={index < attachments.length - 1}
+              sx={{
+                px: 3,
+                py: 2,
+                borderColor: 'rgba(255, 255, 255, 0.05)',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' }
+              }}
+              secondaryAction={
+                <Stack direction="row" spacing={1}>
+                  <IconButton 
+                    size="small" 
+                    sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#00F5FF' } }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`/api/notes/${noteId}/attachments/${a.id}`, { credentials: 'include' });
+                        if (!res.ok) throw new Error('Failed to get attachment URL');
+                        const data = await res.json();
+                        const url = data?.url;
+                        if (url) {
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        } else {
+                          window.open(`/api/notes/${noteId}/attachments/${a.id}?raw=1`, '_blank', 'noopener,noreferrer');
+                        }
+                      } catch (err) {
+                        setError((err as any)?.message || 'Failed to open attachment');
+                      }
+                    }}
+                  >
+                    <OpenIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton 
+                    size="small" 
+                    sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#FF3B30' } }}
+                    onClick={() => deleteAttachment(a.id)}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              }
+            >
+              <ListItemIcon sx={{ minWidth: 48 }}>
+                <Box sx={{ 
+                  width: 36, 
+                  height: 36, 
+                  borderRadius: '10px', 
+                  bgcolor: alpha('#00F5FF', 0.1),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <FileIcon sx={{ color: '#00F5FF', fontSize: 20 }} />
+                </Box>
+              </ListItemIcon>
+              <ListItemText
+                primary={a.name}
+                secondary={`${formatFileSize(a.size)} • ${a.mime || 'unknown'}`}
+                slotProps={{
+                  primary: { sx: { fontWeight: 700, color: 'white', fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                  secondary: { sx: { fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500, mt: 0.25 } }
+                }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ 
+            borderRadius: '16px',
+            bgcolor: alpha('#FF3B30', 0.1),
+            color: '#FF3B30',
+            border: '1px solid',
+            borderColor: alpha('#FF3B30', 0.2),
+            '& .MuiAlert-icon': { color: '#FF3B30' }
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+    </Stack>
   );
 };
+
+export default AttachmentsManager;
+
+
 
 export default AttachmentsManager;

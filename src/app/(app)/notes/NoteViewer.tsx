@@ -8,8 +8,11 @@ import {
   AppBar,
   Tabs,
   Tab,
+  alpha,
+  Stack,
+  Container
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import type { Notes } from '@/types/appwrite';
 import { useState } from 'react';
 import Comments from './Comments';
@@ -29,15 +32,20 @@ interface NoteViewerProps {
 function TabPanel(props: { children?: React.ReactNode; value: number; index: number }) {
   const { children, value, index, ...other } = props;
   return (
-    <div
+    <Box
       role="tabpanel"
       hidden={value !== index}
       id={`note-viewer-tabpanel-${index}`}
       aria-labelledby={`note-viewer-tab-${index}`}
+      sx={{ height: '100%', overflowY: 'auto' }}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
+      {value === index && (
+        <Box sx={{ p: { xs: 2, md: 4 } }}>
+          {children}
+        </Box>
+      )}
+    </Box>
   );
 }
 
@@ -53,54 +61,175 @@ export default function NoteViewer({ note, onClose }: NoteViewerProps) {
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static" color="default" elevation={1}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+    <Box 
+      sx={{ 
+        width: '100%', 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        bgcolor: 'rgba(10, 10, 10, 0.95)',
+        backdropFilter: 'blur(25px) saturate(180%)',
+        color: 'white'
+      }}
+    >
+      <AppBar 
+        position="static" 
+        sx={{ 
+          bgcolor: 'transparent', 
+          boxShadow: 'none', 
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)' 
+        }}
+      >
+        <Toolbar sx={{ py: 1 }}>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 900, 
+              fontFamily: 'var(--font-space-grotesk)',
+              background: 'linear-gradient(90deg, #fff, #00F5FF)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
             {note.title}
           </Typography>
-          <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
-            <Close />
+          <IconButton 
+            edge="end" 
+            onClick={onClose} 
+            sx={{ 
+              color: 'white',
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            <CloseIcon />
           </IconButton>
         </Toolbar>
-        <Tabs value={tabIndex} onChange={handleTabChange} indicatorColor="primary" textColor="primary" variant="fullWidth">
+        <Tabs 
+          value={tabIndex} 
+          onChange={handleTabChange} 
+          variant="fullWidth"
+          sx={{
+            '& .MuiTabs-indicator': { bgcolor: '#00F5FF', height: 3 },
+            '& .MuiTab-root': { 
+              color: 'rgba(255, 255, 255, 0.5)', 
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              textTransform: 'none',
+              '&.Mui-selected': { color: '#00F5FF' }
+            }
+          }}
+        >
           <Tab label="Content" />
           <Tab label="Comments" />
           <Tab label="Attachments" />
           <Tab label="Collaborators" />
         </Tabs>
       </AppBar>
-      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+
+      <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <TabPanel value={tabIndex} index={0}>
-          <Box sx={{ '& .prose': { maxWidth: 'none' } }}>
+          <Container maxWidth="md">
             {note.format === 'doodle' ? (
               <NoteContentDisplay
                 content={note.content || ''}
                 format="doodle"
-                className="w-full max-w-4xl"
               />
             ) : note.content ? (
-              <div className="prose prose-lg max-w-none dark:prose-invert text-foreground dark:text-dark-fg [&>*]:leading-relaxed [&>p]:mb-6 [&>h1]:mb-8 [&>h1]:mt-8 [&>h2]:mb-6 [&>h2]:mt-7 [&>h3]:mb-4 [&>h3]:mt-6 [&>ul]:mb-6 [&>ol]:mb-6 [&>ol>li]:marker:font-bold [&>blockquote]:mb-6 [&>pre]:mb-6 [&>*:first-child]:mt-0 [&_ol]:list-decimal [&_ul]:list-disc [&_li]:ml-4">
+              <Box 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  '& h1': { 
+                    fontFamily: 'var(--font-space-grotesk)', 
+                    fontWeight: 900, 
+                    fontSize: '2.5rem', 
+                    mb: 4, 
+                    mt: 4,
+                    color: 'white'
+                  },
+                  '& h2': { 
+                    fontFamily: 'var(--font-space-grotesk)', 
+                    fontWeight: 800, 
+                    fontSize: '2rem', 
+                    mb: 3, 
+                    mt: 4,
+                    color: 'white'
+                  },
+                  '& h3': { 
+                    fontFamily: 'var(--font-space-grotesk)', 
+                    fontWeight: 700, 
+                    fontSize: '1.5rem', 
+                    mb: 2, 
+                    mt: 3,
+                    color: 'white'
+                  },
+                  '& p': { 
+                    fontSize: '1.1rem', 
+                    lineHeight: 1.8, 
+                    mb: 3,
+                    opacity: 0.8
+                  },
+                  '& ul, & ol': { 
+                    mb: 3, 
+                    pl: 4,
+                    '& li': { mb: 1, opacity: 0.8 }
+                  },
+                  '& blockquote': {
+                    borderLeft: '4px solid #00F5FF',
+                    bgcolor: alpha('#00F5FF', 0.05),
+                    p: 3,
+                    borderRadius: '0 12px 12px 0',
+                    mb: 3,
+                    fontStyle: 'italic'
+                  },
+                  '& pre': {
+                    bgcolor: 'rgba(0, 0, 0, 0.3)',
+                    p: 3,
+                    borderRadius: '12px',
+                    overflowX: 'auto',
+                    mb: 3,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    '& code': { fontFamily: 'monospace', fontSize: '0.9rem' }
+                  },
+                  '& a': {
+                    color: '#00F5FF',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' }
+                  }
+                }}
+              >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeSanitize]}
                 >
                   {note.content}
                 </ReactMarkdown>
-              </div>
+              </Box>
             ) : (
-              <Typography variant="body1" color="text.secondary" fontStyle="italic">
-                This note is empty.
-              </Typography>
+              <Box sx={{ textAlign: 'center', py: 8, opacity: 0.5 }}>
+                <Typography variant="h6" fontStyle="italic">
+                  This note is empty.
+                </Typography>
+              </Box>
             )}
-          </Box>
+          </Container>
         </TabPanel>
+
         <TabPanel value={tabIndex} index={1}>
           <Comments noteId={note.$id} />
         </TabPanel>
+
         <TabPanel value={tabIndex} index={2}>
-          <AttachmentViewer noteId={note.$id} attachments={note.attachments || []} />
+          <AttachmentViewer 
+            attachmentIds={note.attachments || []} 
+            onAttachmentDeleted={(id) => {
+              // Handle deletion if needed, though AttachmentViewer handles its own state
+              console.log('Attachment deleted:', id);
+            }}
+          />
         </TabPanel>
+
         <TabPanel value={tabIndex} index={3}>
           <Collaborators noteId={note.$id} collaborators={note.collaborators || []} />
         </TabPanel>

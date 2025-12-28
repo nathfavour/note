@@ -20,10 +20,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
 import { AIHeroInput } from '@/components/AIHeroInput';
 import {
-  SparklesIcon,
-  CpuChipIcon,
-  ShieldCheckIcon,
-} from '@heroicons/react/24/outline';
+  AutoAwesome as SparklesIcon,
+  Memory as CpuChipIcon,
+  VerifiedUser as ShieldCheckIcon,
+} from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 
 const features = [
@@ -84,17 +84,44 @@ export default function LandingPage() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
-      <AppBar position="sticky" sx={{ bgcolor: alpha(theme.palette.background.default, 0.8), backdropFilter: 'blur(8px)', borderBottom: 1, borderColor: 'divider' }}>
-        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 5 } }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh', 
+      bgcolor: '#0A0A0A', 
+      color: 'rgba(255, 255, 255, 0.9)',
+      backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.05) 0%, transparent 50%)'
+    }}>
+      <AppBar 
+        position="sticky" 
+        sx={{ 
+          bgcolor: 'rgba(10, 10, 10, 0.8)', 
+          backdropFilter: 'blur(25px) saturate(180%)', 
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: 'none',
+          backgroundImage: 'none'
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 5 }, height: 80 }}>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Box 
               component="img"
               src="/logo/whisperrnote.png" 
               alt="Whisperrnote Logo" 
-              sx={{ h: 32, w: 32, borderRadius: 2 }}
+              sx={{ height: 32, width: 32, borderRadius: '8px' }}
             />
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Whisperrnote</Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 900, 
+                fontFamily: '"Space Grotesk", sans-serif',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: '#00F5FF'
+              }}
+            >
+              Whisperrnote
+            </Typography>
           </Stack>
           
           <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', md: 'flex' }, flex: 1, justifyContent: 'center' }}>
@@ -104,11 +131,14 @@ export default function LandingPage() {
                 href="#"
                 underline="none"
                 sx={{ 
-                  fontSize: '0.875rem', 
-                  fontWeight: 500, 
-                  color: 'text.secondary',
-                  transition: 'color 0.2s',
-                  '&:hover': { color: 'text.primary' }
+                  fontSize: '0.75rem', 
+                  fontWeight: 700, 
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  transition: 'all 0.2s',
+                  '&:hover': { color: '#00F5FF' }
                 }}
               >
                 {item}
@@ -118,7 +148,15 @@ export default function LandingPage() {
 
           <Box>
             {isAuthenticated ? (
-              <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', width: 36, height: 36, fontSize: '0.875rem', fontWeight: 500 }}>
+              <Avatar sx={{ 
+                bgcolor: '#00F5FF', 
+                color: '#000', 
+                width: 36, 
+                height: 36, 
+                fontSize: '0.875rem', 
+                fontWeight: 900,
+                fontFamily: '"Space Grotesk", sans-serif'
+              }}>
                 {getUserInitials(user)}
               </Avatar>
             ) : (
@@ -126,6 +164,13 @@ export default function LandingPage() {
                 variant="text" 
                 onClick={() => openIDMWindow()}
                 isLoading={isAuthenticating}
+                sx={{ 
+                  color: '#00F5FF',
+                  fontWeight: 900,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em'
+                }}
               >
                 Login
               </Button>
@@ -135,20 +180,62 @@ export default function LandingPage() {
       </AppBar>
 
       <Box component="main" sx={{ flex: 1 }}>
-        <Box sx={{ py: { xs: 12, md: 16 }, textAlign: 'center', position: 'relative' }}>
+        <Box sx={{ py: { xs: 12, md: 20 }, textAlign: 'center', position: 'relative' }}>
           <Container maxWidth="md">
-            <Typography variant="h1" sx={{ mb: 2, fontSize: { xs: '2.5rem', md: '3.75rem' }, fontWeight: 900, lineHeight: 1.1 }}>
-              Your notes, elevated by AI
+            <Typography 
+              variant="h1" 
+              sx={{ 
+                mb: 3, 
+                fontSize: { xs: '3rem', md: '5rem' }, 
+                fontWeight: 900, 
+                lineHeight: 1,
+                fontFamily: '"Space Grotesk", sans-serif',
+                textTransform: 'uppercase',
+                letterSpacing: '-0.02em',
+                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.5) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Your notes, <br />
+              <Box component="span" sx={{ color: '#00F5FF', WebkitTextFillColor: '#00F5FF' }}>elevated by AI</Box>
             </Typography>
-            <Typography variant="body1" sx={{ mb: 6, color: 'text.secondary', fontSize: { xs: '1.125rem', md: '1.25rem' }, maxWidth: '768px', mx: 'auto' }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                mb: 8, 
+                color: 'rgba(255, 255, 255, 0.6)', 
+                fontSize: { xs: '1.125rem', md: '1.35rem' }, 
+                maxWidth: '700px', 
+                mx: 'auto',
+                fontFamily: '"Inter", sans-serif',
+                lineHeight: 1.6
+              }}
+            >
               Transform your ideas with AI assistance and secure your notes. 
               Generate comprehensive content instantly, collaborate seamlessly, and own your data forever.
             </Typography>
 
-            <Stack direction="column" alignItems="center" spacing={2} sx={{ mb: 6 }}>
+            <Stack direction="column" alignItems="center" spacing={2} sx={{ mb: 10 }}>
               <Button 
                 size="large" 
-                sx={{ px: 6, py: 2, fontSize: '1.125rem', fontWeight: 'bold' }}
+                sx={{ 
+                  px: 8, 
+                  py: 2.5, 
+                  fontSize: '1.125rem', 
+                  fontWeight: 900,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  bgcolor: '#00F5FF',
+                  color: '#000',
+                  borderRadius: '100px',
+                  boxShadow: '0 0 30px rgba(0, 245, 255, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#00D1D9',
+                    boxShadow: '0 0 40px rgba(0, 245, 255, 0.5)',
+                  }
+                }}
                 onClick={() => openIDMWindow()}
                 isLoading={isAuthenticating}
               >
@@ -160,13 +247,31 @@ export default function LandingPage() {
           </Container>
         </Box>
 
-        <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: 'background.paper' }}>
+        <Box sx={{ py: { xs: 12, md: 20 }, bgcolor: 'rgba(255, 255, 255, 0.02)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
           <Container>
-            <Box sx={{ textAlign: 'center', mb: 8, maxWidth: '672px', mx: 'auto' }}>
-              <Typography variant="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
-                AI-powered notes for the future
+            <Box sx={{ textAlign: 'center', mb: 12, maxWidth: '800px', mx: 'auto' }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  mb: 3, 
+                  fontWeight: 900, 
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontSize: { xs: '2rem', md: '3.5rem' }
+                }}
+              >
+                AI-powered notes <br />
+                <Box component="span" sx={{ color: '#00F5FF' }}>for the future</Box>
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontFamily: '"Inter", sans-serif',
+                  fontSize: '1.1rem'
+                }}
+              >
                 Experience next-generation note-taking with intelligent content generation, 
                 private cloud storage, and advanced security built-in.
               </Typography>
@@ -175,26 +280,57 @@ export default function LandingPage() {
             <Grid container spacing={4}>
               {features.map((feature, index) => (
                 <Grid item xs={12} md={4} key={index}>
-                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Card sx={{ 
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 3,
+                    bgcolor: 'rgba(10, 10, 10, 0.95)',
+                    backdropFilter: 'blur(25px) saturate(180%)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '32px',
+                    p: 2,
+                    transition: 'transform 0.3s ease, border-color 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-10px)',
+                      borderColor: 'rgba(0, 245, 255, 0.3)',
+                    }
+                  }}>
                     <CardHeader>
                       <Box sx={{ 
                         display: 'flex', 
-                        height: 48, 
-                        width: 48, 
+                        height: 64, 
+                        width: 64, 
                         alignItems: 'center', 
                         justifyContent: 'center', 
-                        borderRadius: 3, 
-                        bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                        color: 'primary.main' 
+                        borderRadius: '20px', 
+                        bgcolor: 'rgba(0, 245, 255, 0.1)', 
+                        color: '#00F5FF',
+                        border: '1px solid rgba(0, 245, 255, 0.2)'
                       }}>
                         {feature.icon}
                       </Box>
                     </CardHeader>
                     <CardContent>
-                      <CardTitle sx={{ mb: 1 }}>
+                      <CardTitle sx={{ 
+                        mb: 2, 
+                        fontWeight: 900, 
+                        fontFamily: '"Space Grotesk", sans-serif',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontSize: '1.25rem'
+                      }}>
                         {feature.title}
                       </CardTitle>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          fontFamily: '"Inter", sans-serif',
+                          lineHeight: 1.6,
+                          fontSize: '0.95rem'
+                        }}
+                      >
                         {feature.description}
                       </Typography>
                     </CardContent>
@@ -206,27 +342,41 @@ export default function LandingPage() {
         </Box>
       </Box>
 
-      <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', py: 6 }}>
+      <Box component="footer" sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', py: 10, bgcolor: '#0A0A0A' }}>
         <Container>
-          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={3}>
-            <Stack direction="row" spacing={3} flexWrap="wrap" justifyContent="center">
+          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={6}>
+            <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">
               {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((item) => (
                 <Link
                   key={item}
                   href="#"
                   underline="none"
                   sx={{ 
-                    fontSize: '0.875rem', 
-                    color: 'text.secondary',
+                    fontSize: '0.75rem', 
+                    fontWeight: 700,
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'rgba(255, 255, 255, 0.4)',
                     transition: 'color 0.2s',
-                    '&:hover': { color: 'text.primary' }
+                    '&:hover': { color: '#00F5FF' }
                   }}
                 >
                   {item}
                 </Link>
               ))}
             </Stack>
-            <Typography variant="body2" color="text.disabled">
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.2)',
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                fontSize: '0.7rem'
+              }}
+            >
               © 2025 Whisperrnote. All rights reserved.
             </Typography>
           </Stack>

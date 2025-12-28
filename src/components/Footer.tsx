@@ -37,10 +37,12 @@ export default function Footer() {
       <Box
         component="footer"
         sx={{
-          bgcolor: 'background.paper',
-          py: 6,
-          borderTop: 1,
-          borderColor: 'divider',
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          py: 8,
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          position: 'relative',
+          zIndex: 10,
         }}
       >
         <Container maxWidth="lg">
@@ -48,29 +50,39 @@ export default function Footer() {
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' },
-              gap: 4,
+              gap: 6,
             }}
           >
             {Object.entries(footerLinks).map(([category, links]) => (
               <Box key={category}>
                 <Typography
                   variant="subtitle1"
-                  color="text.primary"
-                  gutterBottom
-                  sx={{ fontWeight: 600, textTransform: 'capitalize' }}
+                  sx={{ 
+                    fontWeight: 900, 
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    color: '#00F5FF',
+                    mb: 3
+                  }}
                 >
                   {category}
                 </Typography>
-                <Stack spacing={1}>
+                <Stack spacing={1.5}>
                   {links.map((link) => (
                     <MuiLink
                       key={link.name}
                       href={link.href}
                       component={Link}
-                      color="text.secondary"
                       sx={{
+                        color: 'rgba(255, 255, 255, 0.6)',
                         textDecoration: 'none',
-                        '&:hover': { color: 'primary.main' },
+                        fontSize: '0.9rem',
+                        transition: 'all 0.2s ease',
+                        '&:hover': { 
+                          color: '#00F5FF',
+                          transform: 'translateX(4px)'
+                        },
                       }}
                     >
                       {link.name}
@@ -83,32 +95,51 @@ export default function Footer() {
 
           <Box
             sx={{
-              mt: 6,
-              pt: 3,
-              borderTop: 1,
-              borderColor: 'divider',
+              mt: 8,
+              pt: 4,
+              borderTop: '1px solid rgba(255, 255, 255, 0.05)',
               display: 'flex',
-              flexWrap: 'wrap',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 3,
               justifyContent: 'space-between',
               alignItems: 'center',
             }}
           >
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.4)',
+                fontFamily: '"Inter", sans-serif'
+              }}
+            >
               © {new Date().getFullYear()} WhisperNote. All rights reserved.
             </Typography>
-            <Stack direction="row" spacing={2}>
-              <IconButton color="inherit" size="small" component={motion.button} whileHover={{ scale: 1.1 }}>
-                <GitHub />
-              </IconButton>
-              <IconButton color="inherit" size="small" component={motion.button} whileHover={{ scale: 1.1 }}>
-                <Twitter />
-              </IconButton>
-              <IconButton color="inherit" size="small" component={motion.button} whileHover={{ scale: 1.1 }}>
-                <LinkedIn />
-              </IconButton>
-              <IconButton color="inherit" size="small" component={motion.button} whileHover={{ scale: 1.1 }}>
-                <Facebook />
-              </IconButton>
+            <Stack direction="row" spacing={1}>
+              {[
+                { icon: <GitHub />, label: 'GitHub' },
+                { icon: <Twitter />, label: 'Twitter' },
+                { icon: <LinkedIn />, label: 'LinkedIn' },
+                { icon: <Facebook />, label: 'Facebook' }
+              ].map((social, index) => (
+                <IconButton 
+                  key={index}
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { 
+                      color: '#00F5FF',
+                      bgcolor: 'rgba(0, 245, 255, 0.1)',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                  size="small" 
+                  component={motion.button} 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {social.icon}
+                </IconButton>
+              ))}
             </Stack>
           </Box>
         </Container>

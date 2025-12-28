@@ -1,6 +1,21 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Stack, 
+  Alert,
+  Skeleton,
+  Chip,
+  alpha,
+  useTheme,
+  TextField,
+  Button,
+  CircularProgress
+} from '@mui/material';
+import { Save as SaveIcon, Update as UpdateIcon } from '@mui/icons-material';
 import AttachmentsManager from '@/components/AttachmentsManager';
 import NoteContent from '@/components/NoteContent';
 import { formatFileSize } from '@/lib/utils';
@@ -11,6 +26,8 @@ interface AttachmentMeta { id: string; name: string; size: number; mime: string 
 const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [attachments, setAttachments] = React.useState<AttachmentMeta[]>([]);
   const [loaded, setLoaded] = React.useState(false);
+  const theme = useTheme();
+
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -25,23 +42,40 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
     })();
     return () => { cancelled = true; };
   }, [noteId]);
+
   if (!noteId) return null;
   if (!loaded) {
     return (
-      <div className="flex flex-wrap gap-2 mt-4" aria-hidden>
+      <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
         {Array.from({length:3}).map((_,i)=>(
-          <div key={i} className="h-5 w-20 rounded-full bg-muted animate-pulse" />
+          <Skeleton key={i} variant="rounded" width={80} height={24} sx={{ borderRadius: 12, bgcolor: 'rgba(255, 255, 255, 0.05)' }} />
         ))}
-      </div>
+      </Stack>
     );
   }
   if (attachments.length === 0) return null;
   return (
-    <div className="flex flex-wrap gap-2 mt-4">
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
       {attachments.map(a => (
-        <a key={a.id} href={`/notes/${noteId}/${a.id}`} className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/10 text-accent text-[11px] hover:bg-accent/20 transition" title={`${a.name} • ${formatFileSize(a.size)}${a.mime? ' • '+a.mime:''}`}>{truncate(a.name,18)}</a>
+        <Chip
+          key={a.id}
+          label={truncate(a.name, 18)}
+          component="a"
+          href={`/notes/${noteId}/${a.id}`}
+          clickable
+          size="small"
+          sx={{
+            bgcolor: alpha('#00F5FF', 0.1),
+            color: '#00F5FF',
+            border: `1px solid ${alpha('#00F5FF', 0.2)}`,
+            fontSize: '11px',
+            fontWeight: 700,
+            '&:hover': { bgcolor: alpha('#00F5FF', 0.2) }
+          }}
+          title={`${a.name} • ${formatFileSize(a.size)}${a.mime? ' • '+a.mime:''}`}
+        />
       ))}
-    </div>
+    </Box>
   );
 };
 
@@ -72,11 +106,9 @@ export default function NoteEditor({
   const [internalNoteId, setInternalNoteId] = useState<string | undefined>(externalNoteId);
   const effectiveNoteId = internalNoteId || externalNoteId;
 
-  // If external noteId changes (parent supplies), sync
   useEffect(() => {
     if (externalNoteId && externalNoteId !== internalNoteId) {
       setInternalNoteId(externalNoteId);
-      // Optionally fetch latest content
       (async () => {
         try {
           const n = await getNote(externalNoteId);
@@ -97,7 +129,6 @@ export default function NoteEditor({
       setError(null);
       let saved: any;
       if (effectiveNoteId) {
-        // update existing
         saved = await updateNote(effectiveNoteId, { 
           title: title.trim(), 
           content: content.trim(),
@@ -122,15 +153,38 @@ export default function NoteEditor({
   };
 
   return (
-    <div className="p-6 bg-card rounded-xl shadow-lg">
-      <div className="space-y-4">
-        <Input
-          type="text"
+    <Paper
+      sx={{
+        p: { xs: 2, md: 4 },
+        bgcolor: 'rgba(10, 10, 10, 0.95)',
+        backdropFilter: 'blur(25px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '32px',
+        backgroundImage: 'none',
+        boxShadow: '0 24px 48px rgba(0,0,0,0.4)'
+      }}
+    >
+      <Stack spacing={4}>
+        <TextField
+          fullWidth
           placeholder="Note Title"
+          variant="standard"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isSaving}
-          className="text-lg font-semibold"
+          InputProps={{
+            disableUnderline: true,
+            sx: { 
+              fontSize: { xs: '1.5rem', md: '2rem' }, 
+              fontWeight: 900, 
+              color: 'white',
+              letterSpacing: '-0.03em',
+              '& input::placeholder': {
+                color: 'rgba(255, 255, 255, 0.2)',
+                opacity: 1
+              }
+            }
+          }}
         />
 
         <NoteContent
@@ -141,35 +195,82 @@ export default function NoteEditor({
           disabled={isSaving}
         />
 
-        {/* Attachments only when we have a real note id */}
         {effectiveNoteId && (
-          <div>
+          <Box sx={{ 
+            p: 3, 
+            bgcolor: 'rgba(255, 255, 255, 0.02)', 
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}>
             <AttachmentsManager noteId={effectiveNoteId} />
             <AttachmentChips noteId={effectiveNoteId} />
-          </div>
+          </Box>
         )}
 
         {!effectiveNoteId && (
-          <div className="text-xs text-muted-foreground">
-            Save the note to enable attachments.
-          </div>
+          <Box sx={{ 
+            p: 2, 
+            bgcolor: alpha('#00F5FF', 0.05), 
+            borderRadius: '16px',
+            border: '1px solid',
+            borderColor: alpha('#00F5FF', 0.1),
+            textAlign: 'center'
+          }}>
+            <Typography variant="caption" sx={{ color: '#00F5FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Save the note to enable attachments.
+            </Typography>
+          </Box>
         )}
 
-        <div className="flex justify-end">
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
           <Button
+            variant="contained"
             onClick={handleSave}
             disabled={isSaving || !title.trim()}
+            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : (effectiveNoteId ? <UpdateIcon /> : <SaveIcon />)}
+            sx={{
+              bgcolor: '#00F5FF',
+              color: '#000',
+              fontWeight: 900,
+              px: 4,
+              py: 1.5,
+              borderRadius: '14px',
+              textTransform: 'none',
+              fontSize: '1rem',
+              '&:hover': {
+                bgcolor: alpha('#00F5FF', 0.8),
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${alpha('#00F5FF', 0.4)}`
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.2)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
           >
-            {isSaving ? 'Saving...' : (effectiveNoteId ? 'Update Note' : 'Save & Enable Attachments')}
+            {effectiveNoteId ? 'Update Note' : 'Save & Enable Attachments'}
           </Button>
-        </div>
+        </Box>
 
         {error && (
-          <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-xl">
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: '16px',
+              bgcolor: alpha('#FF3B30', 0.1),
+              color: '#FF3B30',
+              border: '1px solid',
+              borderColor: alpha('#FF3B30', 0.2),
+              '& .MuiAlert-icon': { color: '#FF3B30' }
+            }}
+          >
             {error}
-          </div>
+          </Alert>
         )}
-      </div>
-    </div>
+      </Stack>
+    </Paper>
   );
 }
+
+

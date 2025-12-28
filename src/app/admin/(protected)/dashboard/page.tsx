@@ -1,21 +1,130 @@
 'use client';
 import React from 'react';
+import { 
+  Box, 
+  Typography, 
+  Grid, 
+  Paper, 
+  alpha 
+} from '@mui/material';
+import Link from 'next/link';
+import { 
+  Campaign as BroadcastIcon, 
+  Construction as ToolsIcon 
+} from '@mui/icons-material';
 
 export default function AdminDashboard() {
   return (
-    <div className="max-w-3xl mx-auto py-12 space-y-8">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-      <p className="text-sm text-muted-foreground">Manage application configurations and messaging.</p>
-      <div className="grid gap-4 md:grid-cols-2">
-        <a href="/admin/messages" className="border rounded-lg p-4 hover:bg-muted/40 transition">
-          <h2 className="font-semibold mb-1">Broadcast Messages</h2>
-          <p className="text-xs text-muted-foreground">Send announcements or targeted emails to users.</p>
-        </a>
-        <div className="border rounded-lg p-4 opacity-70">
-          <h2 className="font-semibold mb-1">Coming Soon</h2>
-          <p className="text-xs text-muted-foreground">More management tools will appear here.</p>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ maxWidth: 800, mx: 'auto', py: 8, px: 3 }}>
+      <Box sx={{ mb: 6 }}>
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 900, 
+            fontFamily: 'var(--font-space-grotesk)', 
+            mb: 1,
+            background: 'linear-gradient(90deg, #fff, #00F5FF)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
+          Admin Dashboard
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+          Manage application configurations and messaging.
+        </Typography>
+      </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Paper
+            component={Link}
+            href="/admin/messages"
+            sx={{
+              p: 4,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              textDecoration: 'none',
+              borderRadius: '24px',
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(25px)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                bgcolor: 'rgba(0, 245, 255, 0.05)',
+                borderColor: '#00F5FF',
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0, 245, 255, 0.15)'
+              }
+            }}
+          >
+            <Box 
+              sx={{ 
+                width: 48, 
+                height: 48, 
+                borderRadius: '12px', 
+                bgcolor: 'rgba(0, 245, 255, 0.1)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                color: '#00F5FF'
+              }}
+            >
+              <BroadcastIcon />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 0.5 }}>
+                Broadcast Messages
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                Send announcements or targeted emails to users.
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper
+            sx={{
+              p: 4,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              borderRadius: '24px',
+              bgcolor: 'rgba(255, 255, 255, 0.01)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(25px)',
+              opacity: 0.6
+            }}
+          >
+            <Box 
+              sx={{ 
+                width: 48, 
+                height: 48, 
+                borderRadius: '12px', 
+                bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                color: 'rgba(255, 255, 255, 0.3)'
+              }}
+            >
+              <ToolsIcon />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 0.5 }}>
+                Coming Soon
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                More management tools will appear here.
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

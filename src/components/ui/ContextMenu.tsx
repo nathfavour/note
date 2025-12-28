@@ -1,6 +1,14 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { 
+  Menu, 
+  MenuItem, 
+  ListItemIcon, 
+  ListItemText,
+  alpha,
+  useTheme
+} from '@mui/material';
 
 interface ContextMenuProps {
   x: number;
@@ -14,53 +22,73 @@ interface ContextMenuProps {
   }>;
 }
 
-// Anchored context menu: positions relative to nearest relatively-positioned ancestor
 export function ContextMenu({ x, y, onCloseAction, items }: ContextMenuProps) {
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onCloseAction();
-      }
-    };
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseAction();
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [onCloseAction]);
+  const theme = useTheme();
 
   return (
-    <div
-      ref={menuRef}
-      className="pointer-events-auto fixed z-[60] min-w-48 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg py-1"
-      style={{ left: `${x}px`, top: `${y}px` }}
-      onClick={(e) => e.stopPropagation()}
+    <Menu
+      open={true}
+      onClose={onCloseAction}
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: y, left: x }}
+      slotProps={{
+        paper: {
+          sx: {
+            minWidth: 200,
+            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            backgroundImage: 'none',
+            py: 1,
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+          }
+        }
+      }}
     >
       {items.map((item, index) => (
-        <button
+        <MenuItem
           key={index}
           onClick={() => {
             item.onClick();
             onCloseAction();
           }}
-          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
-            item.variant === 'destructive'
-              ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-              : 'text-light-fg dark:text-dark-fg hover:bg-light-hover dark:hover:bg-dark-hover'
-          }`}
+          sx={{
+            px: 2.5,
+            py: 1.25,
+            gap: 2,
+            color: item.variant === 'destructive' ? '#FF453A' : 'rgba(255, 255, 255, 0.8)',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              bgcolor: item.variant === 'destructive' 
+                ? 'rgba(255, 69, 58, 0.1)' 
+                : 'rgba(0, 245, 255, 0.1)',
+              color: item.variant === 'destructive' ? '#FF453A' : '#00F5FF',
+            },
+            '& .MuiListItemIcon-root': {
+              minWidth: 'auto',
+              color: 'inherit',
+            }
+          }}
         >
-          {item.icon && <span className="w-4 h-4">{item.icon}</span>}
-          {item.label}
-        </button>
+          {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
+          <ListItemText 
+            primary={item.label} 
+            slotProps={{ 
+              primary: { 
+                sx: { 
+                  fontSize: '0.85rem', 
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                } 
+              } 
+            }} 
+          />
+        </MenuItem>
       ))}
-    </div>
+    </Menu>
   );
 }
+

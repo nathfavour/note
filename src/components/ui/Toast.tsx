@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Snackbar, Alert, AlertTitle, Stack } from '@mui/material';
+import { Snackbar, Alert, AlertTitle, Stack, Box } from '@mui/material';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -91,17 +91,39 @@ export function ToastProvider({ children }: ToastProviderProps) {
             <Alert 
               onClose={() => dismissToast(toast.id)} 
               severity={toast.type} 
-              variant="filled"
               sx={{ 
                 width: '100%', 
                 borderRadius: '16px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.1)'
+                boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+                bgcolor: 'rgba(10, 10, 10, 0.95)',
+                backdropFilter: 'blur(25px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#FFFFFF',
+                '& .MuiAlert-icon': {
+                  color: toast.type === 'success' ? '#00F5FF' : 
+                         toast.type === 'error' ? '#FF453A' : 
+                         toast.type === 'warning' ? '#FFA500' : '#00F5FF'
+                },
+                '& .MuiAlert-action': {
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }
               }}
             >
-              <AlertTitle sx={{ fontWeight: 800 }}>{toast.title}</AlertTitle>
-              {toast.message}
+              <AlertTitle sx={{ 
+                fontWeight: 900, 
+                fontFamily: '"Space Grotesk", sans-serif',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                fontSize: '0.85rem',
+                color: toast.type === 'success' ? '#00F5FF' : 
+                       toast.type === 'error' ? '#FF453A' : 
+                       toast.type === 'warning' ? '#FFA500' : '#00F5FF'
+              }}>
+                {toast.title}
+              </AlertTitle>
+              <Box sx={{ fontFamily: '"Inter", sans-serif', fontSize: '0.9rem', opacity: 0.8 }}>
+                {toast.message}
+              </Box>
             </Alert>
           </Snackbar>
         ))}

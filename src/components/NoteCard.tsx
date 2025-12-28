@@ -1,6 +1,27 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardActions, Typography, IconButton, Box, Chip, Menu, MenuItem } from '@mui/material';
-import { Share, MoreVert, Lock, LockOpen, Edit, Delete } from '@mui/icons-material';
+import { 
+  Card, 
+  CardContent, 
+  CardActions, 
+  Typography, 
+  IconButton, 
+  Box, 
+  Chip, 
+  Menu, 
+  MenuItem,
+  alpha,
+  Tooltip
+} from '@mui/material';
+import { 
+  Share as ShareIcon, 
+  MoreVert as MoreVertIcon, 
+  Lock as LockIcon, 
+  LockOpen as LockOpenIcon, 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  AccessTime as AccessTimeIcon,
+  People as PeopleIcon
+} from '@mui/icons-material';
 import Link from 'next/link';
 
 interface NoteCardProps {
@@ -53,73 +74,174 @@ export default function NoteCard({
   };
 
   return (
-    <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6" component="h2" noWrap>
+    <Card 
+      elevation={0} 
+      sx={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        bgcolor: 'rgba(10, 10, 10, 0.95)',
+        backdropFilter: 'blur(25px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        backgroundImage: 'none',
+        '&:hover': {
+          transform: 'translateY(-8px)',
+          border: '1px solid rgba(0, 245, 255, 0.3)',
+          boxShadow: '0 20px 40px rgba(0, 245, 255, 0.1)',
+        }
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 900, 
+              color: 'white',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical'
+            }}
+          >
             {title}
           </Typography>
-          {isEncrypted ? <Lock color="primary" /> : <LockOpen color="action" />}
+          <Tooltip title={isEncrypted ? "Encrypted" : "Public"}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '12px', 
+              bgcolor: isEncrypted ? alpha('#00F5FF', 0.1) : 'rgba(255, 255, 255, 0.05)',
+              color: isEncrypted ? '#00F5FF' : 'rgba(255, 255, 255, 0.4)',
+              display: 'flex'
+            }}>
+              {isEncrypted ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+            </Box>
+          </Tooltip>
         </Box>
 
-        <Typography variant="body2" color="text.secondary">
-          Last updated: {new Date(updatedAt).toLocaleDateString()}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <AccessTimeIcon sx={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.3)' }} />
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {new Date(updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+          </Typography>
+        </Box>
 
         {sharedWith.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="caption" display="block" gutterBottom>
-              Shared with:
-            </Typography>
+          <Box sx={{ mt: 'auto', pt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <PeopleIcon sx={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.3)' }} />
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Shared
+              </Typography>
+            </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {sharedWith.map((user) => (
+              {sharedWith.slice(0, 3).map((user) => (
                 <Chip
                   key={user}
                   label={user}
                   size="small"
-                  variant="outlined"
+                  sx={{ 
+                    height: 20,
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    '& .MuiChip-label': { px: 1 }
+                  }}
                 />
               ))}
+              {sharedWith.length > 3 && (
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, ml: 0.5 }}>
+                  +{sharedWith.length - 3}
+                </Typography>
+              )}
             </Box>
           </Box>
         )}
       </CardContent>
 
-      <CardActions disableSpacing>
-        <IconButton 
-          component={Link} 
-          href={`/notes/${id}`}
-          aria-label="edit note"
-        >
-          <Edit />
-        </IconButton>
-        
-        <IconButton 
-          aria-label="share note"
-          onClick={handleShare}
-          disabled={!isEncrypted}
-        >
-          <Share />
-        </IconButton>
+      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Edit Note">
+            <IconButton 
+              component={Link} 
+              href={`/notes/${id}`}
+              sx={{ 
+                color: '#00F5FF',
+                bgcolor: alpha('#00F5FF', 0.05),
+                borderRadius: '12px',
+                '&:hover': { bgcolor: alpha('#00F5FF', 0.15) }
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Share Note">
+            <IconButton 
+              onClick={handleShare}
+              disabled={!isEncrypted}
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.6)',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)', color: 'white' },
+                '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.1)' }
+              }}
+            >
+              <ShareIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         <IconButton
-          aria-label="note options"
           onClick={handleMenuOpen}
-          sx={{ marginLeft: 'auto' }}
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.4)',
+            '&:hover': { color: 'white' }
+          }}
         >
-          <MoreVert />
+          <MoreVertIcon fontSize="small" />
         </IconButton>
 
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
+          PaperProps={{
+            sx: {
+              bgcolor: 'rgba(10, 10, 10, 0.98)',
+              backdropFilter: 'blur(25px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '16px',
+              mt: 1,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              '& .MuiMenuItem-root': {
+                px: 2,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 800,
+                color: 'rgba(255, 255, 255, 0.6)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  color: 'white'
+                }
+              }
+            }
+          }}
         >
-          <MenuItem onClick={handleDelete} disabled={isDeleting}>
-            <Delete sx={{ mr: 1 }} /> Delete
+          <MenuItem onClick={handleDelete} disabled={isDeleting} sx={{ color: '#FF4D4D !important' }}>
+            <DeleteIcon sx={{ mr: 1.5, fontSize: 18 }} /> Delete Note
           </MenuItem>
         </Menu>
       </CardActions>
     </Card>
   );
 }
+

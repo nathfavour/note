@@ -12,14 +12,15 @@ import {
   Typography,
   InputAdornment,
   Chip,
-  IconButton
+  IconButton,
+  alpha
 } from '@mui/material';
 import { 
-  Search, 
-  NoteOutlined, 
-  FolderOutlined, 
-  LocalOfferOutlined,
-  Close
+  Search as SearchIcon, 
+  NoteOutlined as NoteIcon, 
+  FolderOutlined as FolderIcon, 
+  LocalOfferOutlined as TagIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import debounce from 'lodash/debounce';
@@ -73,11 +74,11 @@ export default function GlobalSearch() {
   const getIcon = (type: SearchResult['type']) => {
     switch (type) {
       case 'note':
-        return <NoteOutlined />;
+        return <NoteIcon sx={{ color: '#00F5FF' }} />;
       case 'collection':
-        return <FolderOutlined />;
+        return <FolderIcon sx={{ color: '#00F5FF' }} />;
       case 'tag':
-        return <LocalOfferOutlined />;
+        return <TagIcon sx={{ color: '#00F5FF' }} />;
     }
   };
 
@@ -101,13 +102,13 @@ export default function GlobalSearch() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <Search />
+                <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.4)' }} />
               </InputAdornment>
             ),
             endAdornment: searchTerm && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={clearSearch}>
-                  <Close />
+                <IconButton size="small" onClick={clearSearch} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                  <CloseIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
             )
@@ -115,11 +116,27 @@ export default function GlobalSearch() {
         }}
         sx={{
           '& .MuiOutlinedInput-root': {
-            borderRadius: 3,
-            backgroundColor: 'background.paper',
-            transition: 'all 0.2s',
+            borderRadius: '16px',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '& fieldset': { border: 'none' },
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            },
             '&.Mui-focused': {
-              boxShadow: (theme) => theme.shadows[4]
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(0, 245, 255, 0.3)',
+              boxShadow: '0 0 20px rgba(0, 245, 255, 0.1)',
+            }
+          },
+          '& .MuiInputBase-input': {
+            color: 'white',
+            fontWeight: 500,
+            '&::placeholder': {
+              color: 'rgba(255, 255, 255, 0.3)',
+              opacity: 1
             }
           }
         }}
@@ -138,39 +155,61 @@ export default function GlobalSearch() {
               left: 0,
               right: 0,
               zIndex: 1000,
-              marginTop: '8px'
+              marginTop: '12px'
             }}
           >
             <Paper 
-              elevation={4}
+              elevation={0}
               sx={{ 
                 maxHeight: 400,
                 overflow: 'auto',
-                borderRadius: 2
+                borderRadius: '20px',
+                bgcolor: 'rgba(10, 10, 10, 0.98)',
+                backdropFilter: 'blur(25px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+                backgroundImage: 'none'
               }}
             >
               {results.length > 0 ? (
-                <List>
+                <List sx={{ p: 1 }}>
                   {results.map((result) => (
                     <ListItem 
                       key={result.id}
-                      sx={{ py: 1.5, cursor: 'pointer' }}
+                      sx={{ 
+                        py: 1.5, 
+                        px: 2,
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        mb: 0.5,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          transform: 'translateX(4px)'
+                        }
+                      }}
                     >
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 40 }}>
                         {getIcon(result.type)}
                       </ListItemIcon>
                       <ListItemText
                         primary={result.title}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: 800,
+                          color: 'white'
+                        }}
                         secondary={
                           result.excerpt && (
                             <Typography
-                              variant="body2"
-                              color="text.secondary"
+                              variant="caption"
                               sx={{
+                                color: 'rgba(255, 255, 255, 0.4)',
                                 display: '-webkit-box',
-                                WebkitLineClamp: 2,
+                                WebkitLineClamp: 1,
                                 WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                mt: 0.5
                               }}
                             >
                               {result.excerpt}
@@ -180,18 +219,27 @@ export default function GlobalSearch() {
                       />
                       <Box sx={{ ml: 2, textAlign: 'right' }}>
                         {result.date && (
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, textTransform: 'uppercase', fontSize: '9px' }}>
                             {result.date}
                           </Typography>
                         )}
                         {result.tags && (
-                          <Box sx={{ mt: 1 }}>
+                          <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
                             {result.tags.map(tag => (
                               <Chip
                                 key={tag}
                                 label={tag}
                                 size="small"
-                                sx={{ mr: 0.5 }}
+                                sx={{ 
+                                  height: 18,
+                                  fontSize: '9px',
+                                  fontWeight: 800,
+                                  bgcolor: alpha('#00F5FF', 0.1),
+                                  color: '#00F5FF',
+                                  border: '1px solid',
+                                  borderColor: alpha('#00F5FF', 0.2),
+                                  '& .MuiChip-label': { px: 1 }
+                                }}
                               />
                             ))}
                           </Box>
@@ -201,8 +249,8 @@ export default function GlobalSearch() {
                   ))}
                 </List>
               ) : searchTerm && (
-                <Box sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography color="text.secondary">
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, fontSize: '0.875rem' }}>
                     No results found for &quot;{searchTerm}&quot;
                   </Typography>
                 </Box>

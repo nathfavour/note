@@ -90,12 +90,28 @@ export function TagNotesListSidebar({
             ))}
           </Stack>
         ) : error ? (
-          <Alert severity="error" sx={{ borderRadius: '16px' }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: '16px',
+              bgcolor: 'rgba(255, 69, 58, 0.1)',
+              color: '#FF453A',
+              border: '1px solid rgba(255, 69, 58, 0.2)',
+              '& .MuiAlert-icon': { color: '#FF453A' }
+            }}
+          >
             {error}
           </Alert>
         ) : notes.length === 0 ? (
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+          <Box sx={{ p: 6, textAlign: 'center' }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.4)',
+                fontFamily: '"Inter", sans-serif',
+                fontStyle: 'italic'
+              }}
+            >
               No notes with this tag
             </Typography>
           </Box>
@@ -117,23 +133,38 @@ export function TagNotesListSidebar({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', h: '100%', p: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 2 }}>
       <Box sx={{ 
         display: 'flex', 
         alignItems: 'center', 
         gap: 1, 
         pb: 2, 
-        borderBottom: '1px solid', 
-        borderColor: 'divider' 
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)', 
       }}>
         <IconButton 
           onClick={handleHeaderBack} 
           size="small"
-          sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.5)', 
+            '&:hover': { 
+              color: '#00F5FF',
+              bgcolor: 'rgba(0, 245, 255, 0.1)'
+            } 
+          }}
         >
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            fontWeight: 900,
+            fontFamily: '"Space Grotesk", sans-serif',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: 'rgba(255, 255, 255, 0.9)',
+            fontSize: '0.75rem'
+          }}
+        >
           {selectedNote ? 'Back to notes' : 'Back'}
         </Typography>
       </Box>

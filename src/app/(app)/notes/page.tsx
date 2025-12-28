@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Box, Typography, Stack, IconButton, Chip, Alert, Skeleton } from '@mui/material';
 import { deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
 
@@ -14,11 +15,11 @@ import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { useSearch } from '@/hooks/useSearch';
 import {
-  MagnifyingGlassIcon,
-  PlusCircleIcon,
-  ArrowLeftOnRectangleIcon,
-  ArrowRightOnRectangleIcon,
-} from '@heroicons/react/24/outline';
+  Search as MagnifyingGlassIcon,
+  AddCircleOutline as PlusCircleIcon,
+  Logout as ArrowLeftOnRectangleIcon,
+  Login as ArrowRightOnRectangleIcon,
+} from '@mui/icons-material';
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
 
@@ -174,13 +175,31 @@ export default function NotesPage() {
   };
 
   // Calculate available space and determine optimal card size
-  const gridClasses = useMemo(() => {
+  const gridSx = useMemo(() => {
     if (!isCollapsed && isDynamicSidebarOpen) {
-      return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]';
+      return {
+        display: 'grid',
+        gap: 1.5,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))'
+      };
     } else if (!isCollapsed || isDynamicSidebarOpen) {
-      return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]';
+      return {
+        display: 'grid',
+        gap: 1.5,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))'
+      };
     } else {
-      return 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]';
+      return {
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: {
+          xs: 'repeat(auto-fill, minmax(240px, 1fr))',
+          sm: 'repeat(auto-fill, minmax(260px, 1fr))',
+          md: 'repeat(auto-fill, minmax(280px, 1fr))',
+          lg: 'repeat(auto-fill, minmax(300px, 1fr))',
+          xl: 'repeat(auto-fill, minmax(320px, 1fr))'
+        }
+      };
     }
   }, [isCollapsed, isDynamicSidebarOpen]);
 
@@ -192,66 +211,114 @@ export default function NotesPage() {
 
   return (
     <NotesErrorBoundary>
-      <div className="flex-1 min-h-screen">
+      <Box sx={{ flex: 1, minHeight: '100vh' }}>
         {/* Mobile Header - Hidden on Desktop */}
-        <header className="mb-8 flex items-center justify-between md:hidden">
-          <h1 className="text-3xl font-bold text-foreground">
+        <Box
+          component="header"
+          sx={{
+            mb: 4,
+            display: { xs: 'flex', md: 'none' },
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 900,
+              fontFamily: 'var(--font-space-grotesk)',
+              color: 'text.primary'
+            }}
+          >
             Notes
-          </h1>
-          <div className="flex items-center gap-3">
-            <Button size="icon" onClick={handleCreateNoteClick} {...sidebarIgnoreProps}>
-              <PlusCircleIcon className="h-6 w-6" />
-            </Button>
-          </div>
-        </header>
+          </Typography>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <IconButton onClick={handleCreateNoteClick} {...sidebarIgnoreProps} sx={{ color: 'primary.main' }}>
+              <PlusCircleIcon />
+            </IconButton>
+          </Stack>
+        </Box>
 
         {/* Desktop Header */}
-        <header className="hidden md:flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-black text-foreground mb-2">
+        <Box
+          component="header"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 4
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 900,
+                fontFamily: 'var(--font-space-grotesk)',
+                color: 'text.primary',
+                mb: 0.5
+              }}
+            >
               Private Vault
-            </h1>
-            <p className="text-lg text-muted font-medium">
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 500
+              }}
+            >
               {allNotes.length < totalNotes && !hasSearchResults ? (
-                <>Syncing <span className="font-mono font-bold text-accent">{allNotes.length}</span> of <span className="font-mono font-bold">{totalNotes}</span> notes</>
+                <>Syncing <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{allNotes.length}</Box> of <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{totalNotes}</Box> notes</>
               ) : (
                 hasSearchResults ? (
-                  <><span className="font-mono font-bold text-accent">{totalCount}</span> {totalCount === 1 ? 'result' : 'results'} found</>
+                  <><Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{totalCount}</Box> {totalCount === 1 ? 'result' : 'results'} found</>
                 ) : (
-                  <><span className="font-mono font-bold text-accent">{totalNotes}</span> {totalNotes === 1 ? 'private note' : 'private notes'} secured</>
+                  <><Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{totalNotes}</Box> {totalNotes === 1 ? 'private note' : 'private notes'} secured</>
                 )
               )}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton
               onClick={handleToggleSidebar}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               {...sidebarIgnoreProps}
+              sx={{ color: 'text.secondary' }}
             >
               {isCollapsed ? (
-                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                <ArrowRightOnRectangleIcon />
               ) : (
-                <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                <ArrowLeftOnRectangleIcon />
               )}
-            </Button>
-            <Button onClick={handleCreateNoteClick} size="icon" {...sidebarIgnoreProps}>
-              <PlusCircleIcon className="h-5 w-5" />
-            </Button>
-          </div>
-        </header>
+            </IconButton>
+            <IconButton onClick={handleCreateNoteClick} {...sidebarIgnoreProps} sx={{ color: 'primary.main' }}>
+              <PlusCircleIcon />
+            </IconButton>
+          </Stack>
+        </Box>
 
         {/* Tags Filter */}
         {tags.length > 0 && (
-          <div className="mb-6 flex gap-3 overflow-x-auto pb-2 items-center">
+          <Stack
+            direction="row"
+            spacing={1.5}
+            sx={{
+              mb: 3,
+              overflowX: 'auto',
+              pb: 1,
+              alignItems: 'center',
+              '&::-webkit-scrollbar': { display: 'none' },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none'
+            }}
+          >
             {tags.map((tag, index) => (
               <Button
                 key={index}
                 variant={searchQuery === tag ? 'default' : 'secondary'}
                 size="sm"
-                className="whitespace-nowrap"
+                sx={{ whiteSpace: 'nowrap' }}
                 aria-pressed={searchQuery === tag}
                 onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
                 {...sidebarIgnoreProps}
@@ -261,16 +328,16 @@ export default function NotesPage() {
             ))}
 
             {hasSearchResults && (
-              <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2" {...sidebarIgnoreProps}>
+              <Button variant="ghost" size="sm" onClick={clearSearch} sx={{ ml: 1 }} {...sidebarIgnoreProps}>
                 Clear
               </Button>
             )}
-          </div>
+          </Stack>
         )}
 
         {/* Top Pagination */}
         {totalPages > 1 && (
-          <div className="mb-6">
+          <Box sx={{ mb: 3 }}>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -283,57 +350,103 @@ export default function NotesPage() {
               pageSize={paginationConfig.pageSize}
               compact={false}
             />
-          </div>
+          </Box>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
-            <p className="text-red-700 dark:text-red-300">{error}</p>
-          </div>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              borderRadius: '16px',
+              bgcolor: 'rgba(211, 47, 47, 0.1)',
+              color: '#ff5252',
+              border: '1px solid rgba(211, 47, 47, 0.2)',
+              '& .MuiAlert-icon': { color: '#ff5252' }
+            }}
+          >
+            {error}
+          </Alert>
         )}
 
         {/* Notes Grid */}
         {isInitialLoading ? (
           <NoteGridSkeleton count={12} />
         ) : paginatedNotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              py: 10,
+              textAlign: 'center'
+            }}
+          >
+            <Box
+              sx={{
+                width: 96,
+                height: 96,
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            >
               {hasSearchResults ? (
-                <MagnifyingGlassIcon className="h-12 w-12 text-muted" />
+                <MagnifyingGlassIcon sx={{ fontSize: 48, color: 'text.disabled', opacity: 0.5 }} />
               ) : (
-                <PlusCircleIcon className="h-12 w-12 text-muted" />
+                <PlusCircleIcon sx={{ fontSize: 48, color: 'text.disabled', opacity: 0.5 }} />
               )}
-            </div>
-            <h3 className="text-2xl font-black text-foreground mb-3 font-mono">
+            </Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 900,
+                fontFamily: 'var(--font-space-grotesk)',
+                color: 'text.primary',
+                mb: 1.5
+              }}
+            >
               {hasSearchResults ? 'NO_RESULTS' : 'VAULT_EMPTY'}
-            </h3>
-            <p className="text-muted mb-6 max-w-md font-medium">
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                mb: 4,
+                maxWidth: 400,
+                fontWeight: 500
+              }}
+            >
               {hasSearchResults
                 ? `No matches found for "${searchQuery}". Try a different search term.`
                 : 'Capture your thoughts and ideas here. Your notes are private and secure.'
               }
-            </p>
+            </Typography>
             {hasSearchResults ? (
-              <div className="flex gap-3">
+              <Stack direction="row" spacing={2}>
                 <Button variant="secondary" onClick={clearSearch}>
                   Clear Search
                 </Button>
-                <Button onClick={handleCreateNoteClick} className="gap-2">
-                  <PlusCircleIcon className="h-5 w-5" />
+                <Button onClick={handleCreateNoteClick} startIcon={<PlusCircleIcon />}>
                   Create Note
                 </Button>
-              </div>
+              </Stack>
             ) : (
-              <Button onClick={handleCreateNoteClick} className="gap-2">
-                <PlusCircleIcon className="h-5 w-5" />
+              <Button onClick={handleCreateNoteClick} startIcon={<PlusCircleIcon />}>
                 Create Your First Note
               </Button>
             )}
-          </div>
+          </Box>
         ) : (
-          <div className="flex flex-col gap-6">
-            <div className={gridClasses}>
+          <Stack spacing={3}>
+            <Box sx={gridSx}>
               {paginatedNotes.map((note) => (
                 <NoteCard
                   key={note.$id}
@@ -342,20 +455,20 @@ export default function NotesPage() {
                   onDelete={handleNoteDeleted}
                 />
               ))}
-            </div>
+            </Box>
             {hasMore && !isInitialLoading && (
-              <div className="flex justify-center">
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Button variant="secondary" onClick={loadMore} {...sidebarIgnoreProps}>
                   Load More
                 </Button>
-              </div>
+              </Box>
             )}
-          </div>
+          </Stack>
         )}
 
         {/* Bottom Pagination */}
         {totalPages > 1 && paginatedNotes.length > 0 && (
-          <div className="mt-8">
+          <Box sx={{ mt: 4 }}>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -368,7 +481,7 @@ export default function NotesPage() {
               pageSize={paginationConfig.pageSize}
               compact={false}
             />
-          </div>
+          </Box>
         )}
 
         {/* Mobile Bottom Navigation */}
@@ -376,7 +489,7 @@ export default function NotesPage() {
 
         {/* Mobile FAB */}
         <MobileFAB />
-      </div>
+      </Box>
     </NotesErrorBoundary>
   );
 }

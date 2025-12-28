@@ -8,9 +8,10 @@ import {
   Typography,
   Box,
   IconButton,
-  Divider
+  Divider,
+  alpha
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
+import { Close as CloseIcon, Keyboard as KeyboardIcon } from '@mui/icons-material';
 
 interface ShortcutProps {
   keys: string[];
@@ -18,9 +19,11 @@ interface ShortcutProps {
 }
 
 const Shortcut = ({ keys, description }: ShortcutProps) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5 }}>
     <Box sx={{ flex: 1 }}>
-      <Typography variant="body2">{description}</Typography>
+      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>
+        {description}
+      </Typography>
     </Box>
     <Box sx={{ display: 'flex', gap: 1 }}>
       {keys.map((key, index) => (
@@ -28,15 +31,18 @@ const Shortcut = ({ keys, description }: ShortcutProps) => (
           key={index}
           component="kbd"
           sx={{
-            px: 1.5,
-            py: 0.5,
-            borderRadius: 1,
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            fontSize: '0.875rem',
+            px: 1.2,
+            py: 0.6,
+            borderRadius: '8px',
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#00F5FF',
+            fontSize: '0.75rem',
+            fontWeight: 800,
             fontFamily: 'monospace',
-            boxShadow: '0 2px 0 rgba(0,0,0,0.1)'
+            minWidth: '24px',
+            textAlign: 'center',
+            boxShadow: '0 4px 0 rgba(0,0,0,0.3)'
           }}
         >
           {key}
@@ -110,7 +116,12 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 2
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          backgroundImage: 'none',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
         }
       }}
     >
@@ -118,17 +129,23 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
         display: 'flex', 
         justifyContent: 'space-between',
         alignItems: 'center',
+        p: 3,
         pb: 1
       }}>
-        Keyboard Shortcuts
-        <IconButton onClick={onClose} size="small">
-          <Close />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <KeyboardIcon sx={{ color: '#00F5FF' }} />
+          <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>
+            Keyboard Shortcuts
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+          <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
+      <DialogContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 6 }}>
           <Box>
-            <Typography variant="h6" gutterBottom color="primary">
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', mb: 3 }}>
               General
             </Typography>
             {shortcuts.general.map((shortcut, index) => (
@@ -139,9 +156,9 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
               />
             ))}
 
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
-            <Typography variant="h6" gutterBottom color="primary">
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', mb: 3 }}>
               Editor
             </Typography>
             {shortcuts.editor.map((shortcut, index) => (
@@ -154,7 +171,7 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
           </Box>
 
           <Box>
-            <Typography variant="h6" gutterBottom color="primary">
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', mb: 3 }}>
               Navigation
             </Typography>
             {shortcuts.navigation.map((shortcut, index) => (
@@ -165,9 +182,9 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
               />
             ))}
 
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
-            <Typography variant="h6" gutterBottom color="primary">
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', mb: 3 }}>
               Organization
             </Typography>
             {shortcuts.organization.map((shortcut, index) => (
@@ -180,12 +197,20 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
           </Box>
         </Box>
 
-        <Box sx={{ mt: 4, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Pro Tip: Press <kbd>⌘</kbd> + <kbd>/</kbd> anywhere in the app to show these shortcuts
+        <Box sx={{ 
+          mt: 4, 
+          p: 2.5, 
+          bgcolor: alpha('#00F5FF', 0.03), 
+          border: '1px solid',
+          borderColor: alpha('#00F5FF', 0.1),
+          borderRadius: '16px' 
+        }}>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+            Pro Tip: Press <Box component="kbd" sx={{ px: 1, py: 0.2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: 'white' }}>{platform === 'mac' ? '⌘' : 'Ctrl'}</Box> + <Box component="kbd" sx={{ px: 1, py: 0.2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: 'white' }}>/</Box> anywhere in the app to show these shortcuts
           </Typography>
         </Box>
       </DialogContent>
     </Dialog>
   );
 }
+

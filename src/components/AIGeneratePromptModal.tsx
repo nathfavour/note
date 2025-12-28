@@ -1,8 +1,30 @@
 "use client";
 
 import { useState } from 'react';
-import { XMarkIcon, SparklesIcon, LightBulbIcon, MagnifyingGlassIcon, PencilIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/Button';
+import { 
+  Box, 
+  Typography, 
+  IconButton, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Stack, 
+  Button, 
+  alpha,
+  Grid,
+  Paper,
+  TextField,
+  Chip,
+  CircularProgress
+} from '@mui/material';
+import { 
+  Close as CloseIcon, 
+  AutoAwesome as SparklesIcon, 
+  Lightbulb as LightBulbIcon, 
+  Search as MagnifyingGlassIcon, 
+  Edit as PencilIcon 
+} from '@mui/icons-material';
 
 interface AIGeneratePromptModalProps {
   onClose: () => void;
@@ -63,150 +85,220 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-card border border-border rounded-2xl shadow-3d-elevated max-h-[calc(100vh-2rem)] overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center">
-            <SparklesIcon className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">AI Note Generation</h2>
-            <p className="text-sm text-muted">Let AI create a note for you</p>
-          </div>
-        </div>
-        <button
+    <Dialog
+      open={true}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '28px',
+          backgroundImage: 'none',
+          color: 'white',
+          overflow: 'hidden'
+        }
+      }}
+    >
+      <DialogTitle sx={{ 
+        p: 3, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+      }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Box sx={{ 
+            w: 40, 
+            h: 40, 
+            bgcolor: '#00F5FF', 
+            borderRadius: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(0, 245, 255, 0.3)'
+          }}>
+            <SparklesIcon sx={{ color: '#000' }} />
+          </Box>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', letterSpacing: '-0.02em' }}>
+              AI Note Generation
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600 }}>
+              Let AI create a note for you
+            </Typography>
+          </Box>
+        </Stack>
+        <IconButton 
           onClick={onClose}
-          className="p-2 rounded-xl hover:bg-background transition-colors"
           disabled={isGenerating}
+          sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}
         >
-          <XMarkIcon className="h-6 w-6 text-muted" />
-        </button>
-      </div>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-      {/* Content */}
-      <div className="p-6 space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
-          {/* Type Selection */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">What would you like to generate?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <DialogContent sx={{ p: 4 }}>
+        <Stack spacing={4}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: 'white' }}>
+              What would you like to generate?
+            </Typography>
+            <Grid container spacing={2}>
               {promptTypes.map((type) => {
                 const Icon = type.icon;
                 const isSelected = selectedType === type.id;
                 
                 return (
-                  <button
-                    key={type.id}
-                    onClick={() => setSelectedType(type.id)}
-                    disabled={isGenerating}
-                    className={`
-                      p-4 rounded-xl border-2 transition-all duration-200 text-left
-                      ${isSelected 
-                        ? 'border-accent bg-accent/10 shadow-glow-accent' 
-                        : 'border-border hover:border-accent/50 hover:bg-background'
-                      }
-                      ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-                        ${isSelected ? 'bg-accent text-white' : 'bg-background text-muted'}
-                      `}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground">{type.title}</h4>
-                        <p className="text-sm text-muted mt-1">{type.description}</p>
-                      </div>
-                    </div>
-                  </button>
+                  <Grid item xs={12} md={6} key={type.id}>
+                    <Paper
+                      component="button"
+                      onClick={() => setSelectedType(type.id)}
+                      disabled={isGenerating}
+                      sx={{
+                        p: 2.5,
+                        width: '100%',
+                        textAlign: 'left',
+                        bgcolor: isSelected ? alpha('#00F5FF', 0.05) : 'rgba(255, 255, 255, 0.02)',
+                        border: '2px solid',
+                        borderColor: isSelected ? '#00F5FF' : 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '20px',
+                        cursor: isGenerating ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: isSelected ? '0 0 20px rgba(0, 245, 255, 0.1)' : 'none',
+                        '&:hover': {
+                          bgcolor: isSelected ? alpha('#00F5FF', 0.08) : 'rgba(255, 255, 255, 0.04)',
+                          borderColor: isSelected ? '#00F5FF' : 'rgba(255, 255, 255, 0.2)',
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      <Stack direction="row" spacing={2} alignItems="flex-start">
+                        <Box sx={{ 
+                          p: 1.5, 
+                          borderRadius: '12px', 
+                          bgcolor: isSelected ? '#00F5FF' : 'rgba(255, 255, 255, 0.05)',
+                          color: isSelected ? '#000' : 'rgba(255, 255, 255, 0.4)',
+                          display: 'flex'
+                        }}>
+                          <Icon fontSize="small" />
+                        </Box>
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: isSelected ? '#00F5FF' : 'white' }}>
+                            {type.title}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', mt: 0.5, lineHeight: 1.4 }}>
+                            {type.description}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Paper>
+                  </Grid>
                 );
               })}
-            </div>
-          </div>
+            </Grid>
+          </Box>
 
-          {/* Prompt Input */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">Describe your request</h3>
-            <div className="space-y-4">
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder={selectedTypeData.placeholder}
-                disabled={isGenerating}
-                className={`
-                  w-full h-32 p-4 border border-border rounded-xl resize-none
-                  bg-background text-foreground placeholder-muted
-                  focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent
-                  transition-all duration-200
-                  ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-              />
-              
-              {/* Examples */}
-              <div>
-                <p className="text-sm font-medium text-foreground mb-2">Example prompts:</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTypeData.examples.map((example, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleExampleClick(example)}
-                      disabled={isGenerating}
-                      className={`
-                        px-3 py-1.5 text-sm rounded-lg border border-border
-                        hover:border-accent hover:bg-accent/10 transition-colors
-                        ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}
-                      `}
-                    >
-                      {example}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: 'white' }}>
+              Describe your request
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder={selectedTypeData.placeholder}
+              disabled={isGenerating}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '20px',
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                }
+              }}
+            />
+            
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.4)', mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                Example prompts
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {selectedTypeData.examples.map((example, index) => (
+                  <Chip
+                    key={index}
+                    label={example}
+                    onClick={() => handleExampleClick(example)}
+                    disabled={isGenerating}
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 0.08)',
+                        borderColor: '#00F5FF',
+                        color: 'white'
+                      }
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          </Box>
+        </Stack>
+      </DialogContent>
 
-        {/* Footer */}
-      <div className="flex items-center justify-between p-6 border-t border-border bg-background/50 sticky bottom-0 z-10">
-        <div className="text-sm text-muted">
+      <DialogActions sx={{ 
+        p: 3, 
+        bgcolor: 'rgba(255, 255, 255, 0.02)', 
+        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+        justifyContent: 'space-between'
+      }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, ml: 1 }}>
           {isGenerating ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
-              Generating your note...
-            </div>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CircularProgress size={14} sx={{ color: '#00F5FF' }} />
+              <span>Generating your note...</span>
+            </Stack>
           ) : (
-            'Your generated content will appear in the note editor'
+            'Content will appear in the editor'
           )}
-        </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
+        </Typography>
+        <Stack direction="row" spacing={2}>
+          <Button 
             onClick={onClose}
             disabled={isGenerating}
+            sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700 }}
           >
             Cancel
           </Button>
           <Button
+            variant="contained"
             onClick={handleGenerate}
             disabled={!customPrompt.trim() || isGenerating}
-            className="gap-2"
+            startIcon={isGenerating ? <CircularProgress size={16} color="inherit" /> : <SparklesIcon />}
+            sx={{
+              bgcolor: '#00F5FF',
+              color: '#000',
+              fontWeight: 800,
+              borderRadius: '14px',
+              px: 3,
+              '&:hover': { bgcolor: '#00D1DA' },
+              '&.Mui-disabled': { bgcolor: 'rgba(0, 245, 255, 0.2)', color: 'rgba(0, 0, 0, 0.3)' }
+            }}
           >
-            {isGenerating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                Generating...
-              </>
-            ) : (
-              <>
-                <SparklesIcon className="h-4 w-4" />
-                Generate Note
-              </>
-            )}
+            {isGenerating ? 'Generating...' : 'Generate Note'}
           </Button>
-        </div>
-      </div>
-    </div>
+        </Stack>
+      </DialogActions>
+    </Dialog>
   );
 }

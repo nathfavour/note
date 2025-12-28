@@ -10,13 +10,13 @@ import {
   Grid, 
   alpha, 
   useTheme,
-  InputAdornment
+  InputAdornment,
+  Paper
 } from '@mui/material';
-import { SparklesIcon } from '@heroicons/react/24/outline';
+import { AutoAwesome as SparklesIcon } from '@mui/icons-material';
 
 interface AIHeroInputProps {
   onPromptSelectAction: (prompt: string) => void;
-  className?: string;
 }
 
 const PROMPT_SUGGESTIONS = [
@@ -24,7 +24,7 @@ const PROMPT_SUGGESTIONS = [
   "Summarize key insights from my research notes"
 ];
 
-export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInputProps) {
+export function AIHeroInput({ onPromptSelectAction }: AIHeroInputProps) {
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [inputValue, setInputValue] = useState('');
@@ -101,24 +101,31 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
           variant="outlined"
           InputProps={{
             sx: {
-              borderRadius: 4,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-              backdropFilter: 'blur(8px)',
-              fontSize: '1.125rem',
-              py: 1,
-              px: 2,
+              borderRadius: '32px',
+              bgcolor: 'rgba(10, 10, 10, 0.95)',
+              backdropFilter: 'blur(25px) saturate(180%)',
+              fontSize: '1.25rem',
+              py: 1.5,
+              px: 3,
+              color: 'white',
+              fontFamily: '"Inter", sans-serif',
               '& fieldset': {
-                borderColor: inputValue ? 'primary.main' : alpha(theme.palette.primary.main, 0.3),
-                borderWidth: 2,
-                transition: 'all 0.3s',
+                borderColor: inputValue ? 'rgba(0, 245, 255, 0.5)' : 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               },
               '&:hover fieldset': {
-                borderColor: 'primary.main',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
               },
               '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
-                boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                borderColor: '#00F5FF',
+                boxShadow: '0 0 30px rgba(0, 245, 255, 0.2)',
               },
+              '& input::placeholder': {
+                color: 'rgba(255, 255, 255, 0.3)',
+                opacity: 1,
+                fontStyle: 'italic'
+              }
             },
             endAdornment: (
               <InputAdornment position="end">
@@ -126,21 +133,22 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
                   type="submit"
                   disabled={!inputValue.trim()}
                   sx={{
-                    bgcolor: inputValue.trim() ? 'primary.main' : alpha(theme.palette.primary.main, 0.2),
-                    color: inputValue.trim() ? 'primary.contrastText' : alpha(theme.palette.primary.main, 0.5),
-                    borderRadius: 3,
-                    p: 1.5,
-                    transition: 'all 0.3s',
+                    bgcolor: inputValue.trim() ? '#00F5FF' : 'rgba(255, 255, 255, 0.05)',
+                    color: inputValue.trim() ? '#000' : 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '20px',
+                    p: 2,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      bgcolor: inputValue.trim() ? alpha(theme.palette.primary.main, 0.8) : alpha(theme.palette.primary.main, 0.2),
+                      bgcolor: inputValue.trim() ? '#00D1DA' : 'rgba(255, 255, 255, 0.1)',
+                      transform: 'scale(1.05)',
                     },
                     '&.Mui-disabled': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      color: alpha(theme.palette.primary.main, 0.3),
+                      bgcolor: 'rgba(255, 255, 255, 0.02)',
+                      color: 'rgba(255, 255, 255, 0.1)',
                     }
                   }}
                 >
-                  <SparklesIcon style={{ height: 20, width: 20 }} />
+                  <SparklesIcon />
                 </IconButton>
               </InputAdornment>
             )
@@ -156,15 +164,31 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
             transform: 'translateY(-50%)', 
             width: 2, 
             height: 24, 
-            bgcolor: 'primary.main',
-            animation: 'pulse 1.5s infinite'
+            bgcolor: '#00F5FF',
+            animation: 'pulse 1.5s infinite',
+            '@keyframes pulse': {
+              '0%': { opacity: 1 },
+              '50%': { opacity: 0 },
+              '100%': { opacity: 1 }
+            }
           }} />
         )}
       </Box>
 
       {/* Quick Suggestions */}
       <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="body2" sx={{ mb: 2, fontWeight: 500, color: 'text.secondary' }}>
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            mb: 2.5, 
+            fontWeight: 900, 
+            color: 'rgba(255, 255, 255, 0.3)', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.1em',
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: '0.7rem'
+          }}
+        >
           Instant create with AI!
         </Typography>
         <Grid container spacing={2}>
@@ -176,23 +200,43 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
                 sx={{
                   textAlign: 'left',
                   justifyContent: 'flex-start',
-                  p: 2,
-                  borderRadius: 3,
-                  border: 1,
-                  borderColor: alpha(theme.palette.primary.main, 0.2),
-                  bgcolor: alpha(theme.palette.background.paper, 0.3),
-                  backdropFilter: 'blur(8px)',
-                  color: 'text.primary',
+                  p: 2.5,
+                  borderRadius: '24px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  bgcolor: 'rgba(255, 255, 255, 0.02)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'rgba(255, 255, 255, 0.8)',
                   textTransform: 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                    borderColor: 'rgba(0, 245, 255, 0.5)',
+                    bgcolor: 'rgba(0, 245, 255, 0.05)',
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+                    color: '#00F5FF'
                   }
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <SparklesIcon style={{ height: 16, width: 16, color: theme.palette.primary.main }} />
-                  <Typography variant="body2" noWrap sx={{ opacity: 0.8 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '12px', 
+                    bgcolor: 'rgba(0, 245, 255, 0.1)',
+                    color: '#00F5FF',
+                    display: 'flex',
+                    border: '1px solid rgba(0, 245, 255, 0.2)'
+                  }}>
+                    <SparklesIcon sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Typography 
+                    variant="body2" 
+                    noWrap 
+                    sx={{ 
+                      fontWeight: 700, 
+                      fontFamily: '"Inter", sans-serif',
+                      fontSize: '0.9rem'
+                    }}
+                  >
                     {suggestion}
                   </Typography>
                 </Box>
@@ -204,3 +248,4 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
     </Box>
   );
 }
+

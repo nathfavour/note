@@ -2,8 +2,8 @@
 
 import React, { useRef, useEffect } from 'react';
 import { DoodleStroke } from '@/types/notes';
-import { Box, Typography, Button, Paper } from '@mui/material';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Box, Typography, Button, Paper, alpha } from '@mui/material';
+import { Edit as EditIcon, Brush as BrushIcon } from '@mui/icons-material';
 
 interface DoodleViewerProps {
   data: string;
@@ -30,7 +30,8 @@ export default function DoodleViewer({ data, onEdit, title }: DoodleViewerProps)
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#ffffff';
+    // Use black background for consistency with editor
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     strokes.forEach((stroke) => {
@@ -55,47 +56,87 @@ export default function DoodleViewer({ data, onEdit, title }: DoodleViewerProps)
   };
 
   return (
-    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
       {title && (
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+        <Typography variant="caption" sx={{ fontWeight: 900, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           {title}
         </Typography>
       )}
       <Paper 
         sx={{ 
           position: 'relative', 
-          borderRadius: 3, 
+          borderRadius: '24px', 
           border: '1px solid rgba(255, 255, 255, 0.1)', 
           overflow: 'hidden', 
-          bgcolor: '#fff' 
+          bgcolor: '#000',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'scale(1.01)',
+            borderColor: alpha('#00F5FF', 0.3)
+          }
         }}
       >
         <canvas
           ref={canvasRef}
-          width={800}
-          height={600}
+          width={1200}
+          height={800}
           style={{ width: '100%', height: 'auto', display: 'block' }}
         />
-        {onEdit && (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<EditIcon />}
-            onClick={onEdit}
-            sx={{ 
-              position: 'absolute', 
-              top: 8, 
-              right: 8, 
-              bgcolor: 'rgba(255,255,255,0.9)', 
-              color: '#000',
-              '&:hover': { bgcolor: '#fff' }
-            }}
-          >
-            Edit
-          </Button>
-        )}
+        
+        <Box sx={{ 
+          position: 'absolute', 
+          top: 16, 
+          right: 16, 
+          display: 'flex', 
+          gap: 1,
+          opacity: 0,
+          transition: 'opacity 0.2s',
+          '.MuiPaper-root:hover &': { opacity: 1 }
+        }}>
+          {onEdit && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<EditIcon />}
+              onClick={onEdit}
+              sx={{ 
+                bgcolor: 'rgba(10, 10, 10, 0.8)', 
+                backdropFilter: 'blur(10px)',
+                color: 'white',
+                fontWeight: 700,
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                '&:hover': { bgcolor: '#00F5FF', color: '#000' }
+              }}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
+
+        <Box sx={{ 
+          position: 'absolute', 
+          bottom: 16, 
+          left: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          bgcolor: 'rgba(10, 10, 10, 0.6)',
+          backdropFilter: 'blur(8px)',
+          px: 1.5,
+          py: 0.5,
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 255, 255, 0.05)'
+        }}>
+          <BrushIcon sx={{ fontSize: 14, color: '#00F5FF' }} />
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700 }}>
+            DOODLE
+          </Typography>
+        </Box>
       </Paper>
     </Box>
   );
 }
+
 

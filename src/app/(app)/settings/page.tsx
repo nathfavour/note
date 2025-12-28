@@ -1,8 +1,56 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
-import { Button } from "@/components/ui/Button";
+import { 
+  account, 
+  updateUser, 
+  getSettings, 
+  createSettings, 
+  updateSettings, 
+  uploadProfilePicture, 
+  getProfilePicture, 
+  deleteProfilePicture, 
+  updateAIMode, 
+  getAIMode, 
+  sendPasswordResetEmail 
+} from "@/lib/appwrite";
+import { 
+  Box, 
+  Typography, 
+  Container, 
+  Paper, 
+  Tabs, 
+  Tab, 
+  Avatar, 
+  Button, 
+  TextField, 
+  Switch, 
+  FormControlLabel, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  InputLabel, 
+  Divider, 
+  CircularProgress, 
+  Alert, 
+  Stack,
+  alpha,
+  IconButton
+} from "@mui/material";
+import { 
+  Person as PersonIcon, 
+  Settings as SettingsIcon, 
+  Subscriptions as SubscriptionIcon, 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  Security as SecurityIcon,
+  Lock as LockIcon,
+  Email as EmailIcon,
+  Notifications as NotificationsIcon,
+  Public as PublicIcon,
+  AutoAwesome as AIIcon,
+  Save as SaveIcon
+} from "@mui/icons-material";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
 import { useSubscription } from "@/components/ui/SubscriptionContext";
@@ -41,8 +89,7 @@ export default function SettingsPage() {
         setUser(u);
         setIsVerified(!!u.emailVerification);
 
-        // Prefer helper-based profilePicId resolution
-        const picId = getUserProfilePicId(u as any); // unified profilePicId resolution
+        const picId = getUserProfilePicId(u as any);
         if (picId) {
           const url = await getProfilePicture(picId);
           setProfilePicUrl(url as string);
@@ -56,7 +103,6 @@ export default function SettingsPage() {
           setSettings(newSettings);
         }
 
-        // Load AI mode
         try {
           const mode = await getAIMode(u.$id);
           setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
@@ -64,7 +110,6 @@ export default function SettingsPage() {
           console.error('Failed to load AI mode:', error);
         }
 
-        // Load MFA status
         try {
           const mfa = await getMFAStatus();
           setMfaStatus(mfa);
@@ -80,12 +125,12 @@ export default function SettingsPage() {
     fetchUserAndSettings();
    }, [router, openIDMWindow]);
 
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     try {
-      await updateSettings(user.$id, { settings: JSON.stringify(settings.settings) });
+      await updateSettings(user!.$id, { settings: JSON.stringify(settings!.settings) });
       setSuccess("Settings updated successfully.");
     } catch (err: any) {
       setError((err as Error)?.message || "Failed to update settings");
@@ -93,7 +138,7 @@ export default function SettingsPage() {
   };
 
   const handleSettingChange = (key: string, value: boolean | string | number) => {
-    setSettings((prev: import('@/types/appwrite').Settings | null) => prev ? { ...prev, settings: { ...prev.settings, [key]: value } } : prev);
+    setSettings((prev: any) => prev ? { ...prev, settings: { ...prev.settings, [key]: value } } : prev);
   };
 
   const handleAIModeChange = async (mode: AIMode) => {
@@ -107,33 +152,6 @@ export default function SettingsPage() {
         setError("Failed to update AI mode");
       }
     }
-  };
-
-  const handlePasswordReset = async () => {
-    if (!user?.email) {
-      setError("User email not found");
-      return;
-    }
-
-    try {
-      setError("");
-      setSuccess("");
-      
-      const resetUrl = `${window.location.origin}/reset`;
-      await sendPasswordResetEmail(user.email, resetUrl);
-      
-      setResetEmailSent(true);
-      setSuccess(`Password reset email sent to ${user.email}`);
-    } catch (err: any) {
-      setError((err as Error)?.message || "Failed to send password reset email");
-    }
-  };
-
-  const handleCancelPasswordReset = () => {
-    setShowPasswordReset(false);
-    setResetEmailSent(false);
-    setError("");
-    setSuccess("");
   };
 
   const handleEditProfile = () => {
@@ -152,7 +170,6 @@ export default function SettingsPage() {
     );
   };
 
-  // Remove profile picture handler: delete stored file and clear prefs
   const handleRemoveProfilePicture = async () => {
     if (!user) return;
     if (!getUserProfilePicId(user)) return;
@@ -161,9 +178,7 @@ export default function SettingsPage() {
       setError('');
       setSuccess('');
       const oldId = getUserProfilePicId(user);
-      // Optimistically clear UI
       setProfilePicUrl(null);
-      // Attempt to delete file then clear prefs
       try {
         if (oldId) await deleteProfilePicture(oldId);
       } catch (delErr) {
@@ -172,7 +187,6 @@ export default function SettingsPage() {
       try {
         const updated = await account.updatePrefs({ ...(user.prefs || {}), profilePicId: null });
         setUser(updated);
-        // Best-effort mirror to users collection top-level field
         try {
           const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
           if (uid) await updateUser(uid, { profilePicId: null });
@@ -192,73 +206,82 @@ export default function SettingsPage() {
     }
   };
 
-  const handlePublicProfileToggle = async (value: boolean) => {
-    if (!user) return;
-    setError('');
-    setSuccess('');
-    try {
-      const updated = await account.updatePrefs({ ...(user.prefs || {}), publicProfile: value });
-      setUser(updated);
-      // Best-effort mirror to users collection top-level field
-      try {
-        const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
-        if (uid) await updateUser(uid, { publicProfile: value });
-      } catch (mirrorErr) {
-        console.warn('Failed to mirror publicProfile to users collection', mirrorErr);
-      }
-      setSuccess(value ? 'Profile is now public.' : 'Profile is now private.');
-    } catch (err: any) {
-      setError((err as Error)?.message || 'Failed to update profile visibility');
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress sx={{ color: '#00F5FF' }} />
+      </Box>
     );
   }
 
-  const enabledIntegrations = {};
-
-  const tabs = [
-    { id: 'profile' as TabType, label: 'Profile' },
-    { id: 'preferences' as TabType, label: 'Preferences' },
-    { id: 'subscription' as TabType, label: 'Subscription' },
-    ...(Object.values(enabledIntegrations).some(enabled => enabled) ? [{ id: 'integrations' as TabType, label: 'Integrations' }] : [])
-  ];
-
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <main className="px-6 md:px-20 lg:px-40 py-12 max-w-6xl mx-auto">
-        <div className="bg-card border border-border rounded-2xl shadow-3d-light dark:shadow-3d-dark">
-          <div className="border-b border-border">
-            <div className="flex px-6 gap-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-4 transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-accent text-accent'
-                      : 'border-transparent text-foreground/60 hover:text-accent hover:border-accent'
-                  }`}
-                >
-                  <p className="text-base font-bold">{tab.label}</p>
-                </button>
-              ))}
-            </div>
-          </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', py: 8 }}>
+      <Container maxWidth="lg">
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: '32px',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            overflow: 'hidden'
+          }}
+        >
+          <Box sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={(_, val) => setActiveTab(val)}
+              sx={{
+                px: 4,
+                '& .MuiTabs-indicator': { bgcolor: '#00F5FF', height: 3 },
+                '& .MuiTab-root': { 
+                  color: 'rgba(255, 255, 255, 0.5)', 
+                  fontWeight: 700, 
+                  py: 3,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  '&.Mui-selected': { color: '#00F5FF' }
+                }
+              }}
+            >
+              <Tab label="Profile" value="profile" icon={<PersonIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
+              <Tab label="Preferences" value="preferences" icon={<SettingsIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
+              <Tab label="Subscription" value="subscription" icon={<SubscriptionIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
+            </Tabs>
+          </Box>
 
-          <div className="p-8">
-            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} onRemoveProfilePicture={handleRemoveProfilePicture} isRemovingProfilePic={isRemovingProfilePic} />}
-            {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
+          <Box sx={{ p: { xs: 4, md: 6 } }}>
+            {error && <Alert severity="error" sx={{ mb: 4, borderRadius: '16px', bgcolor: 'rgba(211, 47, 47, 0.1)', color: '#ff5252', border: '1px solid rgba(211, 47, 47, 0.2)' }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 4, borderRadius: '16px', bgcolor: 'rgba(46, 125, 50, 0.1)', color: '#66bb6a', border: '1px solid rgba(46, 125, 50, 0.2)' }}>{success}</Alert>}
+
+            {activeTab === 'profile' && (
+              <ProfileTab 
+                user={user} 
+                profilePicUrl={profilePicUrl} 
+                onEditProfile={handleEditProfile} 
+                onRemoveProfilePicture={handleRemoveProfilePicture} 
+                isRemovingProfilePic={isRemovingProfilePic} 
+              />
+            )}
+            {activeTab === 'preferences' && (
+              <PreferencesTab 
+                settings={settings} 
+                onSettingChange={handleSettingChange} 
+                onUpdate={handleUpdate} 
+                currentAIMode={currentAIMode} 
+                userTier={userTier} 
+                onAIModeChange={handleAIModeChange} 
+                user={user}
+                isVerified={isVerified}
+                mfaStatus={mfaStatus}
+                setMfaStatus={setMfaStatus}
+              />
+            )}
             {activeTab === 'subscription' && <SubscriptionTab />}
-          </div>
-        </div>
-      </main>
-    </div>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 
@@ -269,62 +292,460 @@ const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture
       if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
-    if (email) {
-      const local = email.split('@')[0];
-      return local.slice(0, 1).toUpperCase();
-    }
-    return '';
+    if (email) return email[0].toUpperCase();
+    return '?';
   };
 
   const initials = getInitials(user?.name, user?.email);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-foreground text-3xl font-bold">Profile</h1>
+    <Box>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 6, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+        Profile
+      </Typography>
       
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-        <div className="flex flex-col items-center gap-4 flex-shrink-0">
-          <div className="rounded-full size-40 border-4 border-accent shadow-lg overflow-hidden flex items-center justify-center">
-            {profilePicUrl ? (
-              <div className="bg-center bg-no-repeat w-full h-full bg-cover" style={{ backgroundImage: `url(${profilePicUrl})` }} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-accent">
-                <span className="text-card-foreground text-2xl font-bold">{initials || (user?.name ? user.name[0].toUpperCase() : '?')}</span>
-              </div>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={8} alignItems={{ xs: 'center', md: 'flex-start' }}>
+        <Box sx={{ textAlign: 'center', flexShrink: 0 }}>
+          <Avatar 
+            src={profilePicUrl || undefined}
+            sx={{ 
+              width: 160, 
+              height: 160, 
+              mb: 3, 
+              border: '4px solid #00F5FF',
+              boxShadow: '0 0 30px rgba(0, 245, 255, 0.2)',
+              bgcolor: '#00F5FF',
+              color: '#000',
+              fontSize: '3rem',
+              fontWeight: 900
+            }}
+          >
+            {!profilePicUrl && initials}
+          </Avatar>
+
+          <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', mb: 0.5 }}>{user?.name}</Typography>
+          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 1 }}>{user?.email}</Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', mb: 4 }}>
+            Joined {new Date(user?.$createdAt).getFullYear()}
+          </Typography>
+
+          <Stack direction="row" spacing={2} justifyContent="center">
+            <Button 
+              variant="contained" 
+              onClick={onEditProfile}
+              startIcon={<EditIcon />}
+              sx={{ 
+                borderRadius: '12px', 
+                bgcolor: '#00F5FF', 
+                color: '#000', 
+                fontWeight: 800,
+                '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+              }}
+            >
+              Edit Profile
+            </Button>
+            {getUserProfilePicId(user) && (
+              <Button 
+                variant="outlined" 
+                onClick={onRemoveProfilePicture} 
+                disabled={isRemovingProfilePic}
+                startIcon={<DeleteIcon />}
+                sx={{ 
+                  borderRadius: '12px', 
+                  borderColor: 'rgba(255, 77, 77, 0.5)', 
+                  color: '#ff4d4d',
+                  '&:hover': { borderColor: '#ff4d4d', bgcolor: 'rgba(255, 77, 77, 0.05)' }
+                }}
+              >
+                {isRemovingProfilePic ? 'Removing...' : 'Remove'}
+              </Button>
             )}
-          </div>
-
-          <div className="flex flex-col items-center justify-center text-center">
-            <p className="text-foreground text-3xl font-bold">{user?.name}</p>
-            <p className="text-foreground/70 text-lg">{user?.email}</p>
-            <p className="text-foreground/60 text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
-          </div>
-            <div className="flex items-center gap-3">
-              <Button onClick={onEditProfile}>Edit Profile</Button>
-              {getUserProfilePicId(user) && (
-                <Button variant="secondary" onClick={onRemoveProfilePicture} disabled={isRemovingProfilePic}>
-                  {isRemovingProfilePic ? 'Removing...' : 'Remove'}
-                </Button>
-              )}
-            </div>
-
-        </div>
+          </Stack>
+        </Box>
         
-        <div className="w-full mt-8 md:mt-0">
-          {/* Content for the right side of the profile tab can be added here in the future. */}
-          <div className="border-b border-border mb-6">
-              <div className="flex px-4 gap-8">
-                  <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
-                  <p className="text-base font-bold">Activity</p>
-                  </div>
-              </div>
-          </div>
-          <div className="text-center py-12">
-              <p className="text-foreground/60">User activity feed will be displayed here.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Box sx={{ flex: 1, width: '100%' }}>
+          <Box sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', mb: 4 }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#00F5FF', pb: 2, borderBottom: '2px solid #00F5FF', display: 'inline-block' }}>
+              Activity
+            </Typography>
+          </Box>
+          <Paper sx={{ p: 6, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>User activity feed will be displayed here.</Typography>
+          </Paper>
+        </Box>
+      </Stack>
+    </Box>
+  );
+};
+
+const PreferencesTab = ({ 
+  settings, 
+  onSettingChange, 
+  onUpdate, 
+  currentAIMode, 
+  userTier, 
+  onAIModeChange,
+  user,
+  isVerified,
+  mfaStatus,
+  setMfaStatus
+}: any) => {
+  const [mfaModalOpen, setMfaModalOpen] = useState(false);
+  const [mfaModalFactor, setMfaModalFactor] = useState<'totp' | 'email'>('totp');
+  const [mfaMFALoading, setMFALoading] = useState(false);
+  const [totpSetupData, setTotpSetupData] = useState<any>(null);
+
+  const handleMFAEnable = async (factor: 'totp' | 'email') => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        const setup = await createTOTPFactor();
+        setTotpSetupData(setup);
+      } else {
+        await createEmailMFAFactor();
+      }
+    } catch (err: any) {
+      console.error('MFA setup error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
+  };
+
+  const handleMFAVerify = async (factor: 'totp' | 'email', otp: string) => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        await verifyTOTPFactor(otp);
+      }
+      const newStatus = await getMFAStatus();
+      setMfaStatus(newStatus);
+    } catch (err: any) {
+      console.error('MFA verification error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
+  };
+
+  const handleMFADisable = async (factor: 'totp' | 'email') => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        await deleteTOTPFactor();
+      } else {
+        await deleteEmailMFAFactor();
+      }
+      const newStatus = await getMFAStatus();
+      setMfaStatus(newStatus);
+    } catch (err: any) {
+      console.error('MFA disable error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
+  };
+
+  return (
+    <Box>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 6, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+        Preferences
+      </Typography>
+
+      <Stack spacing={6}>
+        {/* Account Status */}
+        <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <EmailIcon sx={{ color: isVerified ? '#66bb6a' : '#ff4d4d' }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Email Verification</Typography>
+              <Typography variant="body2" sx={{ color: isVerified ? '#66bb6a' : '#ff4d4d' }}>
+                {isVerified ? 'Your email is verified.' : 'Your email is not verified.'}
+              </Typography>
+            </Box>
+            {!isVerified && (
+              <Button variant="outlined" size="small" sx={{ borderRadius: '8px', color: '#00F5FF', borderColor: '#00F5FF' }}>
+                Verify Now
+              </Button>
+            )}
+          </Stack>
+        </Paper>
+
+        {/* AI Mode Section */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AIIcon sx={{ color: '#00F5FF' }} /> AI Generation Mode
+          </Typography>
+          <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={3}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Current AI Mode</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Controls AI behavior across the application</Typography>
+              </Box>
+              <AIModeSelect
+                currentMode={currentAIMode}
+                userTier={userTier}
+                onModeChangeAction={onAIModeChange}
+              />
+            </Stack>
+            <Box sx={{ mt: 3, p: 3, borderRadius: '16px', bgcolor: 'rgba(0, 245, 255, 0.05)', border: '1px solid rgba(0, 245, 255, 0.1)' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#00F5FF', mb: 0.5 }}>{getAIModeDisplayName(currentAIMode)}</Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>{getAIModeDescription(currentAIMode)}</Typography>
+            </Box>
+          </Paper>
+        </Box>
+
+        {/* Security Section */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <SecurityIcon sx={{ color: '#00F5FF' }} /> Security
+          </Typography>
+          <Stack spacing={3}>
+            <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Authenticator App (TOTP)</Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                    {mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
+                  </Typography>
+                </Box>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => { setMfaModalFactor('totp'); setMfaModalOpen(true); }}
+                  sx={{ borderRadius: '12px', color: '#00F5FF', borderColor: 'rgba(0, 245, 255, 0.3)' }}
+                >
+                  {mfaStatus.totp ? 'Manage' : 'Enable'}
+                </Button>
+              </Stack>
+            </Paper>
+            <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Email OTP</Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                    {mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
+                  </Typography>
+                </Box>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => { setMfaModalFactor('email'); setMfaModalOpen(true); }}
+                  sx={{ borderRadius: '12px', color: '#00F5FF', borderColor: 'rgba(0, 245, 255, 0.3)' }}
+                >
+                  {mfaStatus.email ? 'Manage' : 'Enable'}
+                </Button>
+              </Stack>
+            </Paper>
+          </Stack>
+        </Box>
+
+        {/* App Settings */}
+        {settings && (
+          <Box component="form" onSubmit={onUpdate}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <SettingsIcon sx={{ color: '#00F5FF' }} /> Application Settings
+            </Typography>
+            <Stack spacing={3}>
+              <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Theme</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Choose your preferred theme</Typography>
+                  </Box>
+                  <Select
+                    value={settings.settings.theme || 'light'}
+                    onChange={(e) => onSettingChange('theme', e.target.value)}
+                    size="small"
+                    sx={{ 
+                      minWidth: 120, 
+                      color: 'white', 
+                      '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#00F5FF' }
+                    }}
+                  >
+                    <MenuItem value="light">Light</MenuItem>
+                    <MenuItem value="dark">Dark</MenuItem>
+                    <MenuItem value="system">System</MenuItem>
+                  </Select>
+                </Stack>
+              </Paper>
+
+              <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <FormControlLabel
+                  control={
+                    <Switch 
+                      checked={settings.settings.notifications} 
+                      onChange={(e) => onSettingChange('notifications', e.target.checked)}
+                      sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#00F5FF' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00F5FF' } }}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Enable Notifications</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Receive email notifications for important updates</Typography>
+                    </Box>
+                  }
+                  sx={{ width: '100%', justifyContent: 'space-between', m: 0, flexDirection: 'row-reverse' }}
+                />
+              </Paper>
+
+              <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <FormControlLabel
+                  control={
+                    <Switch 
+                      checked={settings.settings.autoSave ?? true} 
+                      onChange={(e) => onSettingChange('autoSave', e.target.checked)}
+                      sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#00F5FF' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00F5FF' } }}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Auto-save Notes</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Automatically save notes while typing</Typography>
+                    </Box>
+                  }
+                  sx={{ width: '100%', justifyContent: 'space-between', m: 0, flexDirection: 'row-reverse' }}
+                />
+              </Paper>
+
+              <Button 
+                type="submit" 
+                variant="contained" 
+                startIcon={<SaveIcon />}
+                sx={{ 
+                  py: 2, 
+                  borderRadius: '16px', 
+                  bgcolor: '#00F5FF', 
+                  color: '#000', 
+                  fontWeight: 900,
+                  '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+                }}
+              >
+                Update Preferences
+              </Button>
+            </Stack>
+          </Box>
+        )}
+      </Stack>
+
+      <MFASettingsModal
+        isOpen={mfaModalOpen}
+        onClose={() => { setMfaModalOpen(false); setTotpSetupData(null); }}
+        factor={mfaModalFactor}
+        isEnabled={mfaModalFactor === 'totp' ? mfaStatus.totp : mfaStatus.email}
+        onEnable={handleMFAEnable}
+        onDisable={handleMFADisable}
+        onVerify={handleMFAVerify}
+        totpQrCode={totpSetupData?.qrCode}
+        totpManualEntry={totpSetupData?.secret}
+      />
+    </Box>
+  );
+};
+
+const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
+  const [name, setName] = useState(user?.name || '');
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSaveChanges = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      let updatedUser = user;
+      let uploadedFile: any = null;
+      if (profilePic) {
+        try {
+          uploadedFile = await uploadProfilePicture(profilePic);
+        } catch (uploadErr) {
+          setSaveError('Failed to upload new profile picture');
+          setIsSaving(false);
+          return;
+        }
+
+        try {
+          const newPrefs = { ...(user.prefs || {}), profilePicId: uploadedFile.$id };
+          updatedUser = await account.updatePrefs(newPrefs);
+        } catch (prefErr) {
+          try { if (uploadedFile?.$id) await deleteProfilePicture(uploadedFile.$id); } catch {}
+          setSaveError('Failed to save profile picture to your account');
+          setIsSaving(false);
+          return;
+        }
+
+        const oldIdAfter = getUserProfilePicId(user);
+        if (oldIdAfter && uploadedFile && oldIdAfter !== uploadedFile.$id) {
+          try { await deleteProfilePicture(oldIdAfter); } catch {}
+        }
+
+        try {
+          const uid = updatedUser?.$id || user?.$id;
+          if (uid && uploadedFile?.$id) await updateUser(uid, { profilePicId: uploadedFile.$id });
+        } catch {}
+      }
+
+      if (name !== user.name) {
+        try {
+          updatedUser = await account.updateName(name);
+          try {
+            const uid = updatedUser?.$id || user?.$id;
+            if (uid) await updateUser(uid, { name });
+          } catch {}
+        } catch {
+          setSaveError('Failed to update name');
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      onProfileUpdate(updatedUser, !!profilePic);
+      onClose();
+    } catch {
+      setSaveError('Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Paper sx={{ p: 6, borderRadius: '32px', bgcolor: 'rgba(10, 10, 10, 0.95)', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: 450, mx: 'auto' }}>
+      <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, color: 'white', fontFamily: 'var(--font-space-grotesk)' }}>Edit Profile</Typography>
+      <Stack spacing={4}>
+        <TextField
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          fullWidth
+          variant="outlined"
+          sx={{ 
+            '& .MuiOutlinedInput-root': { color: 'white', borderRadius: '16px', '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' }, '&:hover fieldset': { borderColor: '#00F5FF' } },
+            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.5)' }
+          }}
+        />
+        <Box>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 1, display: 'block' }}>Profile Picture</Typography>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
+            style={{ color: 'white', width: '100%' }}
+          />
+        </Box>
+        {saveError && <Typography variant="caption" sx={{ color: '#ff4d4d' }}>{saveError}</Typography>}
+        <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Button onClick={onClose} sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cancel</Button>
+          <Button 
+            onClick={handleSaveChanges} 
+            disabled={isSaving}
+            variant="contained"
+            sx={{ borderRadius: '12px', bgcolor: '#00F5FF', color: '#000', fontWeight: 800 }}
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
   );
 };
 
@@ -355,7 +776,6 @@ const SettingsTab = ({
   const [mfaModalFactor, setMfaModalFactor] = useState<'totp' | 'email'>('totp');
   const [mfaMFALoading, setMFALoading] = useState(false);
   const [totpSetupData, setTotpSetupData] = useState<any>(null);
-
 
   const handleMFAEnable = async (factor: 'totp' | 'email') => {
     setMFALoading(true);
@@ -418,7 +838,6 @@ const SettingsTab = ({
     setDeleteError('');
     setDeleteSuccess('');
     try {
-      // Best-effort delete of user notes first
       try {
         const { getAllNotes, deleteNote } = await import('@/lib/appwrite');
         const all = await getAllNotes();
@@ -429,379 +848,214 @@ const SettingsTab = ({
         console.warn('Failed to bulk delete notes before account deletion', inner);
       }
 
-      // In Appwrite client SDK, direct self-account deletion may not be available; instead clear sessions and mark deletion flag.
       try { await account.deleteSessions(); } catch (e) { console.warn('Failed to delete sessions', e); }
-      try { const updated = await account.updatePrefs({ ...(user.prefs || {}), deletedAt: new Date().toISOString() });
-          // Best-effort mirror deletedAt flag to users collection
-          try {
-            const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
-            if (uid) await updateUser(uid, { deletedAt: updated.prefs?.deletedAt || new Date().toISOString() });
-          } catch (mirrorErr) {
-            console.warn('Failed to mirror deletedAt to users collection', mirrorErr);
-          }
-        } catch (e) { console.warn('Failed to mark deletion', e); }
-       setDeleteSuccess('Account scheduled for deletion. Redirecting...');
-       setTimeout(() => { window.location.href = '/'; }, 1500);
-     } catch (err: any) {
-       setDeleteError(err?.message || 'Failed to delete account');
-     } finally {
-       setIsDeleting(false);
-     }
-   };
+      try { 
+        const updated = await account.updatePrefs({ ...(user.prefs || {}), deletedAt: new Date().toISOString() });
+        const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
+        if (uid) await updateUser(uid, { deletedAt: updated.prefs?.deletedAt || new Date().toISOString() });
+      } catch (e) { console.warn('Failed to mark deletion', e); }
+      setDeleteSuccess('Account scheduled for deletion. Redirecting...');
+      setTimeout(() => { window.location.href = '/'; }, 1500);
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-foreground text-3xl font-bold">Settings</h1>
-      
-      <div className="p-4 bg-background rounded-xl border border-border">
-        <p className="text-foreground text-sm">
-          Email status:{' '}
-          {isVerified ? (
-            <span className="text-green-600 dark:text-green-400 font-medium">Verified</span>
-          ) : (
-            <span className="text-red-600 dark:text-red-400 font-medium">
-              Not verified{' '}
-              <Button variant="link" size="sm" onClick={() => router.push('/verify')}>
-                Verify email
-              </Button>
-            </span>
-          )}
-        </p>
-      </div>
+    <Box>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 6, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+        Account Settings
+      </Typography>
 
-      {/* MFA Section */}
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-            <p className="text-sm text-foreground/70">Enhance your account security</p>
-          </div>
-          {(mfaStatus.totp || mfaStatus.email) ? (
-            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-              Enabled
-            </span>
-          ) : (
-            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
-              Disabled
-            </span>
-          )}
-        </div>
-
-        <div className="space-y-3">
-          {/* TOTP */}
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                <p className="text-xs text-foreground/60 mt-1">
-                  {mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setMfaModalFactor('totp');
-                  setMfaModalOpen(true);
-                }}
-                disabled={mfaMFALoading}
-              >
-                {mfaStatus.totp ? 'Manage' : 'Enable'}
+      <Stack spacing={6}>
+        {/* Email Status */}
+        <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <EmailIcon sx={{ color: isVerified ? '#66bb6a' : '#ff4d4d' }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Email Status</Typography>
+              <Typography variant="body2" sx={{ color: isVerified ? '#66bb6a' : '#ff4d4d' }}>
+                {isVerified ? 'Verified' : 'Not verified'}
+              </Typography>
+            </Box>
+            {!isVerified && (
+              <Button variant="outlined" size="small" onClick={() => router.push('/verify')} sx={{ borderRadius: '8px', color: '#00F5FF', borderColor: '#00F5FF' }}>
+                Verify Now
               </Button>
-            </div>
-          </div>
+            )}
+          </Stack>
+        </Paper>
 
-          {/* Email OTP */}
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Email OTP</p>
-                <p className="text-xs text-foreground/60 mt-1">
-                  {mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setMfaModalFactor('email');
-                  setMfaModalOpen(true);
-                }}
-                disabled={mfaMFALoading}
-              >
-                {mfaStatus.email ? 'Manage' : 'Enable'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* MFA Section */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <SecurityIcon sx={{ color: '#00F5FF' }} /> Multi-Factor Authentication
+          </Typography>
+          <Stack spacing={3}>
+            <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Authenticator App (TOTP)</Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                    {mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
+                  </Typography>
+                </Box>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => { setMfaModalFactor('totp'); setMfaModalOpen(true); }}
+                  sx={{ borderRadius: '12px', color: '#00F5FF', borderColor: 'rgba(0, 245, 255, 0.3)' }}
+                >
+                  {mfaStatus.totp ? 'Manage' : 'Enable'}
+                </Button>
+              </Stack>
+            </Paper>
+            <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Email OTP</Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                    {mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
+                  </Typography>
+                </Box>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => { setMfaModalFactor('email'); setMfaModalOpen(true); }}
+                  sx={{ borderRadius: '12px', color: '#00F5FF', borderColor: 'rgba(0, 245, 255, 0.3)' }}
+                >
+                  {mfaStatus.email ? 'Manage' : 'Enable'}
+                </Button>
+              </Stack>
+            </Paper>
+          </Stack>
+        </Box>
 
-      {/* Password Section */}
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Password</h3>
-            <p className="text-sm text-foreground/70">Manage your account password</p>
-          </div>
-        </div>
-        
-        <div className="p-3 bg-card rounded-lg border border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Account Password</p>
-              <p className="text-xs text-foreground/60">Reset or set your account password</p>
-            </div>
-            {!showPasswordReset ? (
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => setShowPasswordReset(true)}
-              >
-                Reset
-              </Button>
-            ) : null}
-          </div>
-          
-          {/* Password Reset Flow */}
-          {showPasswordReset && (
-            <div className="mt-4 pt-4 border-t border-border">
-              {!resetEmailSent ? (
-                <div className="space-y-3">
-                  <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
-                      Send password reset link to:
-                    </p>
-                    <p className="text-sm text-accent font-medium">{user?.email}</p>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={handlePasswordReset}
-                      className="flex-1"
-                    >
-                      Yes, Send Reset Link
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={handleCancelPasswordReset}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
-                    <p className="text-sm text-green-800 dark:text-green-300">
-                      Password reset email sent! Check your inbox and follow the instructions.
-                    </p>
-                  </div>
-                  
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={handleCancelPasswordReset}
-                    className="w-full"
-                  >
-                    Done
-                  </Button>
-                </div>
+        {/* Password Section */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <LockIcon sx={{ color: '#00F5FF' }} /> Password
+          </Typography>
+          <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Account Password</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Reset or set your account password</Typography>
+              </Box>
+              {!showPasswordReset && (
+                <Button 
+                  variant="outlined" 
+                  onClick={() => setShowPasswordReset(true)}
+                  sx={{ borderRadius: '12px', color: '#00F5FF', borderColor: 'rgba(0, 245, 255, 0.3)' }}
+                >
+                  Reset
+                </Button>
               )}
-            </div>
-          )}
-        </div>
-      </div>
+            </Stack>
+            
+            {showPasswordReset && (
+              <Box sx={{ mt: 4, pt: 4, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                {!resetEmailSent ? (
+                  <Stack spacing={3}>
+                    <Alert severity="warning" sx={{ borderRadius: '16px', bgcolor: 'rgba(255, 152, 0, 0.1)', color: '#ff9800', border: '1px solid rgba(255, 152, 0, 0.2)' }}>
+                      Send password reset link to: <strong>{user?.email}</strong>
+                    </Alert>
+                    <Stack direction="row" spacing={2}>
+                      <Button variant="contained" fullWidth onClick={handlePasswordReset} sx={{ bgcolor: '#00F5FF', color: '#000', fontWeight: 800 }}>
+                        Send Reset Link
+                      </Button>
+                      <Button variant="outlined" fullWidth onClick={handleCancelPasswordReset} sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                        Cancel
+                      </Button>
+                    </Stack>
+                  </Stack>
+                ) : (
+                  <Stack spacing={3}>
+                    <Alert severity="success" sx={{ borderRadius: '16px', bgcolor: 'rgba(76, 175, 80, 0.1)', color: '#4caf50', border: '1px solid rgba(76, 175, 80, 0.2)' }}>
+                      Password reset email sent! Check your inbox.
+                    </Alert>
+                    <Button variant="outlined" fullWidth onClick={handleCancelPasswordReset} sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                      Done
+                    </Button>
+                  </Stack>
+                )}
+              </Box>
+            )}
+          </Paper>
+        </Box>
 
-      
-      {/* MFA Status Section */}
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-            <p className="text-sm text-foreground/70">Enhance your account security</p>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          {/* TOTP */}
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                <p className="text-xs text-foreground/60 mt-1">
-                  {mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setMfaModalFactor('totp');
-                  setMfaModalOpen(true);
-                }}
-                disabled={mfaMFALoading}
-              >
-                {mfaStatus.totp ? 'Manage' : 'Enable'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Email OTP */}
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Email OTP</p>
-                <p className="text-xs text-foreground/60 mt-1">
-                  {mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setMfaModalFactor('email');
-                  setMfaModalOpen(true);
-                }}
-                disabled={mfaMFALoading}
-              >
-                {mfaStatus.email ? 'Manage' : 'Enable'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-      {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
-          <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-        </div>
-      )}
-      
-      {success && (
-        <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
-          <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
-        </div>
-      )}
-
-      {settings && (
-        <form onSubmit={onUpdate} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-            <input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Name</label>
-            <input
-              type="text"
-              value={user?.name || ''}
-              disabled
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-            <div>
-              <label className="text-sm font-medium text-foreground">Enable Notifications</label>
-              <p className="text-xs text-foreground/70 mt-1">Receive email notifications for important updates</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.settings.notifications}
-                onChange={(e) => onSettingChange('notifications', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-            <div>
-              <label className="text-sm font-medium text-foreground">Make Profile Public</label>
-              <p className="text-xs text-foreground/70 mt-1">Allow other users to find your profile and share notes with you</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!!getUserField(user, 'publicProfile')}
+        {/* Public Profile Toggle */}
+        <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={!!getUserField(user, 'publicProfile')} 
                 onChange={(e) => onPublicProfileToggle && onPublicProfileToggle(e.target.checked)}
-                className="sr-only peer"
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#00F5FF' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00F5FF' } }}
               />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-            </label>
-          </div>
+            }
+            label={
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Make Profile Public</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Allow other users to find your profile and share notes with you</Typography>
+              </Box>
+            }
+            sx={{ width: '100%', justifyContent: 'space-between', m: 0, flexDirection: 'row-reverse' }}
+          />
+        </Paper>
 
-          <div className="pt-4">
-            <Button type="submit" className="w-full">
-              Update Settings
-            </Button>
-          </div>
-        </form>
-      )}
-
-      {/* Danger Zone */}
-      <div className="mt-12 border-t border-border pt-8">
-        <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
-        <div className="p-6 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl space-y-4">
-          <p className="text-sm text-red-700 dark:text-red-300">
-            Deleting your account will permanently remove your notes and settings. This action cannot be undone.
-          </p>
-          {!showDelete ? (
-            <Button
-              variant="secondary"
-              onClick={() => setShowDelete(true)}
-              className="border-red-500 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white"
-            >
-              Delete Account
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="Type DELETE to confirm"
-                value={deleteConfirm}
-                onChange={(e) => setDeleteConfirm(e.target.value)}
-                className="w-full px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg bg-red-100/40 dark:bg-red-900/20 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-              {deleteError && <p className="text-xs text-red-600 dark:text-red-400">{deleteError}</p>}
-              {deleteSuccess && <p className="text-xs text-green-600 dark:text-green-400">{deleteSuccess}</p>}
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  disabled={isDeleting || deleteConfirm !== 'DELETE'}
-                  onClick={handleDeleteAccount}
-                  className="flex-1 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                >
-                  {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => { setShowDelete(false); setDeleteConfirm(''); setDeleteError(''); }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+        {/* Danger Zone */}
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#ff4d4d', mb: 3 }}>Danger Zone</Typography>
+          <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 77, 77, 0.05)', border: '1px solid rgba(255, 77, 77, 0.1)' }}>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 3 }}>
+              Deleting your account will permanently remove your notes and settings. This action cannot be undone.
+            </Typography>
+            {!showDelete ? (
+              <Button 
+                variant="outlined" 
+                onClick={() => setShowDelete(true)}
+                sx={{ color: '#ff4d4d', borderColor: 'rgba(255, 77, 77, 0.3)', '&:hover': { borderColor: '#ff4d4d', bgcolor: 'rgba(255, 77, 77, 0.05)' } }}
+              >
+                Delete Account
+              </Button>
+            ) : (
+              <Stack spacing={3}>
+                <TextField
+                  placeholder="Type DELETE to confirm"
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  fullWidth
+                  size="small"
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { color: 'white', bgcolor: 'rgba(0,0,0,0.2)', borderRadius: '12px', '& fieldset': { borderColor: 'rgba(255, 77, 77, 0.3)' }, '&:hover fieldset': { borderColor: '#ff4d4d' } }
+                  }}
+                />
+                {deleteError && <Typography variant="caption" sx={{ color: '#ff4d4d' }}>{deleteError}</Typography>}
+                {deleteSuccess && <Typography variant="caption" sx={{ color: '#4caf50' }}>{deleteSuccess}</Typography>}
+                <Stack direction="row" spacing={2}>
+                  <Button 
+                    variant="contained" 
+                    fullWidth 
+                    disabled={isDeleting || deleteConfirm !== 'DELETE'} 
+                    onClick={handleDeleteAccount}
+                    sx={{ bgcolor: '#ff4d4d', color: 'white', fontWeight: 800, '&:hover': { bgcolor: '#d32f2f' } }}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
+                  </Button>
+                  <Button variant="outlined" fullWidth onClick={() => { setShowDelete(false); setDeleteConfirm(''); setDeleteError(''); }} sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                    Cancel
+                  </Button>
+                </Stack>
+              </Stack>
+            )}
+          </Paper>
+        </Box>
+      </Stack>
 
       <MFASettingsModal
         isOpen={mfaModalOpen}
-        onClose={() => {
-          setMfaModalOpen(false);
-          setTotpSetupData(null);
-        }}
+        onClose={() => { setMfaModalOpen(false); setTotpSetupData(null); }}
         factor={mfaModalFactor}
         isEnabled={mfaModalFactor === 'totp' ? mfaStatus.totp : mfaStatus.email}
         onEnable={handleMFAEnable}
@@ -810,228 +1064,273 @@ const SettingsTab = ({
         totpQrCode={totpSetupData?.qrCode}
         totpManualEntry={totpSetupData?.secret}
       />
-    </div>
+    </Box>
   );
 };
 
-const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, currentAIMode, userTier, onAIModeChange }: any) => (
-  <div className="space-y-8">
-    <h1 className="text-foreground text-3xl font-bold">Preferences</h1>
-    
-    {error && (
-      <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
-        <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-      </div>
-    )}
-    
-    {success && (
-      <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
-        <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
-      </div>
-    )}
+export default function SettingsPage() {
+  const [user, setUser] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [mfaStatus, setMfaStatus] = useState({ totp: false, email: false });
+  const router = useRouter();
 
-    {/* AI Mode Section */}
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">AI Generation Mode</h2>
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <label className="text-sm font-medium text-foreground">Current AI Mode</label>
-            <p className="text-xs text-foreground/70 mt-1">Controls AI behavior across the application</p>
-          </div>
-          <AIModeSelect
-            currentMode={currentAIMode}
-            userTier={userTier}
-            onModeChangeAction={onAIModeChange}
-          />
-        </div>
-        <div className="mt-4 p-4 bg-card rounded-lg">
-          <p className="text-sm font-medium text-foreground mb-2">{getAIModeDisplayName(currentAIMode)}</p>
-          <p className="text-xs text-foreground/70">{getAIModeDescription(currentAIMode)}</p>
-        </div>
-      </div>
-    </div>
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [accountData, settingsData, mfa] = await Promise.all([
+          account.get(),
+          getUserSettings(),
+          getMFAStatus()
+        ]);
+        setUser(accountData);
+        setSettings(settingsData);
+        setIsVerified(accountData.emailVerification);
+        setMfaStatus(mfa);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
-    {settings && (
-      <form onSubmit={onUpdate} className="space-y-6">
-        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-          <div>
-            <label className="text-sm font-medium text-foreground">Theme</label>
-            <p className="text-xs text-foreground/70 mt-1">Choose your preferred theme</p>
-          </div>
-          <select
-            value={settings.settings.theme || 'light'}
-            onChange={(e) => onSettingChange('theme', e.target.value)}
-            className="px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System</option>
-          </select>
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-          <div>
-            <label className="text-sm font-medium text-foreground">Auto-save Notes</label>
-            <p className="text-xs text-foreground/70 mt-1">Automatically save notes while typing</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.settings.autoSave ?? true}
-              onChange={(e) => onSettingChange('autoSave', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-          </label>
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-          <div>
-            <label className="text-sm font-medium text-foreground">Show Note Previews</label>
-            <p className="text-xs text-foreground/70 mt-1">Display note content previews in lists</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.settings.showPreviews ?? true}
-              onChange={(e) => onSettingChange('showPreviews', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-          </label>
-        </div>
-
-        <div className="pt-4">
-          <Button type="submit" className="w-full">
-            Update Preferences
-          </Button>
-        </div>
-      </form>
-    )}
-  </div>
-);
-
-const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
-  const [name, setName] = useState(user?.name || '');
-  const [profilePic, setProfilePic] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-
-  const handleSaveChanges = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    setSaveError(null);
+  const handleUpdateSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
     try {
-      let updatedUser = user;
-      // Handle profile picture swap: upload new, update prefs, delete old
-      let uploadedFile: any = null;
-      if (profilePic) {
-        const oldId = getUserProfilePicId(user);
-        try {
-          uploadedFile = await uploadProfilePicture(profilePic);
-        } catch (uploadErr) {
-          console.error('Failed to upload new profile picture', uploadErr);
-          setSaveError('Failed to upload new profile picture');
-          setIsSaving(false);
-          return;
-        }
-
-        try {
-          const newPrefs = { ...(user.prefs || {}), profilePicId: uploadedFile.$id };
-          updatedUser = await account.updatePrefs(newPrefs);
-        } catch (prefErr) {
-          console.error('Failed to update prefs with new profilePicId', prefErr);
-          // Attempt cleanup of newly uploaded file
-          try {
-            if (uploadedFile && uploadedFile.$id) await deleteProfilePicture(uploadedFile.$id);
-          } catch (cleanupErr) {
-            console.warn('Cleanup of uploaded profile picture failed', cleanupErr);
-          }
-          setSaveError('Failed to save profile picture to your account');
-          setIsSaving(false);
-          return;
-        }
-
-        // Successfully updated prefs; delete old file if present and different
-        const oldIdAfter = getUserProfilePicId(user);
-        if (oldIdAfter && uploadedFile && oldIdAfter !== uploadedFile.$id) {
-          try {
-            await deleteProfilePicture(oldIdAfter);
-          } catch (delOldErr) {
-            console.warn('Failed to delete previous profile picture', delOldErr);
-          }
-        }
-
-        // Best-effort mirror to users collection top-level field
-        try {
-          const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
-          if (uid && uploadedFile && uploadedFile.$id) {
-            await updateUser(uid, { profilePicId: uploadedFile.$id });
-          }
-        } catch (mirrorErr) {
-          console.warn('Failed to mirror new profilePicId to users collection', mirrorErr);
-        }
-      }
-
-      // Update name separately (Appwrite account.updateName returns the updated user)
-      if (name !== user.name) {
-        try {
-          updatedUser = await account.updateName(name);
-          // Mirror name to users collection
-          try {
-            const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
-            if (uid) await updateUser(uid, { name });
-          } catch (mirrorNameErr) {
-            console.warn('Failed to mirror name to users collection', mirrorNameErr);
-          }
-        } catch (nameErr) {
-          console.error('Failed to update name', nameErr);
-          setSaveError('Failed to update name');
-          setIsSaving(false);
-          return;
-        }
-      }
-
-      onProfileUpdate(updatedUser, !!profilePic);
-      onClose();
-    } catch (error) {
-      console.error('Failed to save changes:', error);
-      setSaveError('Failed to save changes');
-    } finally {
-      setIsSaving(false);
+      await updateUserSettings(settings.settings);
+      setSuccess('Settings updated successfully');
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
+  const handleSettingChange = (key: string, value: any) => {
+    setSettings((prev: any) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [key]: value
+      }
+    }));
+  };
+
+  const handleAIModeChange = async (newMode: string) => {
+    try {
+      const updatedSettings = { ...settings.settings, aiMode: newMode };
+      await updateUserSettings(updatedSettings);
+      setSettings((prev: any) => ({ ...prev, settings: updatedSettings }));
+      setSuccess(`AI mode updated to ${getAIModeDisplayName(newMode)}`);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleProfileUpdate = (updatedUser: any, picChanged: boolean) => {
+    setUser(updatedUser);
+    if (picChanged) {
+      setSuccess('Profile picture updated successfully');
+    } else {
+      setSuccess('Profile updated successfully');
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
+    const oldId = getUserProfilePicId(user);
+    if (!oldId) return;
+    try {
+      await deleteProfilePicture(oldId);
+      const newPrefs = { ...user.prefs };
+      delete newPrefs.profilePicId;
+      const updatedUser = await account.updatePrefs(newPrefs);
+      try {
+        const uid = updatedUser?.$id || user?.$id;
+        if (uid) await updateUser(uid, { profilePicId: null });
+      } catch {}
+      setUser(updatedUser);
+      setSuccess('Profile picture removed');
+    } catch (err: any) {
+      setError('Failed to remove profile picture');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    try {
+      await account.createRecovery(user.email, `${window.location.origin}/reset-password`);
+      setResetEmailSent(true);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleCancelPasswordReset = () => {
+    setShowPasswordReset(false);
+    setResetEmailSent(false);
+  };
+
+  const handlePublicProfileToggle = async (enabled: boolean) => {
+    try {
+      const newPrefs = { ...user.prefs, publicProfile: enabled };
+      const updatedUser = await account.updatePrefs(newPrefs);
+      try {
+        const uid = updatedUser?.$id || user?.$id;
+        if (uid) await updateUser(uid, { publicProfile: enabled });
+      } catch {}
+      setUser(updatedUser);
+      setSuccess(`Public profile ${enabled ? 'enabled' : 'disabled'}`);
+    } catch (err: any) {
+      setError('Failed to update profile visibility');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress sx={{ color: '#00F5FF' }} />
+      </Box>
+    );
+  }
+
   return (
-    <div className="p-8 bg-card border border-border rounded-2xl shadow-3d-light dark:shadow-3d-dark max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-foreground mb-6">Edit Profile</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            placeholder="Enter your name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Profile Picture</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-accent file:text-card-foreground hover:file:bg-accent-dark"
-          />
-        </div>
-      </div>
-  <div className="flex justify-end gap-4 mt-8">
-        {saveError && <p className="text-sm text-red-600 mr-auto self-center">{saveError}</p>}
-        <Button variant="secondary" onClick={onClose} disabled={isSaving}>Cancel</Button>
-        <Button onClick={handleSaveChanges} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</Button>
-      </div>
-    </div>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 6 } }}>
+      {isEditingProfile ? (
+        <EditProfileForm 
+          user={user} 
+          onClose={() => setIsEditingProfile(false)} 
+          onProfileUpdate={handleProfileUpdate}
+        />
+      ) : (
+        <>
+          <Box sx={{ mb: 8 }}>
+            <Typography variant="h2" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+              Settings
+            </Typography>
+            <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>
+              Manage your account, preferences, and security
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 6 }}>
+            <Paper 
+              sx={{ 
+                width: { xs: '100%', md: 280 }, 
+                flexShrink: 0,
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                p: 2,
+                height: 'fit-content'
+              }}
+            >
+              <Tabs
+                orientation="vertical"
+                value={activeTab}
+                onChange={(_, newValue) => setActiveTab(newValue)}
+                sx={{
+                  '& .MuiTabs-indicator': { display: 'none' },
+                  '& .MuiTab-root': {
+                    alignItems: 'flex-start',
+                    textAlign: 'left',
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    borderRadius: '16px',
+                    mb: 1,
+                    minHeight: 56,
+                    '&.Mui-selected': {
+                      color: '#00F5FF',
+                      bgcolor: 'rgba(0, 245, 255, 0.1)',
+                    },
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    }
+                  }
+                }}
+              >
+                <Tab icon={<PersonIcon sx={{ mr: 2 }} />} iconPosition="start" label="Profile" />
+                <Tab icon={<SettingsIcon sx={{ mr: 2 }} />} iconPosition="start" label="Preferences" />
+                <Tab icon={<SecurityIcon sx={{ mr: 2 }} />} iconPosition="start" label="Account" />
+              </Tabs>
+            </Paper>
+
+            <Box sx={{ flex: 1 }}>
+              {success && (
+                <Alert 
+                  severity="success" 
+                  onClose={() => setSuccess(null)}
+                  sx={{ mb: 4, borderRadius: '16px', bgcolor: 'rgba(76, 175, 80, 0.1)', color: '#4caf50', border: '1px solid rgba(76, 175, 80, 0.2)' }}
+                >
+                  {success}
+                </Alert>
+              )}
+              {error && (
+                <Alert 
+                  severity="error" 
+                  onClose={() => setError(null)}
+                  sx={{ mb: 4, borderRadius: '16px', bgcolor: 'rgba(244, 67, 54, 0.1)', color: '#f44336', border: '1px solid rgba(244, 67, 54, 0.2)' }}
+                >
+                  {error}
+                </Alert>
+              )}
+
+              {activeTab === 0 && (
+                <ProfileTab 
+                  user={user} 
+                  onEditProfile={() => setIsEditingProfile(true)} 
+                  onRemoveProfilePicture={handleRemoveProfilePicture}
+                />
+              )}
+              {activeTab === 1 && (
+                <PreferencesTab 
+                  settings={settings} 
+                  onSettingChange={handleSettingChange} 
+                  onUpdate={handleUpdateSettings}
+                  currentAIMode={settings?.settings?.aiMode || 'balanced'}
+                  userTier={user?.prefs?.tier || 'free'}
+                  onAIModeChange={handleAIModeChange}
+                  user={user}
+                  isVerified={isVerified}
+                  mfaStatus={mfaStatus}
+                  setMfaStatus={setMfaStatus}
+                />
+              )}
+              {activeTab === 2 && (
+                <SettingsTab 
+                  user={user}
+                  settings={settings}
+                  isVerified={isVerified}
+                  error={error}
+                  success={success}
+                  onUpdate={handleUpdateSettings}
+                  onSettingChange={handleSettingChange}
+                  router={router}
+                  showPasswordReset={showPasswordReset}
+                  setShowPasswordReset={setShowPasswordReset}
+                  resetEmailSent={resetEmailSent}
+                  handlePasswordReset={handlePasswordReset}
+                  handleCancelPasswordReset={handleCancelPasswordReset}
+                  onPublicProfileToggle={handlePublicProfileToggle}
+                  mfaStatus={mfaStatus}
+                  setMfaStatus={setMfaStatus}
+                />
+              )}
+            </Box>
+          </Box>
+        </>
+      )}
+    </Box>
   );
-};
+}
+

@@ -71,12 +71,23 @@ export default function AppShell({ children }: AppShellProps) {
           alignItems: 'center', 
           justifyContent: 'center', 
           minHeight: '100vh',
-          gap: 2,
+          gap: 3,
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
         }}
       >
-        <CircularProgress size={48} thickness={4} />
-        <Typography variant="body1" color="text.secondary">
-          Loading WhisperNote...
+        <CircularProgress size={48} thickness={4} sx={{ color: '#00F5FF' }} />
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          }}
+        >
+          Initializing WhisperNote...
         </Typography>
       </Box>
     );
@@ -88,8 +99,8 @@ export default function AppShell({ children }: AppShellProps) {
         sx={{
           display: 'flex',
           minHeight: '100vh',
-          filter: idmWindowOpen ? 'blur(4px)' : 'none',
-          transition: 'filter 0.2s ease',
+          filter: idmWindowOpen ? 'blur(25px)' : 'none',
+          transition: 'filter 0.3s ease',
         }}
       >
         <Navigation />
@@ -135,8 +146,8 @@ export default function AppShell({ children }: AppShellProps) {
           sx={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.55)',
-            backdropFilter: 'blur(6px)',
+            backgroundColor: 'rgba(10, 10, 10, 0.8)',
+            backdropFilter: 'blur(25px) saturate(180%)',
             zIndex: 1400,
             display: 'flex',
             justifyContent: 'center',
@@ -145,12 +156,36 @@ export default function AppShell({ children }: AppShellProps) {
             px: 3,
           }}
         >
-          <Box>
-            <Typography variant="h6" color="common.white" sx={{ mb: 1 }}>
-              IDM authentication window open
+          <Box sx={{ 
+            p: 4, 
+            borderRadius: '24px', 
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)'
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 2, 
+                fontWeight: 900, 
+                fontFamily: '"Space Grotesk", sans-serif',
+                color: '#00F5FF',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}
+            >
+              Authentication Required
             </Typography>
-            <Typography variant="body2" color="common.white">
-              Please finish logging in from the IDM popup. You can close this overlay afterward.
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontFamily: '"Inter", sans-serif',
+                maxWidth: 300,
+                lineHeight: 1.6
+              }}
+            >
+              Please complete the login process in the popup window to continue.
             </Typography>
           </Box>
         </Box>

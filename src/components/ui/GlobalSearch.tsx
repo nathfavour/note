@@ -201,35 +201,40 @@ export default function GlobalSearch({
         variant="outlined"
         sx={{
           '& .MuiOutlinedInput-root': {
-            backgroundColor: 'background.paper',
+            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+            backdropFilter: 'blur(10px)',
             borderRadius: '16px',
             '& fieldset': {
-              border: `2px solid ${theme.palette.divider}`,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
             },
             '&:hover fieldset': {
-              border: `2px solid ${theme.palette.primary.main}40`,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
             },
             '&.Mui-focused fieldset': {
-              border: `2px solid ${theme.palette.primary.main}`,
+              border: '1px solid #00F5FF',
             },
           },
+          '& .MuiInputBase-input': {
+            fontFamily: '"Inter", sans-serif',
+            color: 'rgba(255, 255, 255, 0.9)',
+          }
         }}
         slotProps={{
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon color="action" />
+                <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.4)' }} />
               </InputAdornment>
             ),
             endAdornment: (
               <InputAdornment position="end">
                 {query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton size="small" onClick={handleClear} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                     <ClearIcon />
                   </IconButton>
                 )}
                 {showFilters && (
-                  <IconButton size="small">
+                  <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                     <FilterIcon />
                   </IconButton>
                 )}
@@ -237,7 +242,11 @@ export default function GlobalSearch({
                     <IconButton 
                       size="small" 
                       onClick={handleUserMenuOpen}
-                      sx={{ ml: 1 }}
+                      sx={{ 
+                        ml: 1,
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        p: 0.5
+                      }}
                     >
                       {user.name ? (
                         <Avatar 
@@ -245,14 +254,17 @@ export default function GlobalSearch({
                             width: 24, 
                             height: 24, 
                             fontSize: '0.75rem',
-                            backgroundColor: 'primary.main'
+                            backgroundColor: '#00F5FF',
+                            color: '#000',
+                            fontWeight: 900,
+                            fontFamily: '"Space Grotesk", sans-serif'
                           }}
                           src={smallProfileUrl ?? undefined}
                         >
                           {user.name.charAt(0).toUpperCase()}
                         </Avatar>
                       ) : (
-                        <AccountIcon />
+                        <AccountIcon sx={{ color: '#00F5FF' }} />
                       )}
                     </IconButton>
                   )}
@@ -275,11 +287,18 @@ export default function GlobalSearch({
                 onDelete={() => handleFilterToggle(filter)}
                 size="small"
                 sx={{
-                  backgroundColor: 'primary.main',
-                  color: 'primary.contrastText',
+                  backgroundColor: 'rgba(0, 245, 255, 0.1)',
+                  color: '#00F5FF',
+                  border: '1px solid rgba(0, 245, 255, 0.2)',
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  fontSize: '0.7rem',
                   '& .MuiChip-deleteIcon': {
-                    color: 'primary.contrastText',
+                    color: '#00F5FF',
+                    '&:hover': { color: '#00D1D9' }
                   },
+                  '& .MuiChip-icon': { color: '#00F5FF' }
                 }}
               />
             );
@@ -295,41 +314,45 @@ export default function GlobalSearch({
             top: '100%',
             left: 0,
             right: 0,
-            mt: 1,
+            mt: 1.5,
             zIndex: 1000,
             maxHeight: 400,
             overflow: 'auto',
-            borderRadius: '12px',
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: `
-              0 8px 32px rgba(0, 0, 0, 0.12),
-              0 4px 16px rgba(0, 0, 0, 0.08)
-            `,
+            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            backgroundImage: 'none',
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
           }}
         >
           {results.length > 0 ? (
-            <List>
+            <List sx={{ py: 1 }}>
               {results.map((result, index) => (
                 <ListItem
                   key={result.id}
                   onClick={() => handleResultClick(result)}
                   sx={{
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     mx: 1,
-                    mb: index === results.length - 1 ? 1 : 0,
+                    mb: 0.5,
+                    width: 'calc(100% - 16px)',
                     cursor: 'pointer',
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      backgroundColor: 'action.hover',
+                      backgroundColor: 'rgba(0, 245, 255, 0.05)',
+                      '& .MuiListItemText-primary': { color: '#00F5FF' }
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
+                      minWidth: 40,
                       color: result.type === 'note' 
-                        ? 'primary.main' 
+                        ? '#00F5FF' 
                         : result.type === 'user' 
-                          ? 'secondary.main' 
-                          : 'success.main'
+                          ? '#A855F7' 
+                          : '#10B981'
                     }}
                   >
                     {result.icon}
@@ -340,13 +363,18 @@ export default function GlobalSearch({
                     slotProps={{
                       primary: {
                         sx: {
-                          fontWeight: 600,
+                          fontWeight: 700,
                           fontSize: '0.9rem',
+                          fontFamily: '"Space Grotesk", sans-serif',
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          transition: 'color 0.2s ease'
                         }
                       },
                       secondary: {
                         sx: {
-                          fontSize: '0.8rem',
+                          fontSize: '0.75rem',
+                          fontFamily: '"Inter", sans-serif',
+                          color: 'rgba(255, 255, 255, 0.5)'
                         }
                       }
                     }}
@@ -355,34 +383,59 @@ export default function GlobalSearch({
               ))}
             </List>
           ) : query ? (
-            <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography color="text.secondary">
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontFamily: '"Inter", sans-serif' }}>
                 No results found for &quot;{query}&quot;
               </Typography>
             </Box>
           ) : (
             <Box sx={{ p: 2 }}>
-              <Typography variant="subtitle2" sx={{ px: 2, pb: 1, color: 'text.secondary' }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  px: 2, 
+                  pb: 1.5, 
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontSize: '0.7rem'
+                }}
+              >
                 Recent searches
               </Typography>
-              <List>
+              <List sx={{ py: 0 }}>
                 {mockRecentSearches.map((search, index) => (
                   <ListItem
                     key={index}
                     onClick={() => setQuery(search)}
                     sx={{
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       mx: 1,
+                      mb: 0.5,
+                      width: 'calc(100% - 16px)',
                       cursor: 'pointer',
                       '&:hover': {
-                        backgroundColor: 'action.hover',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       },
                     }}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 40, color: 'rgba(255, 255, 255, 0.3)' }}>
                       <HistoryIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary={search} />
+                    <ListItemText 
+                      primary={search} 
+                      slotProps={{
+                        primary: {
+                          sx: {
+                            fontSize: '0.85rem',
+                            fontFamily: '"Inter", sans-serif',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                          }
+                        }
+                      }}
+                    />
                   </ListItem>
                 ))}
               </List>
@@ -399,37 +452,103 @@ export default function GlobalSearch({
         slotProps={{
           paper: {
             sx: {
-              borderRadius: '12px',
-              minWidth: 180,
-              border: `1px solid ${theme.palette.divider}`,
-              boxShadow: `
-                0 8px 32px rgba(0, 0, 0, 0.12),
-                0 4px 16px rgba(0, 0, 0, 0.08)
-              `,
+              borderRadius: '16px',
+              minWidth: 200,
+              bgcolor: 'rgba(10, 10, 10, 0.95)',
+              backdropFilter: 'blur(25px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backgroundImage: 'none',
+              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+              mt: 1,
+              py: 1
             }
           }
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleNavigateToNotes}>
-          <ListItemIcon>
+        <MenuItem 
+          onClick={handleNavigateToNotes}
+          sx={{
+            px: 2,
+            py: 1.25,
+            gap: 2,
+            '&:hover': { bgcolor: 'rgba(0, 245, 255, 0.1)', color: '#00F5FF' }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
             <NoteIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Notes" />
+          <ListItemText 
+            primary="Notes" 
+            slotProps={{
+              primary: {
+                sx: {
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.05em'
+                }
+              }
+            }}
+          />
         </MenuItem>
-        <MenuItem onClick={handleNavigateToTags}>
-          <ListItemIcon>
+        <MenuItem 
+          onClick={handleNavigateToTags}
+          sx={{
+            px: 2,
+            py: 1.25,
+            gap: 2,
+            '&:hover': { bgcolor: 'rgba(0, 245, 255, 0.1)', color: '#00F5FF' }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
             <TagIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Tags" />
+          <ListItemText 
+            primary="Tags" 
+            slotProps={{
+              primary: {
+                sx: {
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.05em'
+                }
+              }
+            }}
+          />
         </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
+        <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+        <MenuItem 
+          onClick={handleLogout}
+          sx={{
+            px: 2,
+            py: 1.25,
+            gap: 2,
+            color: '#FF453A',
+            '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.1)' }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Logout" />
+          <ListItemText 
+            primary="Logout" 
+            slotProps={{
+              primary: {
+                sx: {
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.05em'
+                }
+              }
+            }}
+          />
         </MenuItem>
       </Menu>
     </Box>

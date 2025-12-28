@@ -57,8 +57,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       strokes.forEach((stroke) => {
         if (stroke.points.length < 2) return;
@@ -192,22 +191,35 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
           cursor: 'pointer',
           position: 'relative',
           overflow: 'hidden',
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            borderColor: 'rgba(0, 245, 255, 0.3)',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 255, 0.1)',
+          }
         }}
       >
         <CardHeader
-          sx={{ pb: 1 }}
+          sx={{ pb: 1, p: 2.5 }}
           title={
             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
               <Typography 
                 variant="h4" 
                 sx={{ 
                   fontSize: { xs: '1rem', sm: '1.125rem' }, 
-                  fontWeight: 700,
+                  fontWeight: 900,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  color: '#00F5FF',
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  flex: 1
+                  flex: 1,
+                  lineHeight: 1.2
                 }}
               >
                 {note.title}
@@ -222,12 +234,13 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
                       gap: 0.5, 
                       px: 1, 
                       py: 0.5, 
-                      borderRadius: 2, 
-                      bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                      color: 'secondary.main',
+                      borderRadius: '8px', 
+                      bgcolor: 'rgba(0, 245, 255, 0.1)',
+                      color: '#00F5FF',
                       fontSize: '10px',
-                      fontWeight: 700,
-                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                      fontWeight: 800,
+                      border: '1px solid rgba(0, 245, 255, 0.2)',
+                      fontFamily: '"Space Grotesk", sans-serif'
                     }}>
                       <AttachFileIcon sx={{ fontSize: 12 }} />
                       {note.attachments.length}
@@ -241,15 +254,16 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
                     gap: 0.5, 
                     px: 1, 
                     py: 0.5, 
-                    borderRadius: 2, 
+                    borderRadius: '8px', 
                     bgcolor: 'rgba(255, 245, 0, 0.1)',
                     color: '#FFD700',
                     fontSize: '10px',
-                    fontWeight: 700,
-                    border: '1px solid rgba(255, 245, 0, 0.2)'
+                    fontWeight: 800,
+                    border: '1px solid rgba(255, 245, 0, 0.2)',
+                    fontFamily: '"Space Grotesk", sans-serif'
                   }}>
                     <GlobeAltIcon sx={{ fontSize: 12 }} />
-                    Public
+                    PUBLIC
                   </Box>
                 )}
 
@@ -265,7 +279,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
                       items: contextMenuItems
                     });
                   }}
-                  sx={{ borderRadius: 2 }}
+                  sx={{ 
+                    borderRadius: '8px',
+                    color: 'rgba(255, 255, 255, 0.4)',
+                    '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
+                  }}
                 >
                   <EllipsisVerticalIcon fontSize="small" />
                 </IconButton>
@@ -273,14 +291,15 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
             </Box>
           }
         />
-        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 0, position: 'relative' }}>
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 0, position: 'relative', p: 2.5, pt: 0 }}>
           {note.format === 'doodle' ? (
             <Box sx={{ 
               flex: 1, 
-              borderRadius: 3, 
-              border: '1px solid rgba(255,255,255,0.1)', 
+              borderRadius: '16px', 
+              border: '1px solid rgba(255,255,255,0.05)', 
               overflow: 'hidden', 
-              bgcolor: '#fff' 
+              bgcolor: 'rgba(255, 255, 255, 0.02)',
+              position: 'relative'
             }}>
               <canvas
                 ref={canvasRef}
@@ -293,7 +312,10 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
             <Typography 
               variant="body2" 
               sx={{ 
-                color: 'text.secondary',
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontFamily: '"Inter", sans-serif',
+                fontSize: '0.875rem',
+                lineHeight: 1.6,
                 display: '-webkit-box',
                 WebkitLineClamp: { xs: 4, sm: 5, md: 6 },
                 WebkitBoxOrient: 'vertical',
@@ -313,16 +335,19 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
                 size="small"
                 sx={{ 
                   height: 20, 
-                  fontSize: '10px', 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  fontSize: '9px', 
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   '& .MuiChip-label': { px: 1 }
                 }}
               />
             ))}
             {note.tags && note.tags.length > 3 && (
-              <Typography variant="caption" sx={{ color: 'text.disabled', alignSelf: 'center', ml: 0.5 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', alignSelf: 'center', ml: 0.5, fontSize: '10px', fontWeight: 700 }}>
                 +{note.tags.length - 3}
               </Typography>
             )}
@@ -338,11 +363,13 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
                 position: 'absolute',
                 bottom: 12,
                 right: 12,
-                bgcolor: 'primary.main',
-                color: 'background.default',
-                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.8) },
+                bgcolor: '#00F5FF',
+                color: '#000000',
+                '&:hover': { bgcolor: '#00D1DA', transform: 'scale(1.1)' },
                 width: 32,
-                height: 32
+                height: 32,
+                boxShadow: '0 0 15px rgba(0, 245, 255, 0.4)',
+                transition: 'all 0.2s ease'
               }}
             >
               {isCopySuccess ? <CheckIcon sx={{ fontSize: 16 }} /> : <ClipboardDocumentIcon sx={{ fontSize: 16 }} />}
@@ -362,8 +389,5 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete, onNoteSel
     </>
   );
 };
-
-export default NoteCard;
-
 
 export default NoteCard;

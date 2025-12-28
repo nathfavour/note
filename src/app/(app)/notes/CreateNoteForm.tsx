@@ -1,21 +1,30 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { createNote as appwriteCreateNote } from '@/lib/appwrite';
-import { useOverlay } from '@/components/ui/OverlayContext';
-import DoodleCanvas from '@/components/DoodleCanvas';
-import type { Notes } from '@/types/appwrite';
-import * as AppwriteTypes from '@/types/appwrite';
 import { 
-  XMarkIcon, 
-  DocumentTextIcon, 
-  TagIcon, 
-  GlobeAltIcon, 
-  LockClosedIcon,
-  PlusIcon,
-  PencilIcon
-} from '@heroicons/react/24/outline';
+  Box, 
+  Typography, 
+  Stack, 
+  IconButton, 
+  TextField, 
+  Chip, 
+  LinearProgress, 
+  Alert,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip
+} from '@mui/material';
+import { 
+  Close as CloseIcon,
+  Description as DescriptionIcon,
+  LocalOffer as TagIcon,
+  Public as GlobeAltIcon,
+  Lock as LockClosedIcon,
+  Add as PlusIcon,
+  Brush as PencilIcon,
+  Edit as EditIcon
+} from '@mui/icons-material';
+import { Button } from '@/components/ui/Button';
 import { AUTO_TITLE_CONFIG } from '@/constants/noteTitle';
 
 interface CreateNoteFormProps {
@@ -155,100 +164,260 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
         />
       )}
       
-      <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col">
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '672px',
+          mx: 'auto',
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          borderRadius: '32px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          overflow: 'hidden',
+          maxHeight: 'calc(100vh - 4rem)',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/5 to-accent/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center shadow-lg">
-              {format === 'doodle' ? (
-                <PencilIcon className="h-6 w-6 text-white" />
-              ) : (
-                <DocumentTextIcon className="h-6 w-6 text-white" />
-              )}
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-light-fg dark:text-dark-fg">
-                {format === 'doodle' ? 'Create Doodle' : 'Create Note'}
-              </h2>
-              <p className="text-sm text-light-fg/70 dark:text-dark-fg/70">
-                {format === 'doodle' ? 'Draw and sketch your ideas' : 'Capture your thoughts and ideas'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Format Toggle */}
-            <div className="flex bg-light-bg dark:bg-dark-bg rounded-xl border border-light-border dark:border-dark-border p-1">
-              <button
-                onClick={() => setFormat('text')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-                  format === 'text'
-                    ? 'bg-accent text-white'
-                    : 'text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                <DocumentTextIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Text</span>
-              </button>
-              <button
-                onClick={() => setFormat('doodle')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-                  format === 'doodle'
-                    ? 'bg-accent text-white'
-                    : 'text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                <PencilIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Doodle</span>
-              </button>
-            </div>
-            
-            <button
-              onClick={closeOverlay}
-              className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200"
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 3,
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, rgba(0, 245, 255, 0.1) 100%)'
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                background: 'linear-gradient(135deg, #00F5FF 0%, #00D1FF 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 16px rgba(0, 245, 255, 0.2)'
+              }}
             >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
+              {format === 'doodle' ? (
+                <PencilIcon sx={{ fontSize: 24, color: 'black' }} />
+              ) : (
+                <DescriptionIcon sx={{ fontSize: 24, color: 'black' }} />
+              )}
+            </Box>
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 900,
+                  fontFamily: 'var(--font-space-grotesk)',
+                  color: 'white'
+                }}
+              >
+                {format === 'doodle' ? 'Create Doodle' : 'Create Note'}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontWeight: 500
+                }}
+              >
+                {format === 'doodle' ? 'Draw and sketch your ideas' : 'Capture your thoughts and ideas'}
+              </Typography>
+            </Box>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            {/* Format Toggle */}
+            <ToggleButtonGroup
+              value={format}
+              exclusive
+              onChange={(_, newFormat) => newFormat && setFormat(newFormat)}
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                p: 0.5,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                '& .MuiToggleButton-root': {
+                  border: 'none',
+                  borderRadius: '8px',
+                  px: 2,
+                  py: 0.75,
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  '&.Mui-selected': {
+                    bgcolor: '#00F5FF',
+                    color: 'black',
+                    '&:hover': {
+                      bgcolor: '#00E5EE'
+                    }
+                  },
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)'
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="text">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <DescriptionIcon sx={{ fontSize: 18 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Text</Box>
+                </Stack>
+              </ToggleButton>
+              <ToggleButton value="doodle">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <PencilIcon sx={{ fontSize: 18 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Doodle</Box>
+                </Stack>
+              </ToggleButton>
+            </ToggleButtonGroup>
+            
+            <IconButton
+              onClick={closeOverlay}
+              sx={{
+                color: 'rgba(255, 255, 255, 0.6)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'white'
+                }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Stack>
+        </Box>
 
       {/* Form Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 pb-4 space-y-6">
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+        <Stack spacing={4}>
           {/* Title Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Title</label>
-            <input
-              type="text"
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 700,
+                color: 'rgba(255, 255, 255, 0.9)',
+                mb: 1,
+                fontFamily: 'var(--font-space-grotesk)'
+              }}
+            >
+              Title
+            </Typography>
+            <TextField
+              fullWidth
               placeholder="Give your note a memorable title..."
               value={title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-              className="w-full p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
-              maxLength={255}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              variant="outlined"
+              inputProps={{ maxLength: 255 }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '16px',
+                  color: 'white',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: '2px'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#00F5FF'
+                  }
+                }
+              }}
             />
-          </div>
+          </Box>
 
           {/* Content - Text or Doodle */}
           {format === 'text' ? (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Content</label>
-              <textarea
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 700,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  mb: 1,
+                  fontFamily: 'var(--font-space-grotesk)'
+                }}
+              >
+                Content
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={6}
                 placeholder="Start writing your beautiful notes here... You can always edit and enhance them later."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
-                maxLength={65000}
+                variant="outlined"
+                inputProps={{ maxLength: 65000 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '16px',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                      borderWidth: '2px'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#00F5FF'
+                    }
+                  }
+                }}
               />
-              <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  textAlign: 'right',
+                  mt: 1,
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontWeight: 500
+                }}
+              >
                 {content.length}/65000 characters
-              </div>
-            </div>
+              </Typography>
+            </Box>
           ) : (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Doodle</label>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 700,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  mb: 1,
+                  fontFamily: 'var(--font-space-grotesk)'
+                }}
+              >
+                Doodle
+              </Typography>
               {content ? (
-                <div className="relative w-full h-48 rounded-2xl border-2 border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg overflow-hidden">
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    height: 200,
+                    borderRadius: '20px',
+                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    overflow: 'hidden'
+                  }}
+                >
                   <canvas 
-                    className="w-full h-full"
+                    style={{ width: '100%', height: '100%' }}
                     ref={(canvas) => {
                       if (!canvas || !content) return;
                       try {
@@ -277,98 +446,225 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                     width={800}
                     height={600}
                   />
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     onClick={() => setShowDoodleEditor(true)}
-                    className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors rounded-xl flex items-center justify-center"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      bgcolor: 'rgba(0, 0, 0, 0)',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.2)' },
+                      transition: 'background-color 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <span className="bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium">Edit</span>
-                  </button>
-                </div>
+                    <Box
+                      sx={{
+                        bgcolor: '#00F5FF',
+                        color: 'black',
+                        px: 2,
+                        py: 1,
+                        borderRadius: '10px',
+                        fontWeight: 700,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      Edit
+                    </Box>
+                  </Box>
+                </Box>
               ) : (
-                <button
+                <Box
+                  component="button"
                   type="button"
                   onClick={() => setShowDoodleEditor(true)}
-                  className="w-full h-48 border-2 border-dashed border-light-border dark:border-dark-border rounded-2xl bg-light-bg/50 dark:bg-dark-bg/50 hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200 flex flex-col items-center justify-center gap-3 group"
+                  sx={{
+                    width: '100%',
+                    height: 200,
+                    border: '2px dashed rgba(255, 255, 255, 0.1)',
+                    borderRadius: '20px',
+                    bgcolor: 'rgba(255, 255, 255, 0.02)',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      borderColor: '#00F5FF'
+                    },
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 2,
+                    cursor: 'pointer'
+                  }}
                 >
-                  <div className="w-12 h-12 bg-accent/10 group-hover:bg-accent/20 rounded-2xl flex items-center justify-center transition-all duration-200">
-                    <PencilIcon className="h-6 w-6 text-accent" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-light-fg dark:text-dark-fg">Start Drawing</p>
-                    <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">Click to open doodle editor</p>
-                  </div>
-                </button>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      bgcolor: 'rgba(0, 245, 255, 0.1)',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <PencilIcon sx={{ fontSize: 24, color: '#00F5FF' }} />
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'white' }}>
+                      Start Drawing
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                      Click to open doodle editor
+                    </Typography>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Tags Section */}
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
-              <TagIcon className="h-4 w-4" />
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 700,
+                color: 'rgba(255, 255, 255, 0.9)',
+                mb: 1.5,
+                fontFamily: 'var(--font-space-grotesk)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <TagIcon sx={{ fontSize: 18 }} />
               Tags
-            </label>
+            </Typography>
             
-            {/* Tag Input */}
-            <div className="flex gap-2">
-              <input
-                type="text"
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
                 placeholder="Add a tag..."
                 value={currentTag}
                 onChange={(e) => setCurrentTag(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 p-3 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
-                maxLength={50}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                      borderWidth: '2px'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#00F5FF'
+                    }
+                  }
+                }}
               />
-              <button
+              <IconButton
                 onClick={handleAddTag}
                 disabled={!currentTag.trim()}
-                className="px-4 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed"
+                sx={{
+                  bgcolor: '#00F5FF',
+                  color: 'black',
+                  borderRadius: '12px',
+                  width: 40,
+                  height: 40,
+                  '&:hover': { bgcolor: '#00E5EE' },
+                  '&.Mui-disabled': {
+                    bgcolor: 'rgba(0, 245, 255, 0.3)',
+                    color: 'rgba(0, 0, 0, 0.3)'
+                  }
+                }}
               >
-                <PlusIcon className="h-5 w-5" />
-              </button>
-            </div>
+                <PlusIcon />
+              </IconButton>
+            </Stack>
 
-            {/* Tag Display */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {tags.map((tag) => (
-                  <span
+                  <Chip
                     key={tag}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent border border-accent/20 rounded-xl text-sm font-medium"
-                  >
-                    {tag}
-                    <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:bg-accent/20 rounded-full p-0.5 transition-all duration-200"
-                    >
-                      <XMarkIcon className="h-3 w-3" />
-                    </button>
-                  </span>
+                    label={tag}
+                    onDelete={() => handleRemoveTag(tag)}
+                    deleteIcon={<CloseIcon sx={{ fontSize: '12px !important' }} />}
+                    sx={{
+                      bgcolor: 'rgba(0, 245, 255, 0.1)',
+                      color: '#00F5FF',
+                      border: '1px solid rgba(0, 245, 255, 0.2)',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      '& .MuiChip-deleteIcon': {
+                        color: '#00F5FF',
+                        '&:hover': { color: 'white' }
+                      }
+                    }}
+                  />
                 ))}
-              </div>
+              </Stack>
             )}
-          </div>
+          </Box>
 
-          {/* File Upload Section - Enhanced UX */}
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
-              <DocumentTextIcon className="h-4 w-4" />
+          {/* File Upload Section */}
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 700,
+                color: 'rgba(255, 255, 255, 0.9)',
+                mb: 1.5,
+                fontFamily: 'var(--font-space-grotesk)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <DescriptionIcon sx={{ fontSize: 18 }} />
               Attach Files (optional)
-            </label>
+            </Typography>
             
-            <div className="flex flex-col gap-3">
-              {/* Drop zone style file input */}
-              <label
+            <Stack spacing={2}>
+              <Box
+                component="label"
                 htmlFor="pending-files-input" 
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-light-border dark:border-dark-border rounded-2xl cursor-pointer bg-light-bg/50 dark:bg-dark-bg/50 hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: 120,
+                  border: '2px dashed rgba(255, 255, 255, 0.1)',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  bgcolor: 'rgba(255, 255, 255, 0.02)',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: '#00F5FF'
+                  },
+                  transition: 'all 0.2s'
+                }}
               >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <PlusIcon className="h-8 w-8 text-light-fg/50 dark:text-dark-fg/50 mb-2" />
-                  <p className="text-sm text-light-fg dark:text-dark-fg font-medium">Click to select files</p>
-                  <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">Images, PDFs, Text files • Max 10 files • 20MB each</p>
-                </div>
+                <PlusIcon sx={{ fontSize: 32, color: 'rgba(255, 255, 255, 0.3)', mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'white' }}>
+                  Click to select files
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                  Images, PDFs, Text • Max 10 files • 20MB each
+                </Typography>
                 <input
                   id="pending-files-input"
                   type="file"
@@ -381,182 +677,311 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                       e.target.value = '';
                     }
                   }}
-                  className="hidden"
+                  style={{ display: 'none' }}
                 />
-              </label>
+              </Box>
               
-              {/* File list */}
               {pendingFiles.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 font-medium">
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600 }}>
                       {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} selected
-                    </p>
-                    <button
-                      type="button"
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
                       onClick={() => setPendingFiles([])}
-                      className="text-xs text-destructive hover:underline"
+                      sx={{ 
+                        color: '#ff5252', 
+                        cursor: 'pointer', 
+                        fontWeight: 700,
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
                     >
                       Clear all
-                    </button>
-                  </div>
-                  <div className="max-h-24 overflow-y-auto rounded-xl border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg">
+                    </Typography>
+                  </Stack>
+                  <Box 
+                    sx={{ 
+                      maxHeight: 120, 
+                      overflowY: 'auto', 
+                      borderRadius: '16px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      bgcolor: 'rgba(255, 255, 255, 0.02)'
+                    }}
+                  >
                     {pendingFiles.map((file) => (
-                      <div key={`${file.name}-${file.size}-${file.lastModified}`} className="flex items-center justify-between gap-3 p-3 hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <DocumentTextIcon className="h-4 w-4 text-accent" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-light-fg dark:text-dark-fg font-medium truncate" title={file.name}>
+                      <Stack 
+                        key={`${file.name}-${file.size}-${file.lastModified}`}
+                        direction="row" 
+                        alignItems="center" 
+                        justifyContent="space-between" 
+                        spacing={2}
+                        sx={{ 
+                          p: 1.5, 
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                          '&:last-child': { borderBottom: 'none' },
+                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' }
+                        }}
+                      >
+                        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                          <Box sx={{ p: 1, bgcolor: 'rgba(0, 245, 255, 0.1)', borderRadius: '8px' }}>
+                            <DescriptionIcon sx={{ fontSize: 16, color: '#00F5FF' }} />
+                          </Box>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ color: 'white', fontWeight: 600, noWrap: true }}>
                               {file.name}
-                            </p>
-                            <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                               {(file.size / 1024).toFixed(1)} KB
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <IconButton
+                          size="small"
                           onClick={() => setPendingFiles(pendingFiles.filter(f => f !== file))}
-                          className="p-1 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                          sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#ff5252' } }}
                         >
-                          <XMarkIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                          <CloseIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Stack>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
               
-              {/* Upload progress */}
               {uploading && uploadProgress.total > 0 && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-accent">Uploading files...</span>
-                    <span className="text-light-fg/60 dark:text-dark-fg/60">
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: '#00F5FF', fontWeight: 700 }}>
+                      Uploading files...
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
                       {uploadProgress.uploaded}/{uploadProgress.total}
-                    </span>
-                  </div>
-                  <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
-                    <div 
-                      className="bg-accent h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(uploadProgress.uploaded / uploadProgress.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                    </Typography>
+                  </Stack>
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={(uploadProgress.uploaded / uploadProgress.total) * 100}
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      '& .MuiLinearProgress-bar': {
+                        bgcolor: '#00F5FF',
+                        borderRadius: 3
+                      }
+                    }}
+                  />
+                </Box>
               )}
               
-              {/* Upload errors */}
               {uploadErrors.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-destructive font-medium">Upload Errors:</p>
-                  <div className="space-y-1">
-                    {uploadErrors.map((err, i) => (
-                      <div key={i} className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2 border border-destructive/20">
-                        {err}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <Stack spacing={1}>
+                  <Typography variant="caption" sx={{ color: '#ff5252', fontWeight: 700 }}>
+                    Upload Errors:
+                  </Typography>
+                  {uploadErrors.map((err, i) => (
+                    <Alert 
+                      key={i} 
+                      severity="error" 
+                      sx={{ 
+                        py: 0, 
+                        px: 1.5, 
+                        borderRadius: '10px',
+                        bgcolor: 'rgba(255, 82, 82, 0.1)',
+                        color: '#ff5252',
+                        border: '1px solid rgba(255, 82, 82, 0.2)',
+                        '& .MuiAlert-icon': { color: '#ff5252', fontSize: '1rem' },
+                        '& .MuiAlert-message': { fontSize: '0.75rem', fontWeight: 600 }
+                      }}
+                    >
+                      {err}
+                    </Alert>
+                  ))}
+                </Stack>
               )}
-            </div>
-          </div>
+            </Stack>
+          </Box>
 
           {/* Settings Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
             {/* Visibility Setting */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Visibility</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsPublic(false)}
-                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    !isPublic 
-                      ? 'bg-accent text-white shadow-lg' 
-                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                  }`}
-                >
-                  <LockClosedIcon className="h-4 w-4" />
-                  Private
-                </button>
-                <button
-                  onClick={() => setIsPublic(true)}
-                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    isPublic 
-                      ? 'bg-accent text-white shadow-lg' 
-                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                  }`}
-                >
-                  <GlobeAltIcon className="h-4 w-4" />
-                  Public
-                </button>
-              </div>
-            </div>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 700,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  mb: 1.5,
+                  fontFamily: 'var(--font-space-grotesk)'
+                }}
+              >
+                Visibility
+              </Typography>
+              <ToggleButtonGroup
+                value={isPublic}
+                exclusive
+                onChange={(_, newValue) => newValue !== null && setIsPublic(newValue)}
+                fullWidth
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '16px',
+                  p: 0.5,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  '& .MuiToggleButton-root': {
+                    border: 'none',
+                    borderRadius: '12px',
+                    py: 1.5,
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    '&.Mui-selected': {
+                      bgcolor: '#00F5FF',
+                      color: 'black',
+                      boxShadow: '0 4px 12px rgba(0, 245, 255, 0.2)',
+                      '&:hover': { bgcolor: '#00E5EE' }
+                    },
+                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)' }
+                  }
+                }}
+              >
+                <ToggleButton value={false}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <LockClosedIcon sx={{ fontSize: 18 }} />
+                    <Box component="span">Private</Box>
+                  </Stack>
+                </ToggleButton>
+                <ToggleButton value={true}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <GlobeAltIcon sx={{ fontSize: 18 }} />
+                    <Box component="span">Public</Box>
+                  </Stack>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
 
             {/* Status Setting */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Status</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setStatus(AppwriteTypes.Status.DRAFT)}
-                  className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    status === AppwriteTypes.Status.DRAFT
-                      ? 'bg-accent text-white shadow-lg'
-                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                  }`}
-                >
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 700,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  mb: 1.5,
+                  fontFamily: 'var(--font-space-grotesk)'
+                }}
+              >
+                Status
+              </Typography>
+              <ToggleButtonGroup
+                value={status}
+                exclusive
+                onChange={(_, newValue) => newValue !== null && setStatus(newValue)}
+                fullWidth
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '16px',
+                  p: 0.5,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  '& .MuiToggleButton-root': {
+                    border: 'none',
+                    borderRadius: '12px',
+                    py: 1.5,
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    '&.Mui-selected': {
+                      bgcolor: '#00F5FF',
+                      color: 'black',
+                      boxShadow: '0 4px 12px rgba(0, 245, 255, 0.2)',
+                      '&:hover': { bgcolor: '#00E5EE' }
+                    },
+                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)' }
+                  }
+                }}
+              >
+                <ToggleButton value={AppwriteTypes.Status.DRAFT}>
                   Draft
-                </button>
-                <button
-                  onClick={() => setStatus(AppwriteTypes.Status.PUBLISHED)}
-                  className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    status === AppwriteTypes.Status.PUBLISHED
-                      ? 'bg-accent text-white shadow-lg'
-                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                  }`}
-                >
+                </ToggleButton>
+                <ToggleButton value={AppwriteTypes.Status.PUBLISHED}>
                   Published
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          </Box>
+        </Stack>
+      </Box>
 
-      {/* Footer Actions - Always visible at bottom */}
-      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 flex-shrink-0">
+      {/* Footer Actions */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'end',
+          gap: 2,
+          p: 3,
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(255, 255, 255, 0.02)'
+        }}
+      >
         <Button 
           variant="secondary" 
           onClick={closeOverlay}
           disabled={isLoading}
-          className="px-6"
+          sx={{ px: 4, borderRadius: '14px' }}
         >
           Cancel
         </Button>
         <Button 
           onClick={handleCreateNote}
           disabled={!title.trim() || !content.trim() || isLoading || uploading}
-          className="px-6 gap-2"
+          sx={{ 
+            px: 4, 
+            borderRadius: '14px',
+            bgcolor: '#00F5FF',
+            color: 'black',
+            fontWeight: 800,
+            '&:hover': { bgcolor: '#00E5EE' },
+            '&.Mui-disabled': {
+              bgcolor: 'rgba(0, 245, 255, 0.3)',
+              color: 'rgba(0, 0, 0, 0.3)'
+            }
+          }}
         >
           {(isLoading || uploading) ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              {uploading && uploadProgress.total > 0 ? `Uploading ${uploadProgress.uploaded}/${uploadProgress.total}` : 'Creating...'}
-            </>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box
+                sx={{
+                  width: 16,
+                  height: 16,
+                  border: '2px solid rgba(0, 0, 0, 0.1)',
+                  borderTopColor: 'black',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  }
+                }}
+              />
+              <Typography variant="button" sx={{ fontWeight: 800 }}>
+                {uploading && uploadProgress.total > 0 ? `Uploading ${uploadProgress.uploaded}/${uploadProgress.total}` : 'Creating...'}
+              </Typography>
+            </Stack>
           ) : (
-            <>
+            <Stack direction="row" spacing={1} alignItems="center">
               {format === 'doodle' ? (
-                <PencilIcon className="h-4 w-4" />
+                <PencilIcon sx={{ fontSize: 18 }} />
               ) : (
-                <DocumentTextIcon className="h-4 w-4" />
+                <DescriptionIcon sx={{ fontSize: 18 }} />
               )}
-              {pendingFiles.length ? `Create & Upload (${pendingFiles.length})` : `Create ${format === 'doodle' ? 'Doodle' : 'Note'}`}
-            </>
+              <Typography variant="button" sx={{ fontWeight: 800 }}>
+                {pendingFiles.length ? `Create & Upload (${pendingFiles.length})` : `Create ${format === 'doodle' ? 'Doodle' : 'Note'}`}
+              </Typography>
+            </Stack>
           )}
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
     </>
   );
 }

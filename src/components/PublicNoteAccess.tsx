@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { TURNSTILE_SITE_KEY } from '@/lib/turnstile';
 import type { Notes } from '@/types/appwrite';
-import { Box, Typography, Button, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Alert, CircularProgress, alpha } from '@mui/material';
+import { Security as SecurityIcon } from '@mui/icons-material';
 
 interface PublicNoteAccessProps {
   noteId: string;
@@ -92,43 +93,90 @@ export function PublicNoteAccess({ noteId, onVerified, onError }: PublicNoteAcce
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {error && (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
+        <Alert 
+          severity="error" 
+          sx={{ 
+            borderRadius: '16px',
+            bgcolor: alpha('#FF3B30', 0.1),
+            color: '#FF3B30',
+            border: '1px solid',
+            borderColor: alpha('#FF3B30', 0.2),
+            '& .MuiAlert-icon': { color: '#FF3B30' }
+          }}
+        >
           {error}
         </Alert>
       )}
       
-      <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ 
+        textAlign: 'center', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 3,
+        p: 4,
+        bgcolor: 'rgba(255, 255, 255, 0.02)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <Box sx={{ 
+          width: 64, 
+          height: 64, 
+          borderRadius: '20px', 
+          bgcolor: alpha('#00F5FF', 0.1),
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto',
+          mb: 1
+        }}>
+          <SecurityIcon sx={{ color: '#00F5FF', fontSize: 32 }} />
+        </Box>
+
         {turnstileEnabled ? (
           <>
-            <Typography variant="body2" color="text.secondary">
-              Complete the verification to view this shared note
-            </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: 'white', mb: 1 }}>
+                Security Verification
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>
+                Complete the verification to view this shared note
+              </Typography>
+            </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
               <TurnstileWidget
                 onToken={handleTurnstileSuccess}
                 onError={handleTurnstileError}
-                theme="auto"
+                theme="dark"
                 size="normal"
               />
             </Box>
           </>
         ) : (
           <>
-            <Typography variant="body2" color="text.secondary">
-              Verification is temporarily unavailable. Loading the note directly.
-            </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: 'white', mb: 1 }}>
+                Loading Note
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>
+                Verification is temporarily unavailable. Loading the note directly.
+              </Typography>
+            </Box>
             {!isLoading && (
               <Button
                 variant="contained"
                 onClick={loadWithoutVerification}
                 sx={{ 
                   alignSelf: 'center',
-                  bgcolor: 'primary.main',
-                  color: 'primary.contrastText',
-                  '&:hover': { bgcolor: 'primary.dark' }
+                  bgcolor: '#00F5FF',
+                  color: '#000',
+                  fontWeight: 900,
+                  borderRadius: '12px',
+                  px: 4,
+                  '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
                 }}
               >
                 Retry loading note
@@ -138,12 +186,16 @@ export function PublicNoteAccess({ noteId, onVerified, onError }: PublicNoteAcce
         )}
         
         {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <CircularProgress size={32} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 2 }}>
+            <CircularProgress size={40} sx={{ color: '#00F5FF' }} />
+            <Typography variant="caption" sx={{ color: '#00F5FF', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Verifying...
+            </Typography>
           </Box>
         )}
       </Box>
     </Box>
   );
 }
+
 

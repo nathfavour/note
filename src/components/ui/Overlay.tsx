@@ -1,45 +1,86 @@
 "use client";
 
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
+import { 
+  Modal, 
+  Box, 
+  Fade, 
+  Backdrop,
+  IconButton
+} from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { useOverlay } from './OverlayContext';
-
-// Lazy load framer-motion only when overlay is opened
-const MotionDiv = lazy(() => import('framer-motion').then(m => ({ default: m.motion.div })));
-const AnimatePresence = lazy(() => import('framer-motion').then(m => ({ default: m.AnimatePresence })));
 
 const Overlay: React.FC = () => {
   const { isOpen, content, closeOverlay } = useOverlay();
 
-  // Don't even load framer-motion until overlay is needed
-  if (!isOpen) return null;
-
   return (
-    <Suspense fallback={null}>
-      <AnimatePresence>
-        {isOpen && (
-          <MotionDiv
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4 overflow-y-auto"
+    <Modal
+      open={isOpen}
+      onClose={closeOverlay}
+      closeAfterTransition
+      slots={{ backdrop: Backdrop }}
+      slotProps={{
+        backdrop: {
+          timeout: 500,
+          sx: { 
+            bgcolor: 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(25px) saturate(180%)' 
+          }
+        },
+      }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: { xs: 1, sm: 2, md: 4 },
+      }}
+    >
+      <Fade in={isOpen}>
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: 'lg',
+            maxHeight: '90vh',
+            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)',
+            outline: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <IconButton
             onClick={closeOverlay}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              zIndex: 1,
+              color: 'rgba(255, 255, 255, 0.5)',
+              transition: 'all 0.2s ease',
+              '&:hover': { 
+                color: '#00F5FF',
+                bgcolor: 'rgba(0, 245, 255, 0.1)'
+              }
+            }}
           >
-            <MotionDiv
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative z-50 w-full max-w-4xl mx-auto my-2 sm:my-8 max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex-1 overflow-y-auto">
-                {content}
-              </div>
-            </MotionDiv>
-          </MotionDiv>
-        )}
-      </AnimatePresence>
-    </Suspense>
+            <CloseIcon />
+          </IconButton>
+
+          <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, sm: 3, md: 4 } }}>
+            {content}
+          </Box>
+        </Box>
+      </Fade>
+    </Modal>
   );
 };
 
 export default Overlay;
+

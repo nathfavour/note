@@ -2,99 +2,50 @@
 
 import React from 'react';
 import { useTheme } from '@/components/ThemeProvider';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import { Box, IconButton, Typography, Stack } from '@mui/material';
+import { 
+  LightMode as SunIcon, 
+  DarkMode as MoonIcon 
+} from '@mui/icons-material';
 
 interface ThemeToggleProps {
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
 }
 
 export function ThemeToggle({
-  className = '',
-  size = 'md',
   showLabel = false
 }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
-  const sizeClasses = {
-    sm: 'w-8 h-5',
-    md: 'w-10 h-6',
-    lg: 'w-12 h-7'
-  };
-
-  const knobSizeClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5'
-  };
-
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <Stack direction="row" spacing={2} alignItems="center">
       {showLabel && (
-        <span className="text-sm font-medium text-foreground">
+        <Typography variant="body2" sx={{ fontWeight: 700, color: 'white' }}>
           {isDark ? 'Dark' : 'Light'} Mode
-        </span>
+        </Typography>
       )}
 
-      <button
+      <IconButton
         onClick={toggleTheme}
-        className={`
-          relative inline-flex items-center ${sizeClasses[size]} 
-          rounded-full border-2 border-border bg-card
-          transition-all duration-300 ease-in-out
-          hover:shadow-3d-light dark:hover:shadow-3d-dark
-          focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2
-          focus:ring-offset-background
-          ${isDark ? 'justify-end' : 'justify-start'}
-        `}
+        sx={{
+          width: 40,
+          height: 40,
+          bgcolor: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '12px',
+          color: isDark ? '#00F5FF' : '#FFD700',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            transform: 'rotate(15deg) scale(1.1)',
+            boxShadow: isDark ? '0 0 20px rgba(0, 245, 255, 0.2)' : '0 0 20px rgba(255, 215, 0, 0.2)'
+          }
+        }}
         aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-        type="button"
       >
-        <span className="pointer-events-none absolute left-2 flex items-center">
-          <SunIcon className="h-3 w-3 text-foreground/70" aria-hidden="true" />
-        </span>
-        <span className="pointer-events-none absolute right-2 flex items-center">
-          <MoonIcon className="h-3 w-3 text-foreground/70" aria-hidden="true" />
-        </span>
-        {/* Background gradient */}
-        <div
-          className={`
-            absolute inset-0 rounded-full transition-all duration-300
-            ${isDark
-              ? 'bg-gradient-to-r from-dark-card to-accent/20'
-              : 'bg-gradient-to-r from-accent/20 to-light-card'
-            }
-          `}
-        />
-
-        {/* Toggle knob */}
-        <div
-          className={`
-            relative ${knobSizeClasses[size]} rounded-full
-            border border-border bg-background
-            shadow-inner-light dark:shadow-inner-dark
-            transition-all duration-300 ease-in-out
-            flex items-center justify-center
-            ${isDark
-              ? (size === 'sm' ? 'translate-x-3' : size === 'lg' ? 'translate-x-5' : 'translate-x-4')
-              : 'translate-x-0'
-            }
-          `}
-        >
-          {/* Icon */}
-          {isDark ? (
-            <svg className="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-            </svg>
-          ) : (
-            <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-            </svg>
-          )}
-        </div>
-      </button>
-    </div>
+        {isDark ? <MoonIcon /> : <SunIcon />}
+      </IconButton>
+    </Stack>
   );
 }

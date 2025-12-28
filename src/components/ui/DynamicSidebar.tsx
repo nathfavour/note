@@ -1,8 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Button } from './Button';
+import { 
+  Drawer, 
+  Box, 
+  Typography, 
+  IconButton, 
+  Divider,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 
 interface DynamicSidebarContextType {
   isOpen: boolean;
@@ -62,44 +70,72 @@ export function useDynamicSidebar() {
 
 export function DynamicSidebar() {
   const { isOpen, content, closeSidebar } = useDynamicSidebar();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={closeSidebar}
-      />
+    <Drawer
+      anchor="right"
+      open={isOpen}
+      onClose={closeSidebar}
+      variant="temporary"
+      PaperProps={{
+        sx: {
+          width: {
+            xs: '100%',
+            sm: 400,
+            md: 450,
+            lg: 500
+          },
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
+          backgroundImage: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+        }
+      }}
+      ModalProps={{
+        keepMounted: true, // Better open performance on mobile.
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        p: 3,
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+      }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 900, 
+            fontFamily: '"Space Grotesk", sans-serif',
+            color: '#00F5FF',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            fontSize: '1rem'
+          }}
+        >
+          Details
+        </Typography>
+        <IconButton 
+          onClick={closeSidebar} 
+          size="small"
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.5)',
+            '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
 
-      {/* Sidebar */}
-      <div
-        data-dynamic-sidebar
-        className={`fixed top-0 right-0 h-full flex flex-col bg-light-bg dark:bg-dark-bg border-l border-light-border dark:border-dark-border z-50 transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        } w-full sm:w-96 md:w-[28rem] lg:w-[32rem]`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
-          <h2 className="text-lg font-semibold text-light-fg dark:text-dark-fg">
-            Details
-          </h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={closeSidebar}
-            className="h-8 w-8"
-          >
-            <XMarkIcon className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {content}
-        </div>
-      </div>
-    </>
+      {/* Content */}
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+        {content}
+      </Box>
+    </Drawer>
   );
 }

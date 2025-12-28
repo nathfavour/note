@@ -382,7 +382,7 @@ export function NoteDetailSidebar({
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
         {showExpandButton && (
           <Tooltip title="Open full page">
             <IconButton 
@@ -390,7 +390,11 @@ export function NoteDetailSidebar({
                 event.stopPropagation();
                 handleOpenFullPage();
               }}
-              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+              sx={{ 
+                display: { xs: 'none', md: 'inline-flex' },
+                color: 'rgba(255, 255, 255, 0.5)',
+                '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
+              }}
             >
               <ArrowTopRightOnSquareIcon fontSize="small" />
             </IconButton>
@@ -400,7 +404,10 @@ export function NoteDetailSidebar({
           <Tooltip title="Delete note">
             <IconButton 
               onClick={() => setShowDeleteConfirm(true)}
-              sx={{ color: 'error.main', '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.1) } }}
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.5)', 
+                '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' } 
+              }}
             >
               <TrashIcon fontSize="small" />
             </IconButton>
@@ -411,22 +418,33 @@ export function NoteDetailSidebar({
       <Box
         ref={titleContainerRef}
         sx={{
-          borderRadius: 4,
+          borderRadius: '24px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           bgcolor: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(10px)',
           p: 3,
-          transition: 'all 0.2s',
+          transition: 'all 0.3s ease',
           '&:focus-within': {
-            borderColor: 'primary.main',
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            borderColor: '#00F5FF',
+            bgcolor: 'rgba(0, 245, 255, 0.05)',
+            boxShadow: '0 0 20px rgba(0, 245, 255, 0.1)',
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: '#00F5FF', 
+              fontWeight: 900, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.1em',
+              fontFamily: '"Space Grotesk", sans-serif'
+            }}
+          >
             Title
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
             Tap to edit
           </Typography>
         </Box>
@@ -442,14 +460,26 @@ export function NoteDetailSidebar({
             inputRef={titleInputRef}
             InputProps={{
               disableUnderline: true,
-              sx: { fontSize: '1.5rem', fontWeight: 900, color: 'text.primary' }
+              sx: { 
+                fontSize: '1.75rem', 
+                fontWeight: 900, 
+                color: '#FFFFFF',
+                fontFamily: '"Space Grotesk", sans-serif'
+              }
             }}
           />
         ) : (
           <Typography
             variant="h4"
             onClick={activateTitleEditing}
-            sx={{ fontWeight: 900, cursor: 'text', color: 'text.primary' }}
+            sx={{ 
+              fontWeight: 900, 
+              cursor: 'text', 
+              color: '#FFFFFF',
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: '1.75rem',
+              lineHeight: 1.2
+            }}
           >
             {displayTitle}
           </Typography>
@@ -459,22 +489,33 @@ export function NoteDetailSidebar({
       <Box
         ref={contentContainerRef}
         sx={{
-          borderRadius: 4,
+          borderRadius: '24px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           bgcolor: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(10px)',
           p: 3,
-          transition: 'all 0.2s',
+          transition: 'all 0.3s ease',
           '&:focus-within': {
-            borderColor: 'primary.main',
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            borderColor: '#00F5FF',
+            bgcolor: 'rgba(0, 245, 255, 0.05)',
+            boxShadow: '0 0 20px rgba(0, 245, 255, 0.1)',
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: '#00F5FF', 
+              fontWeight: 900, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.1em',
+              fontFamily: '"Space Grotesk", sans-serif'
+            }}
+          >
             Content
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
             Click inside to edit
           </Typography>
         </Box>
@@ -490,16 +531,19 @@ export function NoteDetailSidebar({
               sx={{
                 bgcolor: 'rgba(255,255,255,0.05)',
                 p: 0.5,
-                borderRadius: 2,
+                borderRadius: '12px',
                 '& .MuiToggleButton-root': {
                   border: 'none',
-                  borderRadius: 1.5,
-                  color: 'text.secondary',
+                  borderRadius: '8px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
                   '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: 'background.default',
-                    fontWeight: 700,
-                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.8) }
+                    bgcolor: '#00F5FF',
+                    color: '#000000',
+                    '&:hover': { bgcolor: '#00D1DA' }
                   }
                 }
               }}
@@ -522,13 +566,18 @@ export function NoteDetailSidebar({
                 inputRef={contentTextareaRef}
                 InputProps={{
                   disableUnderline: true,
-                  sx: { fontSize: '0.875rem', color: 'text.primary', lineHeight: 1.6 }
+                  sx: { 
+                    fontSize: '0.95rem', 
+                    color: 'rgba(255, 255, 255, 0.8)', 
+                    lineHeight: 1.7,
+                    fontFamily: '"Inter", sans-serif'
+                  }
                 }}
               />
             ) : (
               <Box>
                 {content ? (
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                  <Box sx={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
                     <NoteContentDisplay
                       content={content}
                       format="doodle"
@@ -541,11 +590,18 @@ export function NoteDetailSidebar({
                     variant="outlined"
                     onClick={() => setShowDoodleEditor(true)}
                     sx={{ 
-                      height: 128, 
+                      height: 160, 
                       borderStyle: 'dashed', 
-                      borderRadius: 3,
+                      borderRadius: '16px',
                       borderColor: 'rgba(255,255,255,0.1)',
-                      color: 'text.disabled'
+                      color: 'rgba(255, 255, 255, 0.3)',
+                      fontFamily: '"Space Grotesk", sans-serif',
+                      fontWeight: 700,
+                      '&:hover': {
+                        borderColor: '#00F5FF',
+                        bgcolor: 'rgba(0, 245, 255, 0.05)',
+                        color: '#00F5FF'
+                      }
                     }}
                   >
                     Click to draw
@@ -559,14 +615,12 @@ export function NoteDetailSidebar({
             <NoteContentRenderer
               content={displayContent}
               format={displayFormat}
-              textClassName="text-foreground"
-              doodleClassName="rounded-lg border border-border mb-2"
-              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.disabled' }}>No content</Typography>}
+              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)' }}>No content</Typography>}
               onEditDoodle={displayFormat === 'doodle' ? activateContentEditing : undefined}
             />
 
             {displayFormat !== 'doodle' && displayContent && (
-              <Box sx={{ pt: 2 }}>
+              <Box sx={{ pt: 3 }}>
                 <Button
                   variant="outlined"
                   size="small"
@@ -581,13 +635,21 @@ export function NoteDetailSidebar({
                     }
                   }}
                   sx={{ 
-                    borderRadius: 2, 
+                    borderRadius: '10px', 
                     borderColor: 'rgba(255,255,255,0.1)', 
-                    color: 'text.secondary',
-                    '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    fontSize: '0.75rem',
+                    '&:hover': { 
+                      borderColor: '#00F5FF', 
+                      color: '#00F5FF',
+                      bgcolor: 'rgba(0, 245, 255, 0.05)'
+                    }
                   }}
                 >
-                  Copy
+                  Copy Content
                 </Button>
               </Box>
             )}
@@ -597,7 +659,18 @@ export function NoteDetailSidebar({
 
       {/* Tags */}
       <Box>
-        <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            display: 'block', 
+            mb: 2, 
+            color: '#00F5FF', 
+            fontWeight: 900, 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.1em',
+            fontFamily: '"Space Grotesk", sans-serif'
+          }}
+        >
           Tags
         </Typography>
         {isEditing ? (
@@ -609,9 +682,12 @@ export function NoteDetailSidebar({
             onChange={(e) => setTags(e.target.value)}
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
+                borderRadius: '12px',
                 bgcolor: 'rgba(255,255,255,0.03)',
+                fontFamily: '"Inter", sans-serif',
                 '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
               }
             }}
           />
@@ -623,10 +699,14 @@ export function NoteDetailSidebar({
                 label={tag}
                 size="small"
                 sx={{ 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                  color: 'primary.main',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  fontWeight: 600
+                  bgcolor: 'rgba(0, 245, 255, 0.1)', 
+                  color: '#00F5FF',
+                  border: '1px solid rgba(0, 245, 255, 0.2)',
+                  fontWeight: 700,
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'uppercase',
+                  fontSize: '0.7rem',
+                  borderRadius: '6px'
                 }}
               />
             ))}
@@ -636,11 +716,22 @@ export function NoteDetailSidebar({
 
       {/* Attachments */}
       <Box>
-        <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            display: 'block', 
+            mb: 2, 
+            color: '#00F5FF', 
+            fontWeight: 900, 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.1em',
+            fontFamily: '"Space Grotesk", sans-serif'
+          }}
+        >
           Attachments
         </Typography>
         {isEditing && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2.5 }}>
             <input
               type="file"
               id="attachment-input"
@@ -652,17 +743,28 @@ export function NoteDetailSidebar({
             <Button
               fullWidth
               variant="outlined"
-              startIcon={isUploadingAttachment ? <CircularProgress size={16} /> : <PaperClipIcon />}
+              startIcon={isUploadingAttachment ? <CircularProgress size={16} sx={{ color: '#00F5FF' }} /> : <PaperClipIcon />}
               onClick={() => document.getElementById('attachment-input')?.click()}
               disabled={isUploadingAttachment}
-              sx={{ borderRadius: 3, borderColor: 'rgba(255,255,255,0.1)', color: 'text.primary' }}
+              sx={{ 
+                borderRadius: '12px', 
+                borderColor: 'rgba(255,255,255,0.1)', 
+                color: '#FFFFFF',
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                '&:hover': {
+                  borderColor: '#00F5FF',
+                  bgcolor: 'rgba(0, 245, 255, 0.05)'
+                }
+              }}
             >
               {isUploadingAttachment ? 'Uploading...' : 'Add Attachments'}
             </Button>
             {attachmentErrors.length > 0 && (
-              <Box sx={{ mt: 1 }}>
+              <Box sx={{ mt: 1.5 }}>
                 {attachmentErrors.map((err, i) => (
-                  <Typography key={i} variant="caption" sx={{ display: 'block', color: 'error.main', bgcolor: alpha(theme.palette.error.main, 0.1), p: 1, borderRadius: 1, mt: 0.5 }}>
+                  <Typography key={i} variant="caption" sx={{ display: 'block', color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)', p: 1.5, borderRadius: '8px', mt: 1, fontFamily: '"Inter", sans-serif' }}>
                     {err}
                   </Typography>
                 ))}
@@ -671,60 +773,70 @@ export function NoteDetailSidebar({
           </Box>
         )}
         {currentAttachments.length > 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 160, overflow: 'auto' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 240, overflow: 'auto' }}>
             {currentAttachments.map((a: any) => (
               <Box key={a.id} sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between', 
                 gap: 2, 
-                p: 1.5, 
-                borderRadius: 2, 
+                p: 2, 
+                borderRadius: '16px', 
                 bgcolor: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.05)'
+                border: '1px solid rgba(255,255,255,0.05)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)'
+                }
               }}>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#00F5FF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
                     {a.name}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: '"Inter", sans-serif' }}>
                     {formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}
                   </Typography>
                 </Box>
                 <Button 
                   size="small" 
                   href={`/notes/${note.$id}/${a.id}`}
-                  sx={{ color: 'primary.main', fontWeight: 700 }}
+                  sx={{ 
+                    color: '#00F5FF', 
+                    fontWeight: 800,
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    '&:hover': { bgcolor: 'rgba(0, 245, 255, 0.1)' }
+                  }}
                 >
-                  Open
+                  OPEN
                 </Button>
               </Box>
             ))}
           </Box>
         ) : (
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.disabled' }}>No attachments</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No attachments</Typography>
         )}
       </Box>
 
       {/* Metadata */}
-      <Box sx={{ pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+      <Box sx={{ pt: 4, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
           Created: {formatNoteCreatedDate(note)}
         </Typography>
-        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
           Updated: {formatNoteUpdatedDate(note)}
         </Typography>
 
         {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
-          <Box sx={{ pt: 2, mt: 1, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-              <UserIcon sx={{ fontSize: 16 }} />
-              <Typography variant="caption">
+          <Box sx={{ pt: 3, mt: 1, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'rgba(255, 255, 255, 0.5)' }}>
+              <UserIcon sx={{ fontSize: 18, color: '#00F5FF' }} />
+              <Typography variant="caption" sx={{ fontWeight: 600 }}>
                 Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
               </Typography>
             </Box>
             {enhancedNote.sharePermission && (
-              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.disabled', ml: 3 }}>
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'rgba(255, 255, 255, 0.3)', ml: 4 }}>
                 Permission: {enhancedNote.sharePermission}
               </Typography>
             )}
@@ -734,20 +846,31 @@ export function NoteDetailSidebar({
 
       {/* Edit Actions */}
       {isEditing && (
-        <Box sx={{ pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ pt: 4, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-              {isAutosaving ? 'Saving changes…' : 'All changes saved'}
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: '"Inter", sans-serif', fontWeight: 600 }}>
+              {isAutosaving ? 'Syncing changes…' : 'All changes synced'}
             </Typography>
-            {isAutosaving && <CircularProgress size={12} color="primary" />}
+            {isAutosaving && <CircularProgress size={14} sx={{ color: '#00F5FF' }} />}
           </Box>
           <Button 
             fullWidth 
             variant="outlined" 
             onClick={handleCancel}
-            sx={{ borderRadius: 3, borderColor: 'rgba(255,255,255,0.1)', color: 'text.primary' }}
+            sx={{ 
+              borderRadius: '12px', 
+              borderColor: 'rgba(255,255,255,0.1)', 
+              color: '#FFFFFF',
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              '&:hover': {
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                bgcolor: 'rgba(255, 255, 255, 0.05)'
+              }
+            }}
           >
-            Cancel
+            Cancel Edits
           </Button>
         </Box>
       )}
@@ -767,36 +890,61 @@ export function NoteDetailSidebar({
         onClose={() => setShowDeleteConfirm(false)}
         PaperProps={{
           sx: {
-            borderRadius: 6,
+            borderRadius: '32px',
             bgcolor: 'rgba(10, 10, 10, 0.95)',
             backdropFilter: 'blur(25px) saturate(180%)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             backgroundImage: 'none',
-            p: 2
+            p: 2,
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)'
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem' }}>Delete Note</DialogTitle>
+        <DialogTitle sx={{ 
+          fontWeight: 900, 
+          fontSize: '1.75rem', 
+          fontFamily: '"Space Grotesk", sans-serif',
+          color: '#FF453A',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
+        }}>
+          Delete Note
+        </DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action cannot be undone.
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: '"Inter", sans-serif', lineHeight: 1.6 }}>
+            Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action is permanent and cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2 }}>
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: 'column' }}>
           <Button 
             variant="contained" 
-            color="error"
             fullWidth
             onClick={handleDelete}
-            sx={{ borderRadius: 3 }}
+            sx={{ 
+              borderRadius: '12px',
+              bgcolor: '#FF453A',
+              color: '#FFFFFF',
+              fontWeight: 800,
+              fontFamily: '"Space Grotesk", sans-serif',
+              textTransform: 'uppercase',
+              '&:hover': { bgcolor: '#D32F2F' }
+            }}
           >
-            Delete Note
+            Delete Permanently
           </Button>
           <Button 
             variant="outlined" 
             fullWidth
             onClick={() => setShowDeleteConfirm(false)}
-            sx={{ borderRadius: 3, borderColor: 'rgba(255, 255, 255, 0.1)', color: 'text.primary' }}
+            sx={{ 
+              borderRadius: '12px', 
+              borderColor: 'rgba(255, 255, 255, 0.1)', 
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontFamily: '"Space Grotesk", sans-serif',
+              textTransform: 'uppercase',
+              '&:hover': { borderColor: 'rgba(255, 255, 255, 0.3)', bgcolor: 'rgba(255, 255, 255, 0.05)' }
+            }}
           >
             Cancel
           </Button>

@@ -1,6 +1,35 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Stack, 
+  Button, 
+  TextField, 
+  Grid, 
+  CircularProgress, 
+  Container,
+  Card,
+  CardContent,
+  IconButton,
+  Chip,
+  alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip
+} from '@mui/material';
+import { 
+  Add as AddIcon, 
+  Edit as EditIcon, 
+  Delete as DeleteIcon, 
+  ArrowBack as ArrowBackIcon,
+  Label as LabelIcon,
+  AccessTime as AccessTimeIcon,
+  Description as DescriptionIcon
+} from '@mui/icons-material';
 import { Tags } from '@/types/appwrite';
 import { listTags, createTag, updateTag, deleteTag, updateNote } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -23,22 +52,22 @@ export default function TagsPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: '#ffc700', // Default to accent color
+    color: '#00F5FF', // Default to accent color
   });
 
   const predefinedColors = [
-    '#ffc700', // sun-yellow (accent)
-    '#d9a900', // sun-yellow-dark
-    '#2d221e', // brown-dark
-    '#5d4037', // brown-medium
-    '#3c3c3c', // ash-dark
-    '#8d6e63', // brown-light
-    '#ff5722', // deep orange
-    '#4caf50', // green
-    '#2196f3', // blue
-    '#9c27b0', // purple
-    '#e91e63', // pink
-    '#00bcd4', // cyan
+    '#00F5FF', // Electric Teal
+    '#A855F7', // Purple
+    '#EC4899', // Pink
+    '#3B82F6', // Blue
+    '#10B981', // Emerald
+    '#F59E0B', // Amber
+    '#EF4444', // Red
+    '#6366F1', // Indigo
+    '#8B5CF6', // Violet
+    '#F43F5E', // Rose
+    '#06B6D4', // Cyan
+    '#84CC16', // Lime
   ];
 
   const fetchTags = useCallback(async () => {
@@ -49,7 +78,7 @@ export default function TagsPage() {
 
     try {
       setLoading(true);
-      const response = await listTags(); // Uses default user filtering
+      const response = await listTags();
       setTags(response.documents as unknown as Tags[]);
     } catch (err) {
        setError(err instanceof Error ? err.message : 'Failed to fetch tags');
@@ -83,17 +112,15 @@ export default function TagsPage() {
 
     try {
       if (editingTag) {
-        // Update existing tag
         await updateTag(editingTag.$id, {
           name: formData.name,
           description: formData.description,
           color: formData.color,
         });
       } else {
-        // Create new tag
         await createTag({
           id: ID.unique(),
-          userId: user.$id, // Add userId for proper ownership
+          userId: user.$id,
           name: formData.name,
           description: formData.description,
           color: formData.color,
@@ -103,8 +130,7 @@ export default function TagsPage() {
         });
       }
       
-      // Reset form and refresh tags
-      setFormData({ name: '', description: '', color: '#ffc700' });
+      setFormData({ name: '', description: '', color: '#00F5FF' });
       setShowCreateForm(false);
       setEditingTag(null);
       await fetchTags();
@@ -120,7 +146,7 @@ export default function TagsPage() {
     setFormData({
       name: tag.name || '',
       description: tag.description || '',
-      color: tag.color || '#ffc700',
+      color: tag.color || '#00F5FF',
     });
     setShowCreateForm(true);
   };
@@ -139,7 +165,7 @@ export default function TagsPage() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', color: '#ffc700' });
+    setFormData({ name: '', description: '', color: '#00F5FF' });
     setShowCreateForm(false);
     setEditingTag(null);
     setError(null);
@@ -147,94 +173,92 @@ export default function TagsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-accent rounded-2xl shadow-3d-light dark:shadow-3d-dark animate-pulse mb-4 mx-auto"></div>
-          <p className="text-foreground/70">Please log in to manage your tags</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Stack spacing={2} alignItems="center">
+          <CircularProgress sx={{ color: '#00F5FF' }} />
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Please log in to manage your tags</Typography>
+        </Stack>
+      </Box>
     );
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-accent rounded-2xl shadow-3d-light dark:shadow-3d-dark animate-pulse mb-4 mx-auto"></div>
-          <p className="text-foreground/70">Loading tags...</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Stack spacing={2} alignItems="center">
+          <CircularProgress sx={{ color: '#00F5FF' }} />
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Loading tags...</Typography>
+        </Stack>
+      </Box>
     );
   }
 
-  // Show sidebar when a tag is selected
   if (selectedTag) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="h-screen flex flex-col lg:grid lg:grid-cols-2">
-          {/* Desktop: Left side shows tags grid in background */}
-          <div className="hidden lg:block overflow-y-auto border-r border-border p-6 animate-fade-in">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">Tags Management</h1>
-              <p className="text-foreground/70">Organize your notes with custom tags and colors</p>
-            </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a' }}>
+        <Grid container sx={{ height: '100vh' }}>
+          <Grid item xs={12} lg={6} sx={{ display: { xs: 'none', lg: 'block' }, borderRight: '1px solid rgba(255, 255, 255, 0.1)', p: 4, overflowY: 'auto' }}>
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h3" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', color: 'white', mb: 1 }}>
+                Tags Management
+              </Typography>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>Organize your notes with custom tags and colors</Typography>
+            </Box>
 
-            {error && (
-              <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
-                <p className="text-red-700 dark:text-red-300">{error}</p>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-sm text-foreground/60">
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
                 {tags.length} tag{tags.length !== 1 ? 's' : ''} total
-              </div>
-              <button
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
                 onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-accent to-accent-dark text-brown-dark px-6 py-3 rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95"
+                sx={{
+                  bgcolor: '#00F5FF',
+                  color: 'black',
+                  fontWeight: 900,
+                  borderRadius: '12px',
+                  '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+                }}
               >
-                ✨ Create New Tag
-              </button>
-            </div>
+                Create New Tag
+              </Button>
+            </Stack>
 
-            <div className="grid grid-cols-1 gap-6">
+            <Stack spacing={2}>
               {tags.map((tag) => (
-                <button
+                <Card
                   key={tag.$id}
                   onClick={() => setSelectedTag(tag)}
-                  className={`bg-card border-2 rounded-3xl p-6 shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 text-left ${
-                    selectedTag?.$id === tag.$id ? 'border-accent' : 'border-border'
-                  }`}
+                  sx={{
+                    bgcolor: selectedTag?.$id === tag.$id ? alpha('#00F5FF', 0.05) : 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid',
+                    borderColor: selectedTag?.$id === tag.$id ? '#00F5FF' : 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { borderColor: '#00F5FF', bgcolor: alpha('#00F5FF', 0.05) }
+                  }}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-6 h-6 rounded-lg shadow-sm"
-                        style={{ backgroundColor: tag.color || '#ffc700' }}
+                  <CardContent sx={{ p: 3 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: tag.color || '#00F5FF' }} />
+                        <Typography sx={{ fontWeight: 800, color: 'white' }}>{tag.name}</Typography>
+                      </Stack>
+                      <Chip 
+                        label={`${tag.usageCount || 0} notes`} 
+                        size="small" 
+                        sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, fontSize: '0.7rem' }} 
                       />
-                      <h3 className="font-semibold text-foreground text-lg">{tag.name}</h3>
-                    </div>
-                    <div className="text-xs text-foreground/50 bg-background px-2 py-1 rounded-lg">
-                      {tag.usageCount || 0} notes
-                    </div>
-                  </div>
-
-                  {tag.description && (
-                    <p className="text-foreground/70 text-sm mb-4 line-clamp-2">
-                      {tag.description}
-                    </p>
-                  )}
-
-                  <div className="text-xs text-foreground/50 mb-4">
-                    Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </div>
-                </button>
+                    </Stack>
+                  </CardContent>
+                </Card>
               ))}
-            </div>
-          </div>
+            </Stack>
+          </Grid>
 
-          {/* Right side or full screen on mobile: Notes sidebar */}
-          <div className="flex-1 overflow-hidden lg:border-l lg:border-border animate-slide-in-right">
+          <Grid item xs={12} lg={6} sx={{ height: '100vh', overflow: 'hidden' }}>
             <TagNotesListSidebar
               tag={selectedTag}
               onBack={() => setSelectedTag(null)}
@@ -246,217 +270,360 @@ export default function TagsPage() {
                 }
               }}
               onNoteDelete={(noteId) => {
-                // Handle note deletion if needed
                 console.log('Note deleted:', noteId);
               }}
             />
-          </div>
-        </div>
-
-        {/* Mobile Bottom Navigation Spacing */}
-        <div className="h-20 lg:hidden" />
-      </div>
+          </Grid>
+        </Grid>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Desktop spacing */}
-      <div className="">
-        <div className="p-6">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Tags Management</h1>
-            <p className="text-foreground/70">Organize your notes with custom tags and colors</p>
-          </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', color: 'white', p: { xs: 2, md: 6 } }}>
+      <Container maxWidth="xl">
+        {/* Header */}
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 900, 
+              fontFamily: 'var(--font-space-grotesk)',
+              background: 'linear-gradient(90deg, #fff, #00F5FF)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1
+            }}
+          >
+            Tags Management
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.6, fontWeight: 400 }}>
+            Organize your notes with custom tags and colors
+          </Typography>
+        </Box>
 
-          {/* Error Display */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
-              <p className="text-red-700 dark:text-red-300">{error}</p>
-            </div>
-          )}
+        {error && (
+          <Box sx={{ mb: 4, p: 2, bgcolor: alpha('#ff4444', 0.1), border: '1px solid #ff4444', borderRadius: '12px' }}>
+            <Typography color="#ff4444">{error}</Typography>
+          </Box>
+        )}
 
-          {/* Action Bar */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="text-sm text-foreground/60">
-              {tags.length} tag{tags.length !== 1 ? 's' : ''} total
-            </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-gradient-to-r from-accent to-accent-dark text-brown-dark px-6 py-3 rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95"
+        {/* Action Bar */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
+            {tags.length} tag{tags.length !== 1 ? 's' : ''} total
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setShowCreateForm(true)}
+            sx={{
+              bgcolor: '#00F5FF',
+              color: 'black',
+              fontWeight: 900,
+              px: 4,
+              py: 1.5,
+              borderRadius: '12px',
+              '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+            }}
+          >
+            Create New Tag
+          </Button>
+        </Stack>
+
+        {/* Tags Grid */}
+        {tags.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Box 
+              sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: alpha('#00F5FF', 0.05), 
+                borderRadius: '40px', 
+                mx: 'auto', 
+                mb: 4, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '4rem'
+              }}
             >
-              ✨ Create New Tag
-            </button>
-          </div>
-
-          {/* Create/Edit Form */}
-          {showCreateForm && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-              <div className="bg-card border border-border rounded-3xl p-8 w-full max-w-md shadow-3d-light dark:shadow-3d-dark">
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  {editingTag ? 'Edit Tag' : 'Create New Tag'}
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Tag Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Tag Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-background border border-border rounded-2xl text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-300"
-                      placeholder="Enter tag name..."
-                      required
-                      maxLength={50}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-3 bg-background border border-border rounded-2xl text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-300 resize-none"
-                      placeholder="Describe this tag..."
-                      rows={3}
-                      maxLength={200}
-                    />
-                  </div>
-
-                  {/* Color Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Tag Color
-                    </label>
-                    <div className="grid grid-cols-6 gap-3 mb-4">
-                      {predefinedColors.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, color })}
-                          className={`w-10 h-10 rounded-xl shadow-3d-light dark:shadow-3d-dark transform transition-all duration-200 hover:scale-110 ${
-                            formData.color === color ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' : ''
-                          }`}
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    <input
-                      type="color"
-                      value={formData.color}
-                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                      className="w-full h-12 rounded-2xl border border-border cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={resetForm}
-                      className="flex-1 px-6 py-3 bg-card border border-border text-foreground rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isCreating || !formData.name.trim()}
-                      className="flex-1 bg-gradient-to-r from-accent to-accent-dark text-brown-dark px-6 py-3 rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isCreating ? '⏳ Saving...' : editingTag ? '✏️ Update' : '✨ Create'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Tags Grid */}
-          {tags.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-accent/10 rounded-3xl shadow-inner-light dark:shadow-inner-dark mx-auto mb-6 flex items-center justify-center">
-                <span className="text-4xl">🏷️</span>
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">No tags yet</h3>
-              <p className="text-foreground/60 mb-6">Create your first tag to start organizing your notes</p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-accent to-accent-dark text-brown-dark px-6 py-3 rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                ✨ Create First Tag
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tags.map((tag) => (
-                <button
-                  key={tag.$id}
+              🏷️
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-space-grotesk)' }}>No tags yet</Typography>
+            <Typography sx={{ opacity: 0.6, mb: 4 }}>Create your first tag to start organizing your notes</Typography>
+            <Button
+              variant="contained"
+              onClick={() => setShowCreateForm(true)}
+              sx={{
+                bgcolor: '#00F5FF',
+                color: 'black',
+                fontWeight: 900,
+                px: 4,
+                py: 1.5,
+                borderRadius: '12px',
+                '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+              }}
+            >
+              Create First Tag
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {tags.map((tag) => (
+              <Grid item xs={12} md={6} lg={4} key={tag.$id}>
+                <Card
                   onClick={() => setSelectedTag(tag)}
-                  className="bg-card border border-border rounded-3xl p-6 shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 text-left"
+                  sx={{
+                    bgcolor: 'rgba(10, 10, 10, 0.95)',
+                    backdropFilter: 'blur(25px) saturate(180%)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '24px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': { 
+                      transform: 'translateY(-4px)', 
+                      borderColor: alpha(tag.color || '#00F5FF', 0.5),
+                      boxShadow: `0 8px 32px ${alpha(tag.color || '#00F5FF', 0.1)}`
+                    }
+                  }}
                 >
-                  {/* Tag Color Badge */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-6 h-6 rounded-lg shadow-sm"
-                        style={{ backgroundColor: tag.color || '#ffc700' }}
-                      />
-                      <h3 className="font-semibold text-foreground text-lg">{tag.name}</h3>
-                    </div>
-                    <div className="text-xs text-foreground/50 bg-background px-2 py-1 rounded-lg">
-                      {tag.usageCount || 0} notes
-                    </div>
-                  </div>
+                  <CardContent sx={{ p: 4 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Box 
+                          sx={{ 
+                            width: 40, 
+                            height: 40, 
+                            borderRadius: '12px', 
+                            bgcolor: alpha(tag.color || '#00F5FF', 0.1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: tag.color || '#00F5FF'
+                          }}
+                        >
+                          <LabelIcon />
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+                            {tag.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+                            {tag.usageCount || 0} notes
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Stack>
 
-                  {/* Description */}
-                  {tag.description && (
-                    <p className="text-foreground/70 text-sm mb-4 line-clamp-2">
-                      {tag.description}
-                    </p>
-                  )}
+                    {tag.description && (
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          opacity: 0.7, 
+                          mb: 3, 
+                          minHeight: 40,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {tag.description}
+                      </Typography>
+                    )}
 
-                  {/* Created Date */}
-                  <div className="text-xs text-foreground/50 mb-4">
-                    Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </div>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, opacity: 0.5 }}>
+                      <AccessTimeIcon sx={{ fontSize: 14 }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                        Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </Typography>
+                    </Stack>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(tag);
-                      }}
-                      className="flex-1 bg-background text-foreground px-4 py-2 rounded-xl text-sm font-medium border border-border hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-200 hover:scale-105 active:scale-95"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(tag);
-                      }}
-                      className="flex-1 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl text-sm font-medium border border-red-300 dark:border-red-700 hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-200 hover:scale-105 active:scale-95"
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                    <Stack direction="row" spacing={2}>
+                      <Button
+                        fullWidth
+                        size="small"
+                        startIcon={<EditIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(tag);
+                        }}
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          color: 'white',
+                          fontWeight: 800,
+                          borderRadius: '10px',
+                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        fullWidth
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(tag);
+                        }}
+                        sx={{
+                          bgcolor: alpha('#ff4444', 0.1),
+                          color: '#ff4444',
+                          fontWeight: 800,
+                          borderRadius: '10px',
+                          '&:hover': { bgcolor: alpha('#ff4444', 0.2) }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
-      {/* Mobile Bottom Navigation Spacing */}
-      <div className="h-20 lg:hidden" />
-    </div>
+        {/* Create/Edit Dialog */}
+        <Dialog 
+          open={showCreateForm} 
+          onClose={resetForm}
+          PaperProps={{
+            sx: {
+              bgcolor: 'rgba(10, 10, 10, 0.95)',
+              backdropFilter: 'blur(25px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '24px',
+              color: 'white',
+              maxWidth: 'sm',
+              fullWidth: true
+            }
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', fontSize: '1.5rem' }}>
+            {editingTag ? 'Edit Tag' : 'Create New Tag'}
+          </DialogTitle>
+          <DialogContent>
+            <Stack spacing={4} sx={{ mt: 1 }}>
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                  Tag Name *
+                </Typography>
+                <TextField
+                  fullWidth
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter tag name..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '12px',
+                      color: 'white',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                      '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                    }
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                  Description
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Describe this tag..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '12px',
+                      color: 'white',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                      '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                    }
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 2, display: 'block', textTransform: 'uppercase' }}>
+                  Tag Color
+                </Typography>
+                <Grid container spacing={1.5} sx={{ mb: 3 }}>
+                  {predefinedColors.map((color) => (
+                    <Grid item key={color}>
+                      <Tooltip title={color} arrow>
+                        <Box
+                          onClick={() => setFormData({ ...formData, color })}
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '10px',
+                            bgcolor: color,
+                            cursor: 'pointer',
+                            border: '2px solid',
+                            borderColor: formData.color === color ? 'white' : 'transparent',
+                            transition: 'all 0.2s ease',
+                            '&:hover': { transform: 'scale(1.1)' }
+                          }}
+                        />
+                      </Tooltip>
+                    </Grid>
+                  ))}
+                </Grid>
+                <TextField
+                  type="color"
+                  fullWidth
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: 48,
+                      p: 0.5,
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '12px',
+                      '& input': { p: 0, height: '100%', cursor: 'pointer' },
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                  }}
+                />
+              </Box>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button 
+              onClick={resetForm} 
+              sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              variant="contained"
+              disabled={isCreating || !formData.name.trim()}
+              sx={{
+                bgcolor: '#00F5FF',
+                color: 'black',
+                fontWeight: 900,
+                px: 3,
+                borderRadius: '10px',
+                '&:hover': { bgcolor: alpha('#00F5FF', 0.8) },
+                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.3)' }
+              }}
+            >
+              {isCreating ? 'Saving...' : editingTag ? 'Update' : 'Create'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 }

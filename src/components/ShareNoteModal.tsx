@@ -1,10 +1,40 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Modal } from '@/components/ui/modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button, 
+  TextField, 
+  Typography, 
+  Box, 
+  Avatar, 
+  IconButton, 
+  List, 
+  ListItem, 
+  ListItemAvatar, 
+  ListItemText, 
+  ListItemSecondaryAction,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Alert,
+  alpha,
+  Paper,
+  Tooltip
+} from '@mui/material';
+import { 
+  Close as CloseIcon, 
+  PersonAdd as PersonAddIcon, 
+  Delete as DeleteIcon,
+  Search as SearchIcon,
+  Email as EmailIcon,
+  Security as SecurityIcon
+} from '@mui/icons-material';
 import { account, shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, searchUsers, updateCollaborator } from '@/lib/appwrite';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
@@ -54,7 +84,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
 
   const fetchAndCachePreview = useCallback(async (fileId?: string | null) => {
     if (!fileId) return null;
-    // Return cached value synchronously if available (string | null), otherwise fetch and cache
     const cached = getCachedProfilePreview(fileId);
     if (cached !== undefined) return cached;
     try {
@@ -71,7 +100,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       const users = await getSharedUsers(noteId);
       setSharedUsers(users as SharedUser[]);
 
-      // Prefetch previews for shared users
       for (const u of users as SharedUser[]) {
         const fileId = u?.profilePicId ?? null;
         if (!fileId) continue;
@@ -101,7 +129,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
         }
       })();
     } else {
-      // reset transient state when modal closes
       setResults([]);
       setSelectedUser(null);
       setQuery('');
@@ -139,14 +166,12 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     return () => clearTimeout(t);
   }, [query, debouncedSearch]);
 
-  // Prefetch previews for search results when they change
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       for (const user of results) {
         const fileId = user.avatar || null;
         if (!fileId) continue;
-        // skip if already have a preview for this user
         if (resultPreviews[user.id] !== undefined) continue;
         try {
           const url = await fetchAndCachePreview(fileId);
@@ -172,7 +197,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       return;
     }
 
-    // Duplicate guard
     if (selectedUser && sharedUsers.some(u => u.id === selectedUser.id)) {
       setErrorMsg('Already shared with this user');
       return;
@@ -217,8 +241,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       setQuery('');
       setSelectedUser(null);
       setResults([]);
-
-      // Reconcile actual data
       await loadSharedUsers();
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
@@ -235,7 +257,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     if (collab.permission === newPerm || !collab.collaborationId) return;
     const prevPerm = collab.permission;
     setUpdatingCollab(collab.collaborationId);
-    // Optimistic update
     setSharedUsers(prev => prev.map(u => u.id === collab.id ? { ...u, permission: newPerm } : u));
     try {
       await updateCollaborator(collab.collaborationId, { permission: newPerm });
@@ -243,7 +264,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
       setErrorMsg(msg || 'Failed updating permission');
-      // Revert
       setSharedUsers(prev => prev.map(u => u.id === collab.id ? { ...u, permission: prevPerm } : u));
     } finally {
       setUpdatingCollab(null);
@@ -253,14 +273,13 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const handleRemoveSharing = async (sharedUserId: string, userEmail: string) => {
     resetMessages();
     const previous = sharedUsers;
-    // Optimistic removal
     setSharedUsers(prev => prev.filter(u => u.id !== sharedUserId));
     try {
       await removeNoteSharing(noteId, sharedUserId);
       setSuccessMsg(`Removed sharing with ${userEmail}`);
     } catch (err: unknown) {
       console.error('Failed to remove sharing:', err);
-      setSharedUsers(previous); // revert
+      setSharedUsers(previous);
       const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
       setErrorMsg(msg || 'Failed to remove sharing');
     }
@@ -269,155 +288,276 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const shareDisabled = isLoading || (!selectedUser && !validEmail);
 
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <Dialog 
+      open={isOpen} 
       onClose={() => onOpenChange(false)}
-      title="Share Note"
-      className="max-w-md"
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          backgroundImage: 'none',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+        }
+      }}
     >
-      <div className="space-y-4">
-        <p className="text-sm text-muted mb-2">
-          Share &quot;{noteTitle}&quot; with other users by name search or email.
-        </p>
+      <DialogTitle sx={{ p: 3, pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>
+            Share Note
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {noteTitle}
+          </Typography>
+        </Box>
+        <IconButton onClick={() => onOpenChange(false)} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-{(errorMsg || successMsg) && (
-            <div className={`text-xs rounded-md px-3 py-2 border ${errorMsg ? 'border-red-400 text-red-600 bg-red-50' : 'border-green-400 text-green-600 bg-green-50'}`}>
-              {errorMsg || successMsg}
-            </div>
-          )}
-
-        {/* User Search / Email Input */}
-        <div className="space-y-2">
-          <Label htmlFor="share-query">User or Email</Label>
-          <Input
-            id="share-query"
-            type="text"
-            placeholder="Search by name or enter email"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setSelectedUser(null); resetMessages(); }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!shareDisabled) handleShare();
-              }
+      <DialogContent sx={{ p: 3 }}>
+        {(errorMsg || successMsg) && (
+          <Alert 
+            severity={errorMsg ? 'error' : 'success'} 
+            sx={{ 
+              mb: 3, 
+              borderRadius: '12px',
+              bgcolor: errorMsg ? alpha('#FF4D4D', 0.1) : alpha('#00FF00', 0.1),
+              color: errorMsg ? '#FF4D4D' : '#00FF00',
+              border: '1px solid',
+              borderColor: errorMsg ? alpha('#FF4D4D', 0.2) : alpha('#00FF00', 0.2),
+              '& .MuiAlert-icon': { color: 'inherit' }
             }}
-          />
-          {query && results.length > 0 && !selectedUser && (
-            <div className="border border-border rounded-md max-h-40 overflow-y-auto divide-y divide-border">
-              {results.map(user => (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => { setSelectedUser(user); setQuery(user.name || user.email || ''); resetMessages(); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-card/80 focus:outline-none text-sm text-foreground"
-                >
-                  {resultPreviews[user.id] ? (
-                    <img src={resultPreviews[user.id] as string} alt={user.name || user.email || 'User'} className="h-6 w-6 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-medium text-foreground">
-                      {(user.name || user.email || '?').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex flex-col">
-                    <span className="font-medium">{user.name || user.email}</span>
-                    {user.email && user.email !== user.name && (
-                      <span className="text-xs text-muted">{user.email}</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-          {query && !isSearching && results.length === 0 && !selectedUser && validEmail === false && (
-            <div className="text-xs text-muted">No users found</div>
-          )}
-          {selectedUser && (
-            <div className="flex items-center gap-2 text-xs text-muted">
-              Selected: <span className="font-medium text-foreground">{selectedUser.name || selectedUser.email}</span>
-              <button
-                onClick={() => { setSelectedUser(null); setQuery(''); }}
-                className="text-muted hover:text-red-500"
-              >Clear</button>
-            </div>
-          )}
-          {isSearching && <div className="text-xs text-muted">Searching...</div>}
-        </div>
-
-        {/* Permission Level */}
-        <div className="space-y-2">
-          <Label htmlFor="permission">Permission Level</Label>
-            <select
-              id="permission"
-              value={permission}
-              onChange={(e) => setPermission(e.target.value as 'read' | 'write' | 'admin')}
-              className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option value="read">Read Only</option>
-              <option value="write">Read & Write</option>
-              <option value="admin">Admin (Full Access)</option>
-            </select>
-        </div>
-
-        {/* Share Button */}
-        <Button onClick={handleShare} disabled={shareDisabled} className="w-full">
-          {isLoading ? 'Sharing...' : 'Share Note'}
-        </Button>
-
-        {/* Currently Shared Users */}
-        {(sharedUsers.length > 0 || isLoadingUsers) && (
-          <div className="space-y-2">
-            <Label>Currently Shared With</Label>
-            {isLoadingUsers ? (
-              <div className="text-sm text-muted">Loading...</div>
-            ) : (
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {sharedUsers.map((user) => (
-                  <div key={user.id + (user.collaborationId || '')} className="flex items-center justify-between p-2 border border-border rounded-md bg-card">
-                    <div className="flex items-center gap-2">
-                      {sharedPreviews[user.id] ? (
-                        <img src={sharedPreviews[user.id] as string} alt={user.name || user.email || 'User'} className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-8 h-8 bg-card rounded-full flex items-center justify-center font-medium text-sm text-foreground">
-                          {user.name ? user.name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                      )}
-                      <span className="text-sm">{user.name ? `${user.name} (${user.email})` : user.email}</span>
-                      <div className="flex items-center gap-1">
-                        <select
-                          value={user.permission}
-                          onChange={(e) => handleUpdatePermission(user, e.target.value as 'read' | 'write' | 'admin')}
-                          className="h-7 rounded-md border border-border bg-card text-xs px-1 py-0.5 text-foreground focus:outline-none"
-                          disabled={updatingCollab === user.collaborationId || user.collaborationId === 'pending'}
-                        >
-                          <option value="read">read</option>
-                          <option value="write">write</option>
-                          <option value="admin">admin</option>
-                        </select>
-                        {updatingCollab === user.collaborationId && (
-                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent" />
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveSharing(user.id, user.email)}
-                      className="h-6 w-6 p-0 text-muted hover:text-red-500 text-sm disabled:opacity-50"
-                      disabled={user.collaborationId === 'pending'}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          >
+            {errorMsg || successMsg}
+          </Alert>
         )}
 
-        <div className="flex justify-end pt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </div>
-      </div>
-    </Modal>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>
+            Invite Collaborators
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+            <Box sx={{ flex: 1, position: 'relative' }}>
+              <TextField
+                fullWidth
+                placeholder="Name or email address"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setSelectedUser(null); resetMessages(); }}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <Box sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.3)', display: 'flex' }}>
+                        <SearchIcon fontSize="small" />
+                      </Box>
+                    )
+                  }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                    '&.Mui-focused fieldset': { borderColor: '#00F5FF' }
+                  },
+                  '& .MuiInputBase-input': { color: 'white' }
+                }}
+              />
+              
+              {query && results.length > 0 && !selectedUser && (
+                <Paper 
+                  elevation={0}
+                  sx={{ 
+                    position: 'absolute', 
+                    top: '100%', 
+                    left: 0, 
+                    right: 0, 
+                    zIndex: 10, 
+                    mt: 1,
+                    bgcolor: 'rgba(20, 20, 20, 0.98)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    maxHeight: 200,
+                    overflow: 'auto'
+                  }}
+                >
+                  <List disablePadding>
+                    {results.map(user => (
+                      <ListItem 
+                        key={user.id} 
+                        component="button"
+                        onClick={() => { setSelectedUser(user); setQuery(user.name || user.email || ''); resetMessages(); }}
+                        sx={{ 
+                          width: '100%', 
+                          textAlign: 'left', 
+                          border: 'none', 
+                          bgcolor: 'transparent',
+                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                          p: 1.5
+                        }}
+                      >
+                        <ListItemAvatar>
+                          <Avatar 
+                            src={resultPreviews[user.id] || undefined}
+                            sx={{ width: 32, height: 32, bgcolor: '#00F5FF', color: '#000', fontWeight: 800, fontSize: '0.75rem' }}
+                          >
+                            {(user.name || user.email || '?').charAt(0).toUpperCase()}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText 
+                          primary={user.name || user.email} 
+                          primaryTypographyProps={{ variant: 'body2', fontWeight: 700, color: 'white' }}
+                          secondary={user.email && user.email !== user.name ? user.email : null}
+                          secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)' }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              )}
+            </Box>
+
+            <FormControl sx={{ minWidth: 140 }}>
+              <Select
+                value={permission}
+                onChange={(e) => setPermission(e.target.value as 'read' | 'write' | 'admin')}
+                sx={{
+                  borderRadius: '12px',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  color: 'white',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00F5FF' }
+                }}
+              >
+                <MenuItem value="read">Read Only</MenuItem>
+                <MenuItem value="write">Read & Write</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button
+              variant="contained"
+              onClick={handleShare}
+              disabled={shareDisabled}
+              sx={{
+                borderRadius: '12px',
+                bgcolor: '#00F5FF',
+                color: '#000',
+                fontWeight: 800,
+                px: 3,
+                '&:hover': { bgcolor: '#00D1DA' },
+                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.2)' }
+              }}
+            >
+              {isLoading ? <CircularProgress size={20} color="inherit" /> : 'Share'}
+            </Button>
+          </Box>
+        </Box>
+
+        <Box>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 2 }}>
+            Collaborators
+          </Typography>
+          
+          {isLoadingUsers ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={24} sx={{ color: '#00F5FF' }} />
+            </Box>
+          ) : sharedUsers.length === 0 ? (
+            <Box sx={{ py: 4, textAlign: 'center', bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 600 }}>
+                No collaborators yet
+              </Typography>
+            </Box>
+          ) : (
+            <List disablePadding>
+              {sharedUsers.map((user) => (
+                <ListItem 
+                  key={user.id + (user.collaborationId || '')}
+                  sx={{ 
+                    bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                    borderRadius: '16px', 
+                    mb: 1.5,
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    p: 1.5
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar 
+                      src={sharedPreviews[user.id] || undefined}
+                      sx={{ width: 40, height: 40, bgcolor: alpha('#00F5FF', 0.1), color: '#00F5FF', fontWeight: 800 }}
+                    >
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={user.name || user.email} 
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: 800, color: 'white' }}
+                    secondary={user.name ? user.email : null}
+                    secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)' }}
+                  />
+                  <ListItemSecondaryAction sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Select
+                      size="small"
+                      value={user.permission}
+                      onChange={(e) => handleUpdatePermission(user, e.target.value as 'read' | 'write' | 'admin')}
+                      disabled={updatingCollab === user.collaborationId || user.collaborationId === 'pending'}
+                      sx={{
+                        height: 32,
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        color: '#00F5FF',
+                        '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                        bgcolor: alpha('#00F5FF', 0.05),
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <MenuItem value="read">Read</MenuItem>
+                      <MenuItem value="write">Write</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                    </Select>
+                    
+                    {updatingCollab === user.collaborationId ? (
+                      <CircularProgress size={16} sx={{ color: '#00F5FF' }} />
+                    ) : (
+                      <Tooltip title="Remove access">
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleRemoveSharing(user.id, user.email)}
+                          disabled={user.collaborationId === 'pending'}
+                          sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#FF4D4D' } }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 3, pt: 0 }}>
+        <Button 
+          onClick={() => onOpenChange(false)}
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.4)', 
+            fontWeight: 800,
+            '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' }
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
+

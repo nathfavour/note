@@ -33,9 +33,9 @@ export function SearchBar({
             startAdornment: (
               <InputAdornment position="start">
                 {isSearching ? (
-                  <CircularProgress size={20} color="primary" />
+                  <CircularProgress size={18} sx={{ color: '#00F5FF' }} />
                 ) : (
-                  <SearchIcon sx={{ color: 'text.secondary' }} />
+                  <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.4)' }} />
                 )}
               </InputAdornment>
             ),
@@ -48,6 +48,10 @@ export function SearchBar({
                     onClear?.();
                   }}
                   edge="end"
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.4)',
+                    '&:hover': { color: '#00F5FF' }
+                  }}
                 >
                   <CloseIcon />
                 </IconButton>
@@ -58,7 +62,9 @@ export function SearchBar({
         sx={{
           '& .MuiOutlinedInput-root': {
             borderRadius: '16px',
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.2s ease',
             '& fieldset': {
               borderColor: 'rgba(255, 255, 255, 0.1)',
             },
@@ -66,7 +72,17 @@ export function SearchBar({
               borderColor: 'rgba(255, 255, 255, 0.2)',
             },
             '&.Mui-focused fieldset': {
-              borderColor: 'primary.main',
+              borderColor: '#00F5FF',
+              borderWidth: '1px',
+              boxShadow: '0 0 15px rgba(0, 245, 255, 0.2)',
+            },
+          },
+          '& .MuiInputBase-input': {
+            color: '#FFFFFF',
+            fontFamily: '"Inter", sans-serif',
+            '&::placeholder': {
+              color: 'rgba(255, 255, 255, 0.3)',
+              opacity: 1,
             },
           },
         }}

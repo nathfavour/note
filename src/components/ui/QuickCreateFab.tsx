@@ -78,41 +78,46 @@ export default function QuickCreateFab({
       ariaLabel="Quick create"
       sx={{
         position: 'fixed',
-        bottom: 24,
-        right: 24,
+        bottom: 32,
+        right: 32,
         zIndex: 1000,
         '& .MuiFab-primary': {
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          boxShadow: `
-            0 8px 32px ${theme.palette.primary.main}40,
-            0 4px 16px rgba(0, 0, 0, 0.2),
-            inset 0 1px 2px rgba(255, 255, 255, 0.2)
-          `,
+          bgcolor: '#00F5FF',
+          color: '#000000',
+          boxShadow: '0 0 30px rgba(0, 245, 255, 0.4)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: `
-              0 12px 40px ${theme.palette.primary.main}50,
-              0 6px 20px rgba(0, 0, 0, 0.25),
-              inset 0 1px 2px rgba(255, 255, 255, 0.2)
-            `,
+            bgcolor: '#00D1DA',
+            transform: 'scale(1.1) rotate(90deg)',
+            boxShadow: '0 0 50px rgba(0, 245, 255, 0.6)',
           },
         },
         '& .MuiSpeedDialAction-fab': {
-          backgroundColor: theme.palette.background.paper,
-          border: `2px solid ${theme.palette.divider}`,
-          boxShadow: `
-            0 4px 16px rgba(0, 0, 0, 0.1),
-            inset 0 1px 1px rgba(255, 255, 255, 0.1)
-          `,
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'rgba(255, 255, 255, 0.7)',
+          transition: 'all 0.2s ease',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            backgroundColor: theme.palette.action.hover,
-            boxShadow: `
-              0 6px 20px rgba(0, 0, 0, 0.15),
-              inset 0 1px 1px rgba(255, 255, 255, 0.1)
-            `,
+            bgcolor: 'rgba(0, 245, 255, 0.1)',
+            color: '#00F5FF',
+            borderColor: '#00F5FF',
+            transform: 'translateY(-4px)',
           },
         },
+        '& .MuiSpeedDialAction-staticTooltipLabel': {
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: '#FFFFFF',
+          fontFamily: '"Space Grotesk", sans-serif',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          fontSize: '0.75rem',
+          padding: '6px 12px',
+          borderRadius: '8px',
+        }
       }}
       icon={<SpeedDialIcon icon={<AddIcon />} openIcon={<CloseIcon />} />}
       onClose={() => setOpen(false)}
@@ -125,6 +130,7 @@ export default function QuickCreateFab({
           key={action.action}
           icon={action.icon}
           tooltipTitle={action.name}
+          tooltipOpen
           onClick={() => handleAction(action.action)}
         />
       ))}

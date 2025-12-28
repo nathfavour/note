@@ -1,12 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PlusIcon, SparklesIcon, DocumentPlusIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { 
+  Box, 
+  Fab, 
+  IconButton, 
+  Typography, 
+  Backdrop, 
+  Zoom, 
+  Tooltip,
+  alpha 
+} from '@mui/material';
+import { 
+  Add as PlusIcon, 
+  AutoAwesome as SparklesIcon, 
+  NoteAdd as DocumentPlusIcon, 
+  Brush as PencilIcon 
+} from '@mui/icons-material';
 import { useOverlay } from '@/components/ui/OverlayContext';
-// AIGeneratePromptModal will be dynamically imported via lazy AI loader
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { ensureAI } from '@/lib/ai/lazy';
-// AI context removed; using lazy ensureAI loader
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 
 interface MobileFABProps {
@@ -15,10 +28,8 @@ interface MobileFABProps {
 
 export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   const { openOverlay, closeOverlay } = useOverlay();
-  // Optional AI usage (AI button independent from core create note)
   const [aiLoading, setAiLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleCreateNoteClick = () => {
     setIsExpanded(false);
@@ -75,66 +86,122 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
     }
   };
 
-  // Legacy direct AI generation removed; handled within ensureAI modal callback
-
   return (
-    <div
-      className={`fixed bottom-20 right-6 z-40 md:hidden ${className}`}
+    <Box
+      sx={{
+        position: 'fixed',
+        bottom: 100, // Above MobileBottomNav
+        right: 24,
+        zIndex: 1400,
+        display: { xs: 'flex', md: 'none' },
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 2
+      }}
       {...sidebarIgnoreProps}
     >
-      {/* Backdrop for expanded state */}
-      {isExpanded && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm"
-          onClick={() => setIsExpanded(false)}
-          style={{ zIndex: -1 }}
-        />
-      )}
+      <Backdrop
+        open={isExpanded}
+        onClick={() => setIsExpanded(false)}
+        sx={{ 
+          zIndex: -1, 
+          bgcolor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(4px)'
+        }}
+      />
 
       {/* Expanded Action Buttons */}
-      {isExpanded && (
-        <div className="flex flex-col gap-3 mb-4">
-          {/* AI Generate Button (lazy loaded) */}
-          <button
-            onClick={aiLoading ? undefined : handleAIGenerateClick}
-            disabled={aiLoading}
-            className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-all duration-200 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed`}
-            title={aiLoading ? 'Loading AI...' : 'AI Generate'}
-          >
-            <SparklesIcon className="h-5 w-5" />
-            <span className="font-medium text-sm">{aiLoading ? 'Loading AI...' : 'AI Generate'}</span>
-          </button>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 1 }}>
+        <Zoom in={isExpanded} style={{ transitionDelay: isExpanded ? '100ms' : '0ms' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', bgcolor: 'rgba(0,0,0,0.6)', px: 1.5, py: 0.5, borderRadius: '8px', backdropFilter: 'blur(10px)' }}>
+              AI Generate
+            </Typography>
+            <Fab
+              size="medium"
+              onClick={aiLoading ? undefined : handleAIGenerateClick}
+              disabled={aiLoading}
+              sx={{
+                bgcolor: '#A855F7',
+                color: 'white',
+                '&:hover': { bgcolor: '#9333EA' },
+                boxShadow: '0 8px 20px rgba(168, 85, 247, 0.4)'
+              }}
+            >
+              <SparklesIcon />
+            </Fab>
+          </Box>
+        </Zoom>
 
-          {/* Create Doodle Button */}
-          <button
-            onClick={handleCreateDoodleClick}
-            className="flex items-center gap-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-1"
-          >
-            <PencilIcon className="h-5 w-5" />
-            <span className="font-medium text-sm">Create Doodle</span>
-          </button>
+        <Zoom in={isExpanded} style={{ transitionDelay: isExpanded ? '50ms' : '0ms' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', bgcolor: 'rgba(0,0,0,0.6)', px: 1.5, py: 0.5, borderRadius: '8px', backdropFilter: 'blur(10px)' }}>
+              Doodle
+            </Typography>
+            <Fab
+              size="medium"
+              onClick={handleCreateDoodleClick}
+              sx={{
+                bgcolor: '#EC4899',
+                color: 'white',
+                '&:hover': { bgcolor: '#DB2777' },
+                boxShadow: '0 8px 20px rgba(236, 72, 153, 0.4)'
+              }}
+            >
+              <PencilIcon />
+            </Fab>
+          </Box>
+        </Zoom>
 
-          {/* Create Note Button */}
-          <button
-            onClick={handleCreateNoteClick}
-            className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-1"
-          >
-            <DocumentPlusIcon className="h-5 w-5" />
-            <span className="font-medium text-sm">Create Note</span>
-          </button>
-        </div>
-      )}
+        <Zoom in={isExpanded} style={{ transitionDelay: isExpanded ? '0ms' : '0ms' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', bgcolor: 'rgba(0,0,0,0.6)', px: 1.5, py: 0.5, borderRadius: '8px', backdropFilter: 'blur(10px)' }}>
+              Note
+            </Typography>
+            <Fab
+              size="medium"
+              onClick={handleCreateNoteClick}
+              sx={{
+                bgcolor: '#3B82F6',
+                color: 'white',
+                '&:hover': { bgcolor: '#2563EB' },
+                boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)'
+              }}
+            >
+              <DocumentPlusIcon />
+            </Fab>
+          </Box>
+        </Zoom>
+      </Box>
 
       {/* Main FAB Button */}
-      <button
+      <Fab
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`flex items-center justify-center w-14 h-14 bg-gradient-to-br from-accent to-accent/80 text-white rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:-translate-y-1 ${
-          isExpanded ? 'rotate-45' : ''
-        }`}
+        sx={{
+          width: 64,
+          height: 64,
+          bgcolor: '#00F5FF',
+          color: '#000',
+          borderRadius: '20px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            bgcolor: '#00D1DA',
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 24px rgba(0, 245, 255, 0.4)'
+          },
+          ...(isExpanded && {
+            transform: 'rotate(45deg)',
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: 'none'
+          })
+        }}
       >
-        <PlusIcon className="h-7 w-7" />
-      </button>
-    </div>
+        <PlusIcon sx={{ fontSize: 32 }} />
+      </Fab>
+    </Box>
   );
 };
 

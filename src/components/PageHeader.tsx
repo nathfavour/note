@@ -1,23 +1,47 @@
 'use client';
 
-import { Box, Paper } from '@mui/material';
+import { Box, Paper, IconButton, alpha } from '@mui/material';
 import GlobalSearch from './GlobalSearch';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import { useState } from 'react';
-import { IconButton } from '@mui/material';
-import { Keyboard } from '@mui/icons-material';
+import { Keyboard as KeyboardIcon } from '@mui/icons-material';
 
 export default function PageHeader() {
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   return (
     <>
-      <Paper sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 2, backgroundColor: 'background.paper' }}>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 2, 
+          mb: 4, 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2, 
+          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(25px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '20px',
+          backgroundImage: 'none'
+        }}
+      >
         <Box sx={{ flexGrow: 1 }}>
           <GlobalSearch />
         </Box>
-        <IconButton onClick={() => setShowKeyboardShortcuts(true)}>
-          <Keyboard />
+        <IconButton 
+          onClick={() => setShowKeyboardShortcuts(true)}
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.6)',
+            bgcolor: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '12px',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.08)',
+              color: '#00F5FF'
+            }
+          }}
+        >
+          <KeyboardIcon />
         </IconButton>
       </Paper>
       <KeyboardShortcuts
@@ -27,3 +51,4 @@ export default function PageHeader() {
     </>
   );
 }
+

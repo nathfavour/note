@@ -17,7 +17,15 @@ import {
   alpha,
   Tooltip
 } from '@mui/material';
-import { X, Maximize2, Minimize2, RotateCcw, Trash2, Save } from 'lucide-react';
+import { 
+  Close as CloseIcon, 
+  Fullscreen as FullscreenIcon, 
+  FullscreenExit as FullscreenExitIcon, 
+  Undo as UndoIcon, 
+  Delete as DeleteIcon, 
+  Save as SaveIcon,
+  PictureInPictureAlt as PipIcon
+} from '@mui/icons-material';
 
 interface DoodleCanvasProps {
   initialData?: string;
@@ -174,32 +182,33 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
   const Controls = ({ isPip = false }: { isPip?: boolean }) => (
     <Stack 
       direction={isPip ? "column" : "row"} 
-      spacing={2} 
+      spacing={3} 
       alignItems="center" 
       sx={{ width: '100%', flexWrap: 'wrap' }}
     >
       <Stack direction="row" spacing={2} alignItems="center">
-        <Typography variant="caption" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.5)' }}>COLOR</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 900, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em' }}>COLOR</Typography>
         <Box 
           component="input"
           type="color"
           value={color}
           onChange={(e: any) => setColor(e.target.value)}
           sx={{ 
-            width: 32, 
-            height: 32, 
-            border: 'none', 
-            borderRadius: '8px', 
+            width: 36, 
+            height: 36, 
+            border: '2px solid rgba(255, 255, 255, 0.1)', 
+            borderRadius: '10px', 
             cursor: 'pointer',
             bgcolor: 'transparent',
+            p: 0.5,
             '&::-webkit-color-swatch-wrapper': { p: 0 },
-            '&::-webkit-color-swatch': { border: 'none', borderRadius: '8px' }
+            '&::-webkit-color-swatch': { border: 'none', borderRadius: '6px' }
           }}
         />
       </Stack>
 
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, minWidth: 150 }}>
-        <Typography variant="caption" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.5)' }}>SIZE</Typography>
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, minWidth: 200 }}>
+        <Typography variant="caption" sx={{ fontWeight: 900, color: '#00F5FF', textTransform: 'uppercase', letterSpacing: '0.1em' }}>SIZE</Typography>
         <Slider
           value={size}
           min={1}
@@ -207,22 +216,45 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
           onChange={(_: any, val: any) => setSize(val)}
           sx={{ 
             color: '#00F5FF',
-            '& .MuiSlider-thumb': { width: 12, height: 12 },
-            '& .MuiSlider-rail': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            '& .MuiSlider-thumb': { 
+              width: 16, 
+              height: 16,
+              '&:hover, &.Mui-focusVisible': {
+                boxShadow: `0 0 0 8px ${alpha('#00F5FF', 0.16)}`
+              }
+            },
+            '& .MuiSlider-rail': { bgcolor: 'rgba(255, 255, 255, 0.1)', opacity: 1 },
+            '& .MuiSlider-track': { border: 'none' }
           }}
         />
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', minWidth: 24 }}>{size}px</Typography>
+        <Typography variant="caption" sx={{ color: 'white', fontWeight: 800, minWidth: 32, textAlign: 'right' }}>{size}px</Typography>
       </Stack>
 
-      <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+      <Stack direction="row" spacing={1.5} sx={{ ml: 'auto' }}>
         <Tooltip title="Undo">
-          <IconButton onClick={handleUndo} size="small" sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
-            <RotateCcw size={18} />
+          <IconButton 
+            onClick={handleUndo} 
+            size="small" 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.4)', 
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
+              '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.08)' } 
+            }}
+          >
+            <UndoIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <Tooltip title="Clear">
-          <IconButton onClick={handleClear} size="small" sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#FF4D4D', bgcolor: alpha('#FF4D4D', 0.1) } }}>
-            <Trash2 size={18} />
+          <IconButton 
+            onClick={handleClear} 
+            size="small" 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.4)', 
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
+              '&:hover': { color: '#FF3B30', bgcolor: alpha('#FF3B30', 0.1) } 
+            }}
+          >
+            <DeleteIcon fontSize="small" />
           </IconButton>
         </Tooltip>
       </Stack>
@@ -237,13 +269,13 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
           left: pipPosition.x,
           top: pipPosition.y,
           zIndex: 2000,
-          width: 320,
+          width: 360,
           bgcolor: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '20px',
+          borderRadius: '24px',
           overflow: 'hidden',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+          boxShadow: '0 32px 64px rgba(0,0,0,0.6)',
           backgroundImage: 'none'
         }}
         onMouseMove={handlePipDrag}
@@ -254,29 +286,30 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
           data-pip-drag
           onMouseDown={handlePipDragStart}
           sx={{ 
-            p: 1.5, 
+            p: 2, 
             bgcolor: 'rgba(255, 255, 255, 0.03)', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            cursor: 'move'
+            cursor: 'move',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
           }}
         >
-          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.6)' }}>DOODLE</Typography>
-          <Stack direction="row" spacing={0.5}>
-            <IconButton size="small" onClick={() => setMode('modal')} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-              <Maximize2 size={14} />
+          <Typography variant="caption" sx={{ fontWeight: 900, color: '#00F5FF', letterSpacing: '0.1em' }}>DOODLE PIP</Typography>
+          <Stack direction="row" spacing={1}>
+            <IconButton size="small" onClick={() => setMode('modal')} sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white' } }}>
+              <FullscreenIcon fontSize="small" />
             </IconButton>
-            <IconButton size="small" onClick={onClose} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-              <X size={14} />
+            <IconButton size="small" onClick={onClose} sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#FF3B30' } }}>
+              <CloseIcon fontSize="small" />
             </IconButton>
           </Stack>
         </Box>
-        <Box sx={{ bgcolor: '#000', aspectRatio: '16/9' }}>
+        <Box sx={{ bgcolor: '#000', aspectRatio: '16/9', position: 'relative' }}>
           <canvas
             ref={canvasRef}
-            width={320}
-            height={180}
+            width={360}
+            height={202}
             onMouseDown={startDrawing}
             onMouseMove={draw}
             onMouseUp={stopDrawing}
@@ -284,16 +317,23 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
             style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
           />
         </Box>
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2.5 }}>
           <Controls isPip />
           <Button 
             fullWidth 
             variant="contained" 
-            size="small" 
             onClick={handleSave}
-            sx={{ mt: 2, bgcolor: '#00F5FF', color: '#000', fontWeight: 800, borderRadius: '10px' }}
+            sx={{ 
+              mt: 2.5, 
+              bgcolor: '#00F5FF', 
+              color: '#000', 
+              fontWeight: 900, 
+              borderRadius: '12px',
+              py: 1,
+              '&:hover': { bgcolor: alpha('#00F5FF', 0.8) }
+            }}
           >
-            Save
+            Save Doodle
           </Button>
         </Box>
       </Paper>
@@ -304,17 +344,18 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
     <Dialog
       open={true}
       onClose={onClose}
-      maxWidth={mode === 'fullscreen' ? false : 'md'}
+      maxWidth={mode === 'fullscreen' ? false : 'lg'}
       fullScreen={mode === 'fullscreen'}
       PaperProps={{
         sx: {
           bgcolor: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: mode === 'fullscreen' ? 0 : '28px',
+          borderRadius: mode === 'fullscreen' ? 0 : '32px',
           backgroundImage: 'none',
           color: 'white',
-          maxHeight: '90vh'
+          maxHeight: '95vh',
+          boxShadow: '0 48px 96px rgba(0,0,0,0.8)'
         }
       }}
     >
@@ -325,49 +366,53 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
         justifyContent: 'space-between',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
-        <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', letterSpacing: '-0.02em' }}>
-          Doodle {mode === 'fullscreen' && '- Fullscreen'}
-        </Typography>
-        <Stack direction="row" spacing={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#00F5FF', boxShadow: '0 0 12px #00F5FF' }} />
+          <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.03em' }}>
+            Doodle Canvas {mode === 'fullscreen' && <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.3)', ml: 1 }}>/ Fullscreen</Box>}
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1.5}>
           <Tooltip title={mode === 'fullscreen' ? "Exit Fullscreen" : "Fullscreen"}>
             <IconButton 
               onClick={() => setMode(mode === 'fullscreen' ? 'modal' : 'fullscreen')}
-              sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}
+              sx={{ color: 'rgba(255, 255, 255, 0.4)', bgcolor: 'rgba(255, 255, 255, 0.03)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.08)' } }}
             >
-              {mode === 'fullscreen' ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+              {mode === 'fullscreen' ? <FullscreenExitIcon /> : <FullscreenIcon />}
             </IconButton>
           </Tooltip>
           <Tooltip title="Minimize to PIP">
             <IconButton 
               onClick={() => setMode('pip')}
-              sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}
+              sx={{ color: 'rgba(255, 255, 255, 0.4)', bgcolor: 'rgba(255, 255, 255, 0.03)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.08)' } }}
             >
-              <Minimize2 size={20} />
+              <PipIcon />
             </IconButton>
           </Tooltip>
           <IconButton 
             onClick={onClose}
-            sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}
+            sx={{ color: 'rgba(255, 255, 255, 0.4)', bgcolor: 'rgba(255, 255, 255, 0.03)', '&:hover': { color: '#FF3B30', bgcolor: alpha('#FF3B30', 0.1) } }}
           >
-            <X size={20} />
+            <CloseIcon />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 4, bgcolor: 'rgba(0, 0, 0, 0.2)' }}>
+      <DialogContent sx={{ p: 4, bgcolor: 'rgba(0, 0, 0, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Box sx={{ 
           width: '100%', 
-          height: mode === 'fullscreen' ? 'calc(100vh - 200px)' : 500,
+          height: mode === 'fullscreen' ? 'calc(100vh - 240px)' : 600,
           bgcolor: '#000',
-          borderRadius: '16px',
+          borderRadius: '24px',
           border: '1px solid rgba(255, 255, 255, 0.05)',
           overflow: 'hidden',
-          position: 'relative'
+          position: 'relative',
+          boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)'
         }}>
           <canvas
             ref={canvasRef}
-            width={mode === 'fullscreen' ? 1920 : 800}
-            height={mode === 'fullscreen' ? 1080 : 600}
+            width={mode === 'fullscreen' ? 1920 : 1200}
+            height={mode === 'fullscreen' ? 1080 : 800}
             onMouseDown={startDrawing}
             onMouseMove={draw}
             onMouseUp={stopDrawing}
@@ -383,9 +428,9 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
       </DialogContent>
 
       <DialogActions sx={{ 
-        p: 3, 
+        p: 4, 
         flexDirection: 'column', 
-        gap: 3,
+        gap: 4,
         borderTop: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
         <Controls />
@@ -393,24 +438,32 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
           <Button 
             onClick={onClose}
             sx={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
-              fontWeight: 700,
+              color: 'rgba(255, 255, 255, 0.5)', 
+              fontWeight: 800,
+              px: 3,
               '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' }
             }}
           >
-            Cancel
+            Discard Changes
           </Button>
           <Button 
             variant="contained"
             onClick={handleSave}
-            startIcon={<Save size={18} />}
+            startIcon={<SaveIcon />}
             sx={{ 
               bgcolor: '#00F5FF', 
               color: '#000', 
-              fontWeight: 800, 
-              borderRadius: '14px',
-              px: 4,
-              '&:hover': { bgcolor: '#00D1DA' }
+              fontWeight: 900, 
+              borderRadius: '16px',
+              px: 5,
+              py: 1.5,
+              fontSize: '1rem',
+              '&:hover': { 
+                bgcolor: alpha('#00F5FF', 0.8),
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${alpha('#00F5FF', 0.4)}`
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             Save Doodle
@@ -420,3 +473,5 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
     </Dialog>
   );
 }
+
+
