@@ -30,7 +30,7 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import { getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { ECOSYSTEM_APPS, getEcosystemUrl } from '@/constants/ecosystem';
-import TopBarSearch from '@/components/TopBarSearch';
+import { TopBarSearch } from '@/components/TopBarSearch';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface AppHeaderProps {
