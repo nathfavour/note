@@ -7,20 +7,15 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Performance optimizations
-  modularizeImports: {
-    '@mui/material': {
-      transform: '@mui/material/{{member}}',
-    },
-    '@mui/icons-material': {
-      transform: '@mui/icons-material/{{member}}',
-    },
-    'lodash': {
-      transform: 'lodash/{{member}}',
-    },
-  },
   experimental: {
-    optimizePackageImports: ['framer-motion'],
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      'lodash',
+      'date-fns',
+      'framer-motion',
+      'react-markdown',
+    ],
   },
 
   // async rewrites() {

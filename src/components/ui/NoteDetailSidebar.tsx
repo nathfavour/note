@@ -2,17 +2,22 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Notes } from '@/types/appwrite';
-import DoodleCanvas from '@/components/DoodleCanvas';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  IconButton, 
-  TextField, 
-  ToggleButtonGroup, 
-  ToggleButton, 
-  Chip, 
-  Divider, 
+import dynamic from 'next/dynamic';
+
+const DoodleCanvas = dynamic(() => import('@/components/DoodleCanvas'), { ssr: false });
+const NoteContentDisplay = dynamic(() => import('@/components/NoteContentDisplay'), { ssr: false });
+const NoteContentRenderer = dynamic(() => import('@/components/NoteContentRenderer'), { ssr: false });
+
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  TextField,
+  ToggleButtonGroup,
+  ToggleButton,
+  Chip,
+  Divider,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -22,11 +27,11 @@ import {
   useTheme,
   CircularProgress
 } from '@mui/material';
-import { 
-  Delete as TrashIcon, 
-  Person as UserIcon, 
-  ContentCopy as ClipboardDocumentIcon, 
-  AttachFile as PaperClipIcon, 
+import {
+  Delete as TrashIcon,
+  Person as UserIcon,
+  ContentCopy as ClipboardDocumentIcon,
+  AttachFile as PaperClipIcon,
   OpenInNew as ArrowTopRightOnSquareIcon,
   Edit as EditIcon,
   Save as SaveIcon,
@@ -38,8 +43,6 @@ import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { getNoteWithSharing, updateNote } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
-import NoteContentDisplay from '@/components/NoteContentDisplay';
-import { NoteContentRenderer } from '@/components/NoteContentRenderer';
 import { useAutosave } from '@/hooks/useAutosave';
 
 interface NoteDetailSidebarProps {
@@ -73,7 +76,7 @@ export function NoteDetailSidebar({
   showExpandButton = true,
   showHeaderDeleteButton = true,
 }: NoteDetailSidebarProps) {
-  
+
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingContent, setIsEditingContent] = useState(false);
   const isEditing = isEditingTitle || isEditingContent;
@@ -385,12 +388,12 @@ export function NoteDetailSidebar({
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
         {showExpandButton && (
           <Tooltip title="Open full page">
-            <IconButton 
+            <IconButton
               onClick={(event) => {
                 event.stopPropagation();
                 handleOpenFullPage();
               }}
-              sx={{ 
+              sx={{
                 display: { xs: 'none', md: 'inline-flex' },
                 color: 'rgba(255, 255, 255, 0.5)',
                 '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
@@ -402,11 +405,11 @@ export function NoteDetailSidebar({
         )}
         {showHeaderDeleteButton && (
           <Tooltip title="Delete note">
-            <IconButton 
+            <IconButton
               onClick={() => setShowDeleteConfirm(true)}
-              sx={{ 
-                color: 'rgba(255, 255, 255, 0.5)', 
-                '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' } 
+              sx={{
+                color: 'rgba(255, 255, 255, 0.5)',
+                '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' }
               }}
             >
               <TrashIcon fontSize="small" />
@@ -432,12 +435,12 @@ export function NoteDetailSidebar({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              color: '#00F5FF', 
-              fontWeight: 900, 
-              textTransform: 'uppercase', 
+          <Typography
+            variant="caption"
+            sx={{
+              color: '#00F5FF',
+              fontWeight: 900,
+              textTransform: 'uppercase',
               letterSpacing: '0.1em',
               fontFamily: '"Space Grotesk", sans-serif'
             }}
@@ -460,9 +463,9 @@ export function NoteDetailSidebar({
             inputRef={titleInputRef}
             InputProps={{
               disableUnderline: true,
-              sx: { 
-                fontSize: '1.75rem', 
-                fontWeight: 900, 
+              sx: {
+                fontSize: '1.75rem',
+                fontWeight: 900,
                 color: '#FFFFFF',
                 fontFamily: '"Space Grotesk", sans-serif'
               }
@@ -472,9 +475,9 @@ export function NoteDetailSidebar({
           <Typography
             variant="h4"
             onClick={activateTitleEditing}
-            sx={{ 
-              fontWeight: 900, 
-              cursor: 'text', 
+            sx={{
+              fontWeight: 900,
+              cursor: 'text',
               color: '#FFFFFF',
               fontFamily: '"Space Grotesk", sans-serif',
               fontSize: '1.75rem',
@@ -503,12 +506,12 @@ export function NoteDetailSidebar({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              color: '#00F5FF', 
-              fontWeight: 900, 
-              textTransform: 'uppercase', 
+          <Typography
+            variant="caption"
+            sx={{
+              color: '#00F5FF',
+              fontWeight: 900,
+              textTransform: 'uppercase',
               letterSpacing: '0.1em',
               fontFamily: '"Space Grotesk", sans-serif'
             }}
@@ -519,7 +522,7 @@ export function NoteDetailSidebar({
             Click inside to edit
           </Typography>
         </Box>
-        
+
         {isEditingContent ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <ToggleButtonGroup
@@ -566,9 +569,9 @@ export function NoteDetailSidebar({
                 inputRef={contentTextareaRef}
                 InputProps={{
                   disableUnderline: true,
-                  sx: { 
-                    fontSize: '0.95rem', 
-                    color: 'rgba(255, 255, 255, 0.8)', 
+                  sx: {
+                    fontSize: '0.95rem',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     lineHeight: 1.7,
                     fontFamily: '"Inter", sans-serif'
                   }
@@ -589,9 +592,9 @@ export function NoteDetailSidebar({
                     fullWidth
                     variant="outlined"
                     onClick={() => setShowDoodleEditor(true)}
-                    sx={{ 
-                      height: 160, 
-                      borderStyle: 'dashed', 
+                    sx={{
+                      height: 160,
+                      borderStyle: 'dashed',
                       borderRadius: '16px',
                       borderColor: 'rgba(255,255,255,0.1)',
                       color: 'rgba(255, 255, 255, 0.3)',
@@ -634,16 +637,16 @@ export function NoteDetailSidebar({
                       showError('Copy failed', 'Could not copy content to clipboard');
                     }
                   }}
-                  sx={{ 
-                    borderRadius: '10px', 
-                    borderColor: 'rgba(255,255,255,0.1)', 
+                  sx={{
+                    borderRadius: '10px',
+                    borderColor: 'rgba(255,255,255,0.1)',
                     color: 'rgba(255, 255, 255, 0.5)',
                     fontFamily: '"Space Grotesk", sans-serif',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     fontSize: '0.75rem',
-                    '&:hover': { 
-                      borderColor: '#00F5FF', 
+                    '&:hover': {
+                      borderColor: '#00F5FF',
                       color: '#00F5FF',
                       bgcolor: 'rgba(0, 245, 255, 0.05)'
                     }
@@ -659,14 +662,14 @@ export function NoteDetailSidebar({
 
       {/* Tags */}
       <Box>
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            display: 'block', 
-            mb: 2, 
-            color: '#00F5FF', 
-            fontWeight: 900, 
-            textTransform: 'uppercase', 
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            mb: 2,
+            color: '#00F5FF',
+            fontWeight: 900,
+            textTransform: 'uppercase',
             letterSpacing: '0.1em',
             fontFamily: '"Space Grotesk", sans-serif'
           }}
@@ -698,8 +701,8 @@ export function NoteDetailSidebar({
                 key={`${tag}-${index}`}
                 label={tag}
                 size="small"
-                sx={{ 
-                  bgcolor: 'rgba(0, 245, 255, 0.1)', 
+                sx={{
+                  bgcolor: 'rgba(0, 245, 255, 0.1)',
                   color: '#00F5FF',
                   border: '1px solid rgba(0, 245, 255, 0.2)',
                   fontWeight: 700,
@@ -716,14 +719,14 @@ export function NoteDetailSidebar({
 
       {/* Attachments */}
       <Box>
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            display: 'block', 
-            mb: 2, 
-            color: '#00F5FF', 
-            fontWeight: 900, 
-            textTransform: 'uppercase', 
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            mb: 2,
+            color: '#00F5FF',
+            fontWeight: 900,
+            textTransform: 'uppercase',
             letterSpacing: '0.1em',
             fontFamily: '"Space Grotesk", sans-serif'
           }}
@@ -746,9 +749,9 @@ export function NoteDetailSidebar({
               startIcon={isUploadingAttachment ? <CircularProgress size={16} sx={{ color: '#00F5FF' }} /> : <PaperClipIcon />}
               onClick={() => document.getElementById('attachment-input')?.click()}
               disabled={isUploadingAttachment}
-              sx={{ 
-                borderRadius: '12px', 
-                borderColor: 'rgba(255,255,255,0.1)', 
+              sx={{
+                borderRadius: '12px',
+                borderColor: 'rgba(255,255,255,0.1)',
                 color: '#FFFFFF',
                 fontFamily: '"Space Grotesk", sans-serif',
                 fontWeight: 700,
@@ -775,13 +778,13 @@ export function NoteDetailSidebar({
         {currentAttachments.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 240, overflow: 'auto' }}>
             {currentAttachments.map((a: any) => (
-              <Box key={a.id} sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                gap: 2, 
-                p: 2, 
-                borderRadius: '16px', 
+              <Box key={a.id} sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                p: 2,
+                borderRadius: '16px',
                 bgcolor: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.05)',
                 transition: 'all 0.2s ease',
@@ -798,11 +801,11 @@ export function NoteDetailSidebar({
                     {formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}
                   </Typography>
                 </Box>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   href={`/notes/${note.$id}/${a.id}`}
-                  sx={{ 
-                    color: '#00F5FF', 
+                  sx={{
+                    color: '#00F5FF',
                     fontWeight: 800,
                     fontFamily: '"Space Grotesk", sans-serif',
                     '&:hover': { bgcolor: 'rgba(0, 245, 255, 0.1)' }
@@ -853,13 +856,13 @@ export function NoteDetailSidebar({
             </Typography>
             {isAutosaving && <CircularProgress size={14} sx={{ color: '#00F5FF' }} />}
           </Box>
-          <Button 
-            fullWidth 
-            variant="outlined" 
+          <Button
+            fullWidth
+            variant="outlined"
             onClick={handleCancel}
-            sx={{ 
-              borderRadius: '12px', 
-              borderColor: 'rgba(255,255,255,0.1)', 
+            sx={{
+              borderRadius: '12px',
+              borderColor: 'rgba(255,255,255,0.1)',
               color: '#FFFFFF',
               fontFamily: '"Space Grotesk", sans-serif',
               fontWeight: 700,
@@ -900,9 +903,9 @@ export function NoteDetailSidebar({
           }
         }}
       >
-        <DialogTitle sx={{ 
-          fontWeight: 900, 
-          fontSize: '1.75rem', 
+        <DialogTitle sx={{
+          fontWeight: 900,
+          fontSize: '1.75rem',
           fontFamily: '"Space Grotesk", sans-serif',
           color: '#FF453A',
           textTransform: 'uppercase',
@@ -916,11 +919,11 @@ export function NoteDetailSidebar({
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 2, flexDirection: 'column' }}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             fullWidth
             onClick={handleDelete}
-            sx={{ 
+            sx={{
               borderRadius: '12px',
               bgcolor: '#FF453A',
               color: '#FFFFFF',
@@ -932,13 +935,13 @@ export function NoteDetailSidebar({
           >
             Delete Permanently
           </Button>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             fullWidth
             onClick={() => setShowDeleteConfirm(false)}
-            sx={{ 
-              borderRadius: '12px', 
-              borderColor: 'rgba(255, 255, 255, 0.1)', 
+            sx={{
+              borderRadius: '12px',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
               color: '#FFFFFF',
               fontWeight: 700,
               fontFamily: '"Space Grotesk", sans-serif',
