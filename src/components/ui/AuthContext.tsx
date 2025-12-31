@@ -175,8 +175,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const expectedOrigin = idmOriginRef.current;
-      if (!expectedOrigin || event.origin !== expectedOrigin) {
+      const authSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
+      const domain = process.env.NEXT_PUBLIC_DOMAIN;
+      if (!authSubdomain || !domain) return;
+      const expectedOrigin = `https://${authSubdomain}.${domain}`;
+
+      if (event.origin !== expectedOrigin) {
         return;
       }
       if (event.data?.type !== 'idm:auth-success') {
@@ -367,10 +371,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           );
 
           if (!windowRef) {
-            console.error('Failed to open IDM window');
-            setIDMWindowOpen(false);
-            setIsAuthenticating(false);
-            router.replace('/landing');
+            console.warn('Popup blocked, falling back to redirect in whisperrnote');
+            window.location.assign(mobileTargetUrl);
             return;
           }
 
