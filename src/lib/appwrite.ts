@@ -2113,11 +2113,17 @@ export async function listNotesPaginated(options: ListNotesPaginatedOptions = {}
   if (Array.isArray(queries) && queries.length) {
     baseQueries = [...queries];
   } else {
-    const user = userId ? { $id: userId } as any : await getCurrentUser();
-    if (!user?.$id) {
+    // Optimization: avoid redundant account.get() if userId is provided
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+      const user = await getCurrentUser();
+      effectiveUserId = user?.$id;
+    }
+
+    if (!effectiveUserId) {
       return { documents: [], total: 0, nextCursor: null, hasMore: false };
     }
-    baseQueries = [Query.equal('userId', user.$id)];
+    baseQueries = [Query.equal('userId', effectiveUserId)];
   }
 
   const finalQueries: any[] = [

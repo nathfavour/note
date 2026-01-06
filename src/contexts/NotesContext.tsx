@@ -34,7 +34,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   useEffect(() => { notesRef.current = notes; }, [notes]);
   useEffect(() => { cursorRef.current = cursor; }, [cursor]);
 
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_NOTES_PAGE_SIZE || 50);
 
@@ -42,11 +42,13 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     if (isFetchingRef.current) return;
 
     if (!isAuthenticated) {
-      setNotes([]);
-      setTotalNotes(0);
-      setIsLoading(false);
-      setHasMore(false);
-      setError(null);
+      if (!isAuthLoading) {
+        setNotes([]);
+        setTotalNotes(0);
+        setIsLoading(false);
+        setHasMore(false);
+        setError(null);
+      }
       return;
     }
 
@@ -60,6 +62,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       const res = await listNotesPaginated({
         limit: PAGE_SIZE,
         cursor: reset ? null : (cursorRef.current || null),
+        userId: user?.$id, // Use explicit user ID
       });
 
       const batch = res.documents as Notes[];
@@ -89,7 +92,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isFetchingRef.current = false;
       setIsLoading(false);
     }
-  }, [isAuthenticated, PAGE_SIZE]); // intentionally exclude cursor & notes to prevent infinite loop
+  }, [isAuthenticated, isAuthLoading, user?.$id, PAGE_SIZE]); // include user?.$id
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isFetchingRef.current) return;
@@ -105,16 +108,18 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   // Initial fetch or auth state change
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthLoading) return; // Wait for auth to be determined
+
+    if (isAuthenticated && user?.$id) {
       fetchBatch(true);
-    } else {
+    } else if (!isAuthLoading && !isAuthenticated) {
       setNotes([]);
       setTotalNotes(0);
       setHasMore(false);
       setIsLoading(false);
       setError(null);
     }
-  }, [isAuthenticated, fetchBatch]);
+  }, [isAuthenticated, isAuthLoading, user?.$id, fetchBatch]);
 
   const upsertNote = useCallback((note: Notes) => {
     const existed = notesRef.current.some((n) => n.$id === note.$id);

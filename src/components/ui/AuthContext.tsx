@@ -46,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [emailVerificationReminderDismissed, setEmailVerificationReminderDismissed] = useState(false);
   const idmWindowRef = useRef<Window | null>(null);
   const idmOriginRef = useRef<string | null>(null);
+  const initAuthStarted = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -145,6 +146,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (initAuthStarted.current) return;
+    initAuthStarted.current = true;
+
     const initAuth = async () => {
       const localUser = await refreshUser();
       if (!localUser) {
@@ -228,11 +232,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [idmWindowOpen, refreshUser]);
 
-  const login = (userData: User) => {
+  const login = useCallback((userData: User) => {
     setUser(userData);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       // Delete the current session
       const { account } = await import('@/lib/appwrite');
@@ -251,10 +255,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear any temporary auth state
       setIDMWindowOpen(false);
     }
-  };
+  }, []);
 
   // Session recovery function for when authentication state becomes inconsistent
-  const recoverSession = async () => {
+  const recoverSession = useCallback(async () => {
     setIsLoading(true);
 
     try {
@@ -274,10 +278,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [refreshUser, user]);
 
   // Email verification reminder logic
-  const shouldShowEmailVerificationReminder = (): boolean => {
+  const shouldShowEmailVerificationReminder = useCallback((): boolean => {
     if (!user || user.emailVerification || emailVerificationReminderDismissed) {
       return false;
     }
@@ -287,15 +291,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const oneDay = 24 * 60 * 60 * 1000;
 
     return accountAge > oneDay;
-  };
+  }, [user, emailVerificationReminderDismissed]);
 
-  const dismissEmailVerificationReminder = (): void => {
+  const dismissEmailVerificationReminder = useCallback((): void => {
     setEmailVerificationReminderDismissed(true);
     // Store dismissal in localStorage to persist across sessions
     if (typeof window !== 'undefined') {
       localStorage.setItem('emailVerificationReminderDismissed', 'true');
     }
-  };
+  }, []);
 
   // Opens IDM window for authentication
   const openIDMWindow = useCallback(() => {
@@ -406,7 +410,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [router, user]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     isLoading,
     isAuthenticating,
@@ -420,7 +424,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     openIDMWindow,
     closeIDMWindow,
     idmWindowOpen,
-  };
+  }), [
+    user,
+    isLoading,
+    isAuthenticating,
+    login,
+    logout,
+    refreshUser,
+    recoverSession,
+    shouldShowEmailVerificationReminder,
+    dismissEmailVerificationReminder,
+    openIDMWindow,
+    closeIDMWindow,
+    idmWindowOpen,
+  ]);
 
   return (
     <AuthContext.Provider value={value}>
