@@ -12,7 +12,7 @@ import {
   Stack, 
   Button, 
   alpha,
-  Grid2 as Grid,
+  Grid,
   Paper,
   TextField,
   Chip,

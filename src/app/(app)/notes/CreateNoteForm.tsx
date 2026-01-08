@@ -26,6 +26,12 @@ import {
 } from '@mui/icons-material';
 import { Button } from '@/components/ui/Button';
 import { AUTO_TITLE_CONFIG } from '@/constants/noteTitle';
+import { Notes, Status } from '@/types/appwrite';
+import { createNote } from '@/lib/appwrite';
+import { useOverlay } from '@/components/ui/OverlayContext';
+import dynamic from 'next/dynamic';
+
+const DoodleCanvas = dynamic(() => import('@/components/DoodleCanvas'), { ssr: false });
 
 interface CreateNoteFormProps {
   onNoteCreated: (note: Notes) => void;
@@ -44,7 +50,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
   const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [status, setStatus] = useState<AppwriteTypes.Status>(AppwriteTypes.Status.DRAFT);
+  const [status, setStatus] = useState<Status>(Status.DRAFT);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -116,7 +122,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
     };
 
     try {
-      const newNote = await appwriteCreateNote(newNoteData);
+      const newNote = await createNote(newNoteData);
       if (newNote) {
         onNoteCreated(newNote);
         // Upload pending files sequentially using client SDK

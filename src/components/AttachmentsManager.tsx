@@ -361,7 +361,3 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId }
 };
 
 export default AttachmentsManager;
-
-
-
-export default AttachmentsManager;

@@ -23,7 +23,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (user: User) => void;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: (isRetry?: boolean, shouldSetLoading?: boolean) => Promise<User | null>;
   recoverSession: () => Promise<boolean>;
   shouldShowEmailVerificationReminder: () => boolean;
   dismissEmailVerificationReminder: () => void;

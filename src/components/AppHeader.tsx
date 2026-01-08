@@ -15,7 +15,7 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
-  Grid2 as Grid,
+  Grid,
   Paper,
   alpha
 } from '@mui/material';
@@ -38,7 +38,7 @@ interface AppHeaderProps {
   className?: string;
 }
 
-export default function AppHeader({ }: AppHeaderProps) {
+export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const { openOverlay, closeOverlay } = useOverlay();
   const [aiLoading, setAiLoading] = useState(false);
@@ -122,6 +122,7 @@ export default function AppHeader({ }: AppHeaderProps) {
     <AppBar 
       position="fixed" 
       elevation={0}
+      className={className}
       sx={{ 
         zIndex: 1201,
         bgcolor: 'rgba(10, 10, 10, 0.95)',
@@ -282,7 +283,9 @@ export default function AppHeader({ }: AppHeaderProps) {
                       }
                     }}
                   >
-                    <Image src="/logo/whisperrnote.png" alt={app.label} width={24} height={24} style={{ opacity: isActive ? 0.5 : 1 }} />
+                    <Box sx={{ fontSize: '20px', opacity: isActive ? 0.5 : 1 }}>
+                      {app.icon}
+                    </Box>
                     <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 800, color: isActive ? '#00F5FF' : 'rgba(255, 255, 255, 0.6)' }}>
                       {app.label}
                     </Typography>

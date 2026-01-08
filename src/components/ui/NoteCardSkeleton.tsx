@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Skeleton, Grid2 as Grid } from '@mui/material';
+import { Box, Skeleton, Grid } from '@mui/material';
 
 export const NoteCardSkeleton: React.FC = () => {
   return (

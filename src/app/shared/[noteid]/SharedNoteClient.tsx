@@ -91,7 +91,7 @@ function SharedNoteHeader() {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <ThemeToggle size="sm" />
+          <ThemeToggle />
 
           <Button
             onClick={handleOpenMenu}
