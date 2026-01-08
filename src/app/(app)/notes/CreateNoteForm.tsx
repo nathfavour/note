@@ -734,7 +734,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                             <DescriptionIcon sx={{ fontSize: 16, color: '#00F5FF' }} />
                           </Box>
                           <Box sx={{ minWidth: 0 }}>
-                            <Typography variant="body2" sx={{ color: 'white', fontWeight: 600, noWrap: true }}>
+                            <Typography variant="body2" noWrap sx={{ color: 'white', fontWeight: 600 }}>
                               {file.name}
                             </Typography>
                             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
@@ -906,10 +906,10 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                   }
                 }}
               >
-                <ToggleButton value={AppwriteTypes.Status.DRAFT}>
+                <ToggleButton value={Status.DRAFT}>
                   Draft
                 </ToggleButton>
-                <ToggleButton value={AppwriteTypes.Status.PUBLISHED}>
+                <ToggleButton value={Status.PUBLISHED}>
                   Published
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -930,7 +930,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
         }}
       >
         <Button 
-          variant="secondary" 
+          variant="outlined" 
           onClick={closeOverlay}
           disabled={isLoading}
           sx={{ px: 4, borderRadius: '14px' }}

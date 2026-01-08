@@ -29,7 +29,7 @@ export async function getUser(userId: string): Promise<Users> {
     databaseId: APPWRITE_DATABASE_ID,
     tableId: APPWRITE_TABLE_ID_USERS,
     rowId: userId
-  }) as Promise<Users>;
+  }) as unknown as Promise<Users>;
 }
 
 export async function updateUser(userId: string, data: Partial<Users>) {

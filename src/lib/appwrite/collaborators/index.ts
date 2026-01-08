@@ -104,7 +104,7 @@ export async function getCollaborator(collaboratorId: string): Promise<Collabora
     databaseId: APPWRITE_DATABASE_ID,
     tableId: APPWRITE_TABLE_ID_COLLABORATORS,
     rowId: collaboratorId
-  }) as Promise<Collaborators>;
+  }) as unknown as Promise<Collaborators>;
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {

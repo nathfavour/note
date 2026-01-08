@@ -60,7 +60,7 @@ export async function getTag(tagId: string): Promise<Tags> {
     databaseId: APPWRITE_DATABASE_ID,
     tableId: APPWRITE_TABLE_ID_TAGS,
     rowId: tagId
-  }) as Promise<Tags>;
+  }) as unknown as Promise<Tags>;
 }
 
 export async function updateTag(tagId: string, data: Partial<Tags>) {

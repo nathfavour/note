@@ -34,9 +34,10 @@ function truncate(s: string | undefined, n: number) {
    return s.length > n ? s.slice(0, n).trim() + '…' : s;
 }
 
-export async function generateMetadata({ params }: { params: { noteid: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ noteid: string }> }) {
    try {
-     const note = await validatePublicNoteAccess(params.noteid);
+     const { noteid } = await params;
+     const note = await validatePublicNoteAccess(noteid);
      const baseUrl = (process.env.NEXT_PUBLIC_APP_URI || 'http://localhost:3001').replace(/\/$/, '');
 
      if (!note) {
@@ -46,8 +47,8 @@ export async function generateMetadata({ params }: { params: { noteid: string } 
        };
      }
 
-     const titleText = note.title && note.title.trim() ? truncate(note.title.trim(), 70) : truncate(firstParagraph(note.content), 70);
-     const description = truncate(firstParagraph(note.content) || 'Shared via Whisperrnote', 160);
+     const titleText = note.title && note.title.trim() ? truncate(note.title.trim(), 70) : truncate(firstParagraph(note.content || undefined), 70);
+     const description = truncate(firstParagraph(note.content || undefined) || 'Shared via Whisperrnote', 160);
      const url = `${baseUrl}/shared/${params.noteid}`;
      const image = `${baseUrl}/logo/whisperrnote.png`;
 
@@ -84,8 +85,9 @@ export async function generateMetadata({ params }: { params: { noteid: string } 
    }
 }
 
-export default async function SharedNotePage({ params }: { params: { noteid: string } }) {
+export default async function SharedNotePage({ params }: { params: Promise<{ noteid: string }> }) {
    // Server only renders shell - actual note fetching happens client-side
    // This ensures Turnstile verification and rate limiting are enforced before database access
-   return <SharedNoteClient noteId={params.noteid} />;
+   const { noteid } = await params;
+   return <SharedNoteClient noteId={noteid} />;
 }

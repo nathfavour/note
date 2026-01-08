@@ -305,7 +305,7 @@ export function TopBarSearch() {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 No results matched "{searchQuery}"
               </Typography>
-              <Button size="small" variant="outline" onClick={handleClear}>
+              <Button size="small" variant="outlined" onClick={handleClear}>
                 Reset Search
               </Button>
             </Box>

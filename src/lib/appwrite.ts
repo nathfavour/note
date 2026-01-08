@@ -530,7 +530,7 @@ export async function getAllNotes(): Promise<{ documents: Notes[], total: number
       [Query.equal('userId', currentUser.$id), Query.limit(1000)]
     );
 
-    return { documents: notesRes.documents as Notes[], total: notesRes.total };
+    return { documents: notesRes.documents as unknown as Notes[], total: notesRes.total };
   } catch (error) {
     console.error('getAllNotes error:', error);
     return { documents: [], total: 0 };
@@ -572,7 +572,7 @@ export async function createTag(data: Partial<Tags>) {
 }
 
 export async function getTag(tagId: string): Promise<Tags> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, tagId) as Promise<Tags>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, tagId) as unknown as Promise<Tags>;
 }
 
 export async function updateTag(tagId: string, data: Partial<Tags>) {
@@ -693,7 +693,7 @@ export async function createApiKey(data: Partial<ApiKeys>) {
 }
 
 export async function getApiKey(apiKeyId: string): Promise<ApiKeys> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, apiKeyId) as Promise<ApiKeys>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, apiKeyId) as unknown as Promise<ApiKeys>;
 }
 
 export async function updateApiKey(apiKeyId: string, data: Partial<ApiKeys>) {
@@ -723,7 +723,7 @@ export async function createComment(noteId: string, content: string) {
 }
 
 export async function getComment(commentId: string): Promise<Comments> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, commentId) as Promise<Comments>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, commentId) as unknown as Promise<Comments>;
 }
 
 export async function updateComment(commentId: string, data: Partial<Comments>) {
@@ -784,7 +784,7 @@ export async function createExtension(data: Partial<Extensions>) {
 }
 
 export async function getExtension(extensionId: string): Promise<Extensions> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId) as Promise<Extensions>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId) as unknown as Promise<Extensions>;
 }
 
 export async function updateExtension(extensionId: string, data: Partial<Extensions>) {
@@ -798,7 +798,7 @@ export async function updateExtension(extensionId: string, data: Partial<Extensi
     updatedAt: new Date().toISOString()
   };
   
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId, updatedData) as Promise<Extensions>;
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId, updatedData) as unknown as Promise<Extensions>;
 }
 
 export async function deleteExtension(extensionId: string) {
@@ -850,7 +850,7 @@ export async function createReaction(data: Partial<Reactions>) {
 }
 
 export async function getReaction(reactionId: string): Promise<Reactions> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, reactionId) as Promise<Reactions>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, reactionId) as unknown as Promise<Reactions>;
 }
 
 export async function updateReaction(reactionId: string, data: Partial<Reactions>) {
@@ -917,7 +917,7 @@ export async function createCollaborator(data: Partial<Collaborators>) {
 }
 
 export async function getCollaborator(collaboratorId: string): Promise<Collaborators> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId) as Promise<Collaborators>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId) as unknown as Promise<Collaborators>;
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {
@@ -939,7 +939,7 @@ export async function createActivityLog(data: Partial<ActivityLog>) {
 }
 
 export async function getActivityLog(activityLogId: string): Promise<ActivityLog> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, activityLogId) as Promise<ActivityLog>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, activityLogId) as unknown as Promise<ActivityLog>;
 }
 
 export async function updateActivityLog(activityLogId: string, data: Partial<ActivityLog>) {
@@ -964,7 +964,7 @@ export async function createSettings(data: Pick<Settings, 'userId' | 'settings'>
 }
 
 export async function getSettings(settingsId: string): Promise<Settings> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, settingsId) as Promise<Settings>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, settingsId) as unknown as Promise<Settings>;
 }
 
 export async function updateSettings(settingsId: string, data: any) {
@@ -1851,7 +1851,7 @@ export async function listAttachmentsForNote(noteId: string): Promise<Attachment
       APPWRITE_TABLE_ID_ATTACHMENTS,
       [Query.equal('noteId', noteId), Query.limit(200), Query.orderDesc('$createdAt')] as any
     );
-    return res.documents as AttachmentRecord[];
+    return res.documents as unknown as AttachmentRecord[];
   } catch (e) {
     console.error('listAttachmentsForNote failed', e);
     return [];

@@ -60,7 +60,7 @@ export async function getApiKey(apiKeyId: string): Promise<ApiKeys> {
     databaseId: APPWRITE_DATABASE_ID,
     tableId: APPWRITE_TABLE_ID_APIKEYS,
     rowId: apiKeyId
-  }) as Promise<ApiKeys>;
+  }) as unknown as Promise<ApiKeys>;
 }
 
 export async function updateApiKey(apiKeyId: string, data: Partial<ApiKeys>) {

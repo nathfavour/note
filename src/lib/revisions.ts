@@ -1,8 +1,5 @@
-// Removed unused imports
-const REVISION_LIMITS = {
-  free: 3,
-  paid: 10,
-};
+import { databases, APPWRITE_DATABASE_ID, Query, ID } from './appwrite';
+import type { NoteRevision } from '@/types/appwrite';
 
 const REVISION_LIMITS = {
   free: 3,
@@ -81,10 +78,10 @@ export async function pruneRevisions(
 /**
  * Get revision history for a note
  */
-export async function getNoteRevisions(
+export async function getNoteRevision(
   noteId: string,
   limit?: number
-): Promise<NoteRevisions[]> {
+): Promise<NoteRevision[]> {
   try {
     const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
     const effectiveLimit = limit || (await getRevisionLimit());
@@ -99,9 +96,9 @@ export async function getNoteRevisions(
       ] as any
     );
 
-    return res.documents as NoteRevisions[];
+    return res.documents as NoteRevision[];
   } catch (e) {
-    console.error('getNoteRevisions failed:', e);
+    console.error('getNoteRevision failed:', e);
     return [];
   }
 }
@@ -112,7 +109,7 @@ export async function getNoteRevisions(
 export async function getNoteRevision(
   noteId: string,
   revisionNumber: number
-): Promise<NoteRevisions | null> {
+): Promise<NoteRevision | null> {
   try {
     const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
 
@@ -126,7 +123,7 @@ export async function getNoteRevision(
       ] as any
     );
 
-    return (res.documents[0] as NoteRevisions) || null;
+    return (res.documents[0] as NoteRevision) || null;
   } catch (e) {
     console.error('getNoteRevision failed:', e);
     return null;
@@ -184,7 +181,7 @@ export async function createRevision(
   before: Record<string, any>,
   after: Record<string, any>,
   cause: 'manual' | 'ai' | 'collab' = 'manual'
-): Promise<NoteRevisions | null> {
+): Promise<NoteRevision | null> {
   try {
     const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
     const significantFields = ['title', 'content', 'tags', 'format'];
@@ -266,7 +263,7 @@ export async function createRevision(
       }
     );
 
-    return revision as NoteRevisions;
+    return revision as NoteRevision;
   } catch (e) {
     console.error('createRevision failed:', e);
     return null;

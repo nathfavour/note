@@ -9,6 +9,7 @@ import { listUsers } from '@/lib/appwrite';
 
 interface CollaboratorsProps {
   noteId: string;
+  collaborators?: any[];
 }
 
 export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {

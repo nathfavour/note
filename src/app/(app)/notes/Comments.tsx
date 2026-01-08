@@ -17,7 +17,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
     const fetchComments = async () => {
       try {
         const res = await listComments(noteId);
-        setComments(res.documents as Comments[]);
+        setComments(res.documents as unknown as Comments[]);
       } catch (error) {
         console.error('Failed to fetch comments:', error);
       }
@@ -29,7 +29,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
     if (!newComment.trim()) return;
     try {
       const comment = await createComment(noteId, newComment);
-      setComments(prev => [comment, ...prev]);
+      setComments(prev => [comment as unknown as Comments, ...prev]);
       setNewComment('');
     } catch (error) {
       console.error('Failed to add comment:', error);
