@@ -44,9 +44,10 @@ export default function NotesPage() {
   // Fetch notes action for the search hook
   const fetchNotesAction = useCallback(async () => {
     // Data is now coming from context, so we just return it
+    const safeNotes = Array.isArray(allNotes) ? allNotes : [];
     return {
-      documents: allNotes,
-      total: allNotes.length
+      documents: safeNotes,
+      total: safeNotes.length
     };
   }, [allNotes]);
 
@@ -477,7 +478,7 @@ export default function NotesPage() {
               onPageChange={goToPage}
               onNextPage={nextPage}
               onPreviousPage={previousPage}
-              totalCount={hasSearchResults ? totalCount : allNotes.length}
+              totalCount={hasSearchResults ? totalCount : (allNotes || []).length}
               pageSize={paginationConfig.pageSize}
               compact={false}
             />
