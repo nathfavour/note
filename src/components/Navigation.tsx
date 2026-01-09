@@ -242,12 +242,6 @@ export const DesktopSidebar: React.FC<NavigationProps> = () => {
       </List>
 
       <Box sx={{ p: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: isCollapsed ? 'center' : 'space-between',
-        </Box>
-
         {isAuthenticated && user && (
           <Box sx={{ 
             display: 'flex', 
