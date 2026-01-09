@@ -7,7 +7,8 @@ const rateLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 10 requests per minute
 });
 
-export async function GET(req: NextRequest, { params }: { params: { noteid: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ noteid: string }> }) {
+  const { noteid } = await params;
   const { allowed, retryAfter } = rateLimiter(req);
 
   if (!allowed) {

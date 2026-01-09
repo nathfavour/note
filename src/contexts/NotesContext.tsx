@@ -142,8 +142,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   return (
     <NotesContext.Provider
       value={{
-        notes,
-        totalNotes,
+        notes: Array.isArray(notes) ? notes : [],
+        totalNotes: totalNotes || 0,
         isLoading,
         error,
         hasMore,

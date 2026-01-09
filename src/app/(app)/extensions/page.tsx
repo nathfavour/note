@@ -652,15 +652,15 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
     <Dialog 
       open={isOpen} 
       onClose={onClose}
+      fullWidth
+      maxWidth="sm"
       PaperProps={{
         sx: {
           bgcolor: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '24px',
-          color: 'white',
-          maxWidth: 'sm',
-          fullWidth: true
+          color: 'white'
         }
       }}
     >

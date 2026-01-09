@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Box, Typography, Stack, IconButton, Chip, Alert, Skeleton } from '@mui/material';
+import React, { useEffect, useCallback, useMemo } from 'react';
+import { Box, Typography, Stack, IconButton, Alert } from '@mui/material';
 import { deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
 
@@ -33,7 +33,7 @@ import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
   const { notes: allNotes, totalNotes, isLoading: isInitialLoading, hasMore, loadMore, upsertNote, removeNote } = useNotes();
-  const { openOverlay, closeOverlay } = useOverlay();
+  const { openOverlay } = useOverlay();
 
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen, openSidebar } = useDynamicSidebar();
@@ -44,9 +44,10 @@ export default function NotesPage() {
   // Fetch notes action for the search hook
   const fetchNotesAction = useCallback(async () => {
     // Data is now coming from context, so we just return it
+    const safeNotes = Array.isArray(allNotes) ? allNotes : [];
     return {
-      documents: allNotes,
-      total: allNotes.length
+      documents: safeNotes,
+      total: safeNotes.length
     };
   }, [allNotes]);
 
@@ -477,7 +478,7 @@ export default function NotesPage() {
               onPageChange={goToPage}
               onNextPage={nextPage}
               onPreviousPage={previousPage}
-              totalCount={hasSearchResults ? totalCount : allNotes.length}
+              totalCount={hasSearchResults ? totalCount : (allNotes || []).length}
               pageSize={paginationConfig.pageSize}
               compact={false}
             />

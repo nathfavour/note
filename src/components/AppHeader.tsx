@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { 
   AppBar, 
   Toolbar, 
@@ -37,7 +38,7 @@ interface AppHeaderProps {
   className?: string;
 }
 
-export default function AppHeader({ className = '' }: AppHeaderProps) {
+export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const { openOverlay, closeOverlay } = useOverlay();
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
@@ -103,6 +104,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     <AppBar 
       position="fixed" 
       elevation={0}
+      className={className}
       sx={{ 
         zIndex: 1201,
         bgcolor: 'rgba(10, 10, 10, 0.95)',
@@ -126,7 +128,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             overflow: 'hidden',
             boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
           }}>
-            <img src="/logo/whisperrnote.png" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <Image src="/logo/whisperrnote.png" alt="Logo" width={28} height={28} style={{ objectFit: 'contain' }} />
           </Box>
           <Typography 
             variant="h6" 
@@ -244,7 +246,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       }
                     }}
                   >
-                    <img src="/logo/whisperrnote.png" alt={app.label} style={{ width: 24, height: 24, opacity: isActive ? 0.5 : 1 }} />
+                    <Box sx={{ fontSize: '20px', opacity: isActive ? 0.5 : 1 }}>
+                      {app.icon}
+                    </Box>
                     <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 800, color: isActive ? '#00F5FF' : 'rgba(255, 255, 255, 0.6)' }}>
                       {app.label}
                     </Typography>
