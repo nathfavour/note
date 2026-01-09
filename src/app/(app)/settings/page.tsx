@@ -10,8 +10,6 @@ import {
   uploadProfilePicture, 
   getProfilePicture, 
   deleteProfilePicture, 
-  updateAIMode, 
-  getAIMode, 
   sendPasswordResetEmail 
 } from "@/lib/appwrite";
 import { 
@@ -40,21 +38,18 @@ import {
 import { 
   Person as PersonIcon, 
   Settings as SettingsIcon, 
-  Subscriptions as SubscriptionIcon, 
   Edit as EditIcon, 
   Delete as DeleteIcon,
-  AutoAwesome as AIIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Lock as LockIcon,
+  Email as EmailIcon,
+  Security as SecurityIcon
 } from "@mui/icons-material";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
-import { useSubscription } from "@/components/ui/SubscriptionContext";
-import AIModeSelect from "@/components/AIModeSelect";
-import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { getUserProfilePicId, getUserField } from '@/lib/utils';
-import { SubscriptionTab } from "./SubscriptionTab";
 
-type TabType = 'profile' | 'preferences' | 'subscription' | 'account';
+type TabType = 'profile' | 'preferences' | 'account';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
@@ -66,10 +61,8 @@ export default function SettingsPage() {
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [isRemovingProfilePic, setIsRemovingProfilePic] = useState<boolean>(false);
-  const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
   const { openIDMWindow } = useAuth();
@@ -94,13 +87,6 @@ export default function SettingsPage() {
           const newSettings = await createSettings({ userId: u.$id, settings: JSON.stringify({ theme: 'light', notifications: true }) });
           setSettings(newSettings);
         }
-
-        try {
-          const mode = await getAIMode(u.$id);
-          setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
-         } catch (error) {
-          console.error('Failed to load AI mode:', error);
-        }
       } catch {
         openIDMWindow();
       } finally {
@@ -124,19 +110,6 @@ export default function SettingsPage() {
 
   const handleSettingChange = (key: string, value: boolean | string | number) => {
     setSettings((prev: any) => prev ? { ...prev, settings: { ...prev.settings, [key]: value } } : prev);
-  };
-
-  const handleAIModeChange = async (mode: AIMode) => {
-    if (user) {
-      try {
-        await updateAIMode(user.$id, mode);
-        setCurrentAIMode(mode);
-        setSuccess("AI mode updated successfully.");
-      } catch (error) {
-        console.error('Failed to update AI mode:', error);
-        setError("Failed to update AI mode");
-      }
-    }
   };
 
   const handleEditProfile = () => {
@@ -265,7 +238,6 @@ export default function SettingsPage() {
             >
               <Tab label="Profile" value="profile" icon={<PersonIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
               <Tab label="Preferences" value="preferences" icon={<SettingsIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
-              <Tab label="Subscription" value="subscription" icon={<SubscriptionIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
               <Tab label="Account" value="account" icon={<SecurityIcon sx={{ fontSize: 20 }} />} iconPosition="start" />
             </Tabs>
           </Box>
@@ -288,14 +260,10 @@ export default function SettingsPage() {
                 settings={settings} 
                 onSettingChange={handleSettingChange} 
                 onUpdate={handleUpdate} 
-                currentAIMode={currentAIMode} 
-                userTier={userTier} 
-                onAIModeChange={handleAIModeChange} 
                 user={user}
                 isVerified={isVerified}
               />
             )}
-            {activeTab === 'subscription' && <SubscriptionTab />}
             {activeTab === 'account' && (
               <SettingsTab 
                 user={user}
@@ -315,6 +283,7 @@ export default function SettingsPage() {
               />
             )}
           </Box>
+
         </Paper>
       </Container>
     </Box>
@@ -418,9 +387,6 @@ const PreferencesTab = ({
   settings, 
   onSettingChange, 
   onUpdate, 
-  currentAIMode, 
-  userTier, 
-  onAIModeChange,
   user,
   isVerified
 }: any) => {
@@ -449,30 +415,6 @@ const PreferencesTab = ({
           </Stack>
         </Paper>
 
-        {/* AI Mode Section */}
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: 'white', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <AIIcon sx={{ color: '#00F5FF' }} /> AI Generation Mode
-          </Typography>
-          <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={3}>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'white' }}>Current AI Mode</Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Controls AI behavior across the application</Typography>
-              </Box>
-              <AIModeSelect
-                currentMode={currentAIMode}
-                userTier={userTier}
-                onModeChangeAction={onAIModeChange}
-              />
-            </Stack>
-            <Box sx={{ mt: 3, p: 3, borderRadius: '16px', bgcolor: 'rgba(0, 245, 255, 0.05)', border: '1px solid rgba(0, 245, 255, 0.1)' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#00F5FF', mb: 0.5 }}>{getAIModeDisplayName(currentAIMode)}</Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>{getAIModeDescription(currentAIMode)}</Typography>
-            </Box>
-          </Paper>
-        </Box>
-
         {/* App Settings */}
         {settings && (
           <Box component="form" onSubmit={onUpdate}>
@@ -480,6 +422,7 @@ const PreferencesTab = ({
               <SettingsIcon sx={{ color: '#00F5FF' }} /> Application Settings
             </Typography>
             <Stack spacing={3}>
+
               <Paper sx={{ p: 4, borderRadius: '24px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
