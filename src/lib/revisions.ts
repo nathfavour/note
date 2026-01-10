@@ -1,5 +1,5 @@
 import { databases, APPWRITE_DATABASE_ID, Query, ID } from './appwrite';
-import type { NoteRevision } from '@/types/appwrite';
+import type { NoteRevisions } from '@/types/appwrite';
 
 const REVISION_LIMITS = {
   free: 3,
