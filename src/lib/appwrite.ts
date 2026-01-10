@@ -450,7 +450,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   delete (rest as any).id;
   delete (rest as any).userId;
   const updatedAt = new Date().toISOString();
-  const updatedData = { ...rest, updated_at: updatedAt };
+  const updatedData = { ...rest, updatedAt: updatedAt };
   await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId);
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
   
@@ -2342,7 +2342,7 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
       APPWRITE_DATABASE_ID,
       APPWRITE_TABLE_ID_NOTES,
       noteId,
-      { isPublic: newIsPublic, updated_at: new Date().toISOString() },
+      { isPublic: newIsPublic, updatedAt: new Date().toISOString() },
       permissions
     );
     return updated as unknown as Notes;
