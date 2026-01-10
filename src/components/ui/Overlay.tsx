@@ -24,8 +24,8 @@ const Overlay: React.FC = () => {
         backdrop: {
           timeout: 500,
           sx: { 
-            bgcolor: 'rgba(0, 0, 0, 0.8)', 
-            backdropFilter: 'blur(10px)' 
+            bgcolor: 'rgba(0, 0, 0, 0.7)', 
+            backdropFilter: 'blur(15px) saturate(160%)' 
           }
         },
       }}
@@ -33,48 +33,25 @@ const Overlay: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: { xs: 1, sm: 2, md: 4 },
+        p: { xs: 0, sm: 2 },
+        zIndex: 1300
       }}
     >
       <Fade in={isOpen}>
         <Box
           sx={{
-            position: 'relative',
-            width: '100%',
-            maxWidth: 'lg',
-            maxHeight: '90vh',
-            bgcolor: 'rgba(10, 10, 10, 0.98)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '24px',
-            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.8)',
             outline: 'none',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: 'fit-content',
+            maxHeight: '100vh',
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <IconButton
-            onClick={closeOverlay}
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              zIndex: 1,
-              color: 'rgba(255, 255, 255, 0.5)',
-              transition: 'all 0.2s ease',
-              '&:hover': { 
-                color: '#00F5FF',
-                bgcolor: 'rgba(0, 245, 255, 0.1)'
-              }
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-
-          <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, sm: 3, md: 4 } }}>
-            {content}
-          </Box>
+          {content}
         </Box>
       </Fade>
     </Modal>

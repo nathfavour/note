@@ -575,7 +575,7 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
   };
 
   return (
-    <Paper sx={{ p: 6, borderRadius: '32px', bgcolor: 'rgba(10, 10, 10, 0.95)', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: 450, mx: 'auto' }}>
+    <Paper sx={{ p: 6, borderRadius: '32px', bgcolor: 'rgba(10, 10, 10, 0.8)', backdropFilter: 'blur(30px) saturate(180%)', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: 450, mx: 'auto' }}>
       <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, color: 'white', fontFamily: 'var(--font-space-grotesk)' }}>Edit Profile</Typography>
       <Stack spacing={4}>
         <TextField
