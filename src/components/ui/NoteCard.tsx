@@ -102,8 +102,8 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
     }
   };
 
-  const handleCopyShareLink = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopyShareLink = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const shareUrl = `${window.location.origin}/shared/${note.$id}`;
     navigator.clipboard.writeText(shareUrl);
     showSuccess('Share link copied to clipboard');
@@ -224,6 +224,11 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       icon: pinned ? <PinIcon sx={{ fontSize: 18 }} /> : <PinOutlinedIcon sx={{ fontSize: 18 }} />,
       onClick: handlePinToggle
     },
+    ...(note.isPublic ? [{
+      label: 'Copy Share Link',
+      icon: <LinkIcon sx={{ fontSize: 18 }} />,
+      onClick: (e: any) => handleCopyShareLink(e as any)
+    }] : []),
     {
       label: note.isPublic ? 'Make Private' : 'Make Public',
       icon: note.isPublic ? <PrivateIcon sx={{ fontSize: 18 }} /> : <PublicIcon sx={{ fontSize: 18 }} />,
