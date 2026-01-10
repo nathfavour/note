@@ -382,49 +382,61 @@ export function NoteDetailSidebar({
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
-        {showExpandButton && (
-          <Tooltip title="Open full page">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+        <IconButton
+          onClick={closeSidebar}
+          sx={{
+            color: 'rgba(255, 255, 255, 0.5)',
+            '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
+          }}
+        >
+          <BackIcon />
+        </IconButton>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {showExpandButton && (
+            <Tooltip title="Open full page">
+              <IconButton
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleOpenFullPage();
+                }}
+                sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
+                }}
+              >
+                <ArrowTopRightOnSquareIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title={pinned ? "Unpin note" : "Pin note"}>
             <IconButton
-              onClick={(event) => {
-                event.stopPropagation();
-                handleOpenFullPage();
-              }}
+              onClick={handlePinToggle}
               sx={{
-                display: { xs: 'none', md: 'inline-flex' },
-                color: 'rgba(255, 255, 255, 0.5)',
+                color: pinned ? '#00F5FF' : 'rgba(255, 255, 255, 0.5)',
                 '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
               }}
             >
-              <ArrowTopRightOnSquareIcon fontSize="small" />
+              {pinned ? <PinIcon fontSize="small" /> : <PinOutlinedIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
-        )}
-        <Tooltip title={pinned ? "Unpin note" : "Pin note"}>
-          <IconButton
-            onClick={handlePinToggle}
-            sx={{
-              color: pinned ? '#00F5FF' : 'rgba(255, 255, 255, 0.5)',
-              '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }
-            }}
-          >
-            {pinned ? <PinIcon fontSize="small" /> : <PinOutlinedIcon fontSize="small" />}
-          </IconButton>
-        </Tooltip>
 
-        {showHeaderDeleteButton && (
-          <Tooltip title="Delete note">
-            <IconButton
-              onClick={() => setShowDeleteConfirm(true)}
-              sx={{
-                color: 'rgba(255, 255, 255, 0.5)',
-                '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' }
-              }}
-            >
-              <TrashIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
+          {showHeaderDeleteButton && (
+            <Tooltip title="Delete note">
+              <IconButton
+                onClick={() => setShowDeleteConfirm(true)}
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' }
+                }}
+              >
+                <TrashIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
       </Box>
 
       <Box

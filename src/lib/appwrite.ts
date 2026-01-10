@@ -88,15 +88,34 @@ if (typeof window === 'undefined') {
 }
 
 function cleanDocumentData<T>(data: Partial<T>): Record<string, unknown> {
-  const cleanData = { ...(data as any) };
-  delete cleanData.$id;
-  delete cleanData.$sequence;
-  delete cleanData.$collectionId;
-  delete cleanData.$databaseId;
-  delete cleanData.$createdAt;
-  delete cleanData.$updatedAt;
-  delete cleanData.$permissions;
-  return cleanData;
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data as any)) {
+    if (key.startsWith('$')) continue;
+    if (key === 'updated_at' || key === 'created_at' || key === 'id' || key === 'userId' || key === 'owner_id') continue;
+    if (value === undefined) continue;
+    result[key] = value;
+  }
+  return result;
+}
+
+/**
+ * Filter note data to only include keys supported by the Appwrite collection schema.
+ * This prevents "invalid document structure" errors when sending extra client-side fields.
+ */
+function filterNoteData(data: Record<string, any>): Record<string, any> {
+  const allowedKeys = [
+    'title', 'content', 'isPublic', 'status', 'parentNoteId', 
+    'tags', 'comments', 'extensions', 'collaborators', 'metadata',
+    'createdAt', 'updatedAt', 'userId'
+  ];
+  
+  const filtered: Record<string, any> = {};
+  for (const key of allowedKeys) {
+    if (data[key] !== undefined) {
+      filtered[key] = data[key];
+    }
+  }
+  return filtered;
 }
 
 export async function createUser(data: Partial<Users>) {
@@ -319,24 +338,28 @@ export async function createNote(data: Partial<Notes>) {
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
   const now = new Date().toISOString();
-  const cleanData = cleanDocumentData(data);
   // Remove attachments from creation payload as it's initialized separately
+  const cleanData = cleanDocumentData(data);
   const noteData = { ...cleanData };
   delete noteData.attachments;
+  
   const initialPermissions = [
     Permission.read(Role.user(user.$id)),
     Permission.update(Role.user(user.$id)),
     Permission.delete(Role.user(user.$id))
   ];
+  
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_TABLE_ID_NOTES,
     ID.unique(),
-    {
+    filterNoteData({
       ...noteData,
       userId: user.$id,
+      createdAt: now,
+      updatedAt: now,
       attachments: null
-    },
+    }),
     initialPermissions
   );
   // Re-sync tag logic if needed, but keeping existing structure for now.
@@ -446,11 +469,9 @@ export async function getNote(noteId: string): Promise<Notes> {
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
   const cleanData = cleanDocumentData(data);
-  const rest = { ...cleanData };
-  delete (rest as any).id;
-  delete (rest as any).userId;
   const updatedAt = new Date().toISOString();
-  const updatedData = { ...rest, updatedAt: updatedAt };
+  const updatedData = filterNoteData({ ...cleanData, updatedAt: updatedAt });
+  
   await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId);
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
   
@@ -2342,7 +2363,7 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
       APPWRITE_DATABASE_ID,
       APPWRITE_TABLE_ID_NOTES,
       noteId,
-      { isPublic: newIsPublic, updatedAt: new Date().toISOString() },
+      filterNoteData({ isPublic: newIsPublic, updatedAt: new Date().toISOString() }),
       permissions
     );
     return updated as unknown as Notes;
