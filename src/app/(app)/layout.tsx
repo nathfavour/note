@@ -3,7 +3,6 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { SidebarProvider, useSidebar } from '@/components/ui/SidebarContext';
 import { DynamicSidebarProvider, useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
-import { SIDEBAR_IGNORE_ATTR } from '@/constants/sidebar';
 import { NotesProvider } from '@/contexts/NotesContext';
 
 // Lazy load navigation components for faster initial render
@@ -15,28 +14,8 @@ import { Box, Container } from '@mui/material';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
-  const { isOpen: isDynamicSidebarOpen, closeSidebar } = useDynamicSidebar();
+  const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
 
-  useEffect(() => {
-    if (!isDynamicSidebarOpen) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      const targetElement = event.target as Element | null;
-      if (!targetElement) return;
-      if (targetElement.closest('[data-dynamic-sidebar]')) {
-        return;
-      }
-      if (targetElement.closest(`[${SIDEBAR_IGNORE_ATTR}]`)) {
-        return;
-      }
-      closeSidebar();
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [isDynamicSidebarOpen, closeSidebar]);
-  
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', overflowX: 'hidden' }}>
       {/* Header spans full width */}
