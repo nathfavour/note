@@ -107,7 +107,6 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
       content: content.trim(),
       format,
       tags,
-      is_deleted: false,
     };
 
     try {
