@@ -18,10 +18,16 @@ import {
   Delete as TrashIcon,
   AttachFile as AttachFileIcon,
   PushPin as PinIcon,
-  PushPinOutlined as PinOutlinedIcon
+  PushPinOutlined as PinOutlinedIcon,
+  ContentCopy as DuplicateIcon,
+  Share as ShareIcon,
+  Lock as PrivateIcon,
+  LockOpen as PublicIcon,
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
-
+import { ShareNoteModal } from '../ShareNoteModal';
+import { updateNote, createNote } from '@/lib/appwrite';
+import { useToast } from './Toast';
 
 interface NoteCardProps {
   note: Notes;
@@ -33,21 +39,49 @@ interface NoteCardProps {
 const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete, onNoteSelect }) => {
   const { openMenu } = useContextMenu();
   const { openSidebar } = useDynamicSidebar();
-  const { isPinned, pinNote, unpinNote } = useNotes();
+  const { isPinned, pinNote, unpinNote, upsertNote } = useNotes();
+  const { showSuccess, showError } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
   const pinned = isPinned(note.$id);
 
-  const handlePinClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePinToggle = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     try {
       if (pinned) {
         await unpinNote(note.$id);
+        showSuccess('Note unpinned');
       } else {
         await pinNote(note.$id);
+        showSuccess('Note pinned');
       }
-    } catch (err: unknown) {
-      console.error('Pinning error:', err instanceof Error ? err.message : 'Unknown error');
+    } catch (err: any) {
+      showError(err.message || 'Failed to update pin status');
+    }
+  };
+
+  const handleDuplicate = async () => {
+    try {
+      const { $id, $createdAt, $updatedAt, $permissions, $databaseId, $collectionId, ...rest } = note as any;
+      const duplicatedNote = await createNote({
+        ...rest,
+        title: `${note.title} (Copy)`,
+      });
+      upsertNote(duplicatedNote as Notes);
+      showSuccess('Note duplicated');
+    } catch (err: any) {
+      showError(err.message || 'Failed to duplicate note');
+    }
+  };
+
+  const handleTogglePublic = async () => {
+    try {
+      const updated = await updateNote(note.$id, { isPublic: !note.isPublic });
+      upsertNote(updated as Notes);
+      showSuccess(note.isPublic ? 'Note made private' : 'Note made public');
+    } catch (err: any) {
+      showError(err.message || 'Failed to update visibility');
     }
   };
 
@@ -115,6 +149,26 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
 
   const contextMenuItems = [
     {
+      label: pinned ? 'Unpin' : 'Pin',
+      icon: pinned ? <PinIcon sx={{ fontSize: 18 }} /> : <PinOutlinedIcon sx={{ fontSize: 18 }} />,
+      onClick: handlePinToggle
+    },
+    {
+      label: note.isPublic ? 'Make Private' : 'Make Public',
+      icon: note.isPublic ? <PrivateIcon sx={{ fontSize: 18 }} /> : <PublicIcon sx={{ fontSize: 18 }} />,
+      onClick: handleTogglePublic
+    },
+    {
+      label: 'Duplicate',
+      icon: <DuplicateIcon sx={{ fontSize: 18 }} />,
+      onClick: handleDuplicate
+    },
+    {
+      label: 'Share with...',
+      icon: <ShareIcon sx={{ fontSize: 18 }} />,
+      onClick: () => setIsShareModalOpen(true)
+    },
+    {
       label: 'Delete',
       icon: <TrashIcon sx={{ fontSize: 18 }} />,
       onClick: handleDelete,
@@ -124,6 +178,12 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
 
   return (
     <>
+      <ShareNoteModal 
+        isOpen={isShareModalOpen} 
+        onOpenChange={setIsShareModalOpen} 
+        noteId={note.$id} 
+        noteTitle={note.title || 'Untitled note'} 
+      />
       <Card
         {...sidebarIgnoreProps}
         onClick={handleClick}
@@ -171,7 +231,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <IconButton
                   size="small"
-                  onClick={handlePinClick}
+                  onClick={handlePinToggle}
                   sx={{ 
                     p: 0.5,
                     color: pinned ? '#00F5FF' : 'rgba(255, 255, 255, 0.2)',
