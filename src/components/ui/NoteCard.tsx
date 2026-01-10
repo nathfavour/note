@@ -222,22 +222,22 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
     {
       label: pinned ? 'Unpin' : 'Pin',
       icon: pinned ? <PinIcon sx={{ fontSize: 18 }} /> : <PinOutlinedIcon sx={{ fontSize: 18 }} />,
-      onClick: handlePinToggle
+      onClick: () => { handlePinToggle(); }
     },
     ...(note.isPublic ? [{
       label: 'Copy Share Link',
       icon: <LinkIcon sx={{ fontSize: 18 }} />,
-      onClick: (e: any) => handleCopyShareLink(e as any)
+      onClick: () => { handleCopyShareLink(); }
     }] : []),
     {
       label: note.isPublic ? 'Make Private' : 'Make Public',
       icon: note.isPublic ? <PrivateIcon sx={{ fontSize: 18 }} /> : <PublicIcon sx={{ fontSize: 18 }} />,
-      onClick: handleTogglePublic
+      onClick: () => { handleTogglePublic(); }
     },
     {
       label: 'Duplicate',
       icon: <DuplicateIcon sx={{ fontSize: 18 }} />,
-      onClick: handleDuplicate
+      onClick: () => { handleDuplicate(); }
     },
     {
       label: 'Share with...',

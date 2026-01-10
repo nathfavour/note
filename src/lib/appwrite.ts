@@ -2107,7 +2107,7 @@ export async function generateSignedAttachmentURL(noteId: string, ownerId: strin
   };
 }
 
-export async function verifySignedAttachmentURL(params: { noteId: string; ownerId: string; fileId: string; exp: number | string; sig: string; }): { valid: boolean; reason?: string } {
+export async function verifySignedAttachmentURL(params: { noteId: string; ownerId: string; fileId: string; exp: number | string; sig: string; }): Promise<{ valid: boolean; reason?: string }> {
   if (!ATTACHMENT_URL_SIGNING_SECRET) return { valid: false, reason: 'signing_disabled' };
   const { noteId, ownerId, fileId } = params;
   const expNum = typeof params.exp === 'string' ? parseInt(params.exp, 10) : params.exp;
