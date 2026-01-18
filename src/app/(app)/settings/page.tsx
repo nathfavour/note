@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { 
   account, 
   updateUser, 
+  getUser,
   getSettings, 
   createSettings, 
   updateSettings, 
@@ -71,13 +72,25 @@ export default function SettingsPage() {
     const fetchUserAndSettings = async () => {
       try {
         const u = await account.get();
-        setUser(u);
+        let dbUser = {};
+        try {
+          dbUser = await getUser(u.$id);
+        } catch (dbErr) {
+          console.warn('Could not fetch DB user profile for settings');
+        }
+        
+        const mergedUser = { ...u, ...dbUser };
+        setUser(mergedUser);
         setIsVerified(!!u.emailVerification);
 
-        const picId = getUserProfilePicId(u as any);
+        const picId = getUserProfilePicId(mergedUser as any);
         if (picId) {
-          const url = await getProfilePicture(picId);
-          setProfilePicUrl(url as string);
+          try {
+            const url = await getProfilePicture(picId);
+            setProfilePicUrl(url as string);
+          } catch (picErr) {
+            console.warn('Failed to fetch profile picture URL');
+          }
         }
 
         try {
@@ -329,6 +342,9 @@ const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture
           </Avatar>
 
           <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', mb: 0.5 }}>{user?.name}</Typography>
+          {user?.username && (
+            <Typography variant="subtitle1" sx={{ color: '#00F5FF', fontWeight: 700, mb: 1 }}>@{user.username}</Typography>
+          )}
           <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 1 }}>{user?.email}</Typography>
           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', mb: 4 }}>
             Joined {new Date(user?.$createdAt).getFullYear()}
@@ -510,6 +526,7 @@ const PreferencesTab = ({
 
 const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
   const [name, setName] = useState(user?.name || '');
+  const [username, setUsername] = useState(user?.username || '');
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -551,21 +568,31 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
         } catch {}
       }
 
-      if (name !== user.name) {
+      const userUpdates: any = {};
+      if (name !== user.name) userUpdates.name = name;
+      if (username !== (user.username || '')) {
+        // Simple client-side validation for username
+        const cleanUsername = username.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '');
+        userUpdates.username = cleanUsername;
+      }
+
+      if (Object.keys(userUpdates).length > 0) {
         try {
-          updatedUser = await account.updateName(name);
-          try {
-            const uid = updatedUser?.$id || user?.$id;
-            if (uid) await updateUser(uid, { name });
-          } catch {}
-        } catch {
-          setSaveError('Failed to update name');
+          if (userUpdates.name) {
+            updatedUser = await account.updateName(userUpdates.name);
+          }
+          const uid = updatedUser?.$id || user?.$id;
+          if (uid) {
+            await updateUser(uid, userUpdates);
+          }
+        } catch (e: any) {
+          setSaveError(e?.message || 'Failed to update profile info');
           setIsSaving(false);
           return;
         }
       }
 
-      onProfileUpdate(updatedUser, !!profilePic);
+      onProfileUpdate({ ...updatedUser, ...userUpdates }, !!profilePic);
       onClose();
     } catch {
       setSaveError('Failed to save changes');
@@ -584,6 +611,21 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
           onChange={(e) => setName(e.target.value)}
           fullWidth
           variant="outlined"
+          sx={{ 
+            '& .MuiOutlinedInput-root': { color: 'white', borderRadius: '16px', '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' }, '&:hover fieldset': { borderColor: '#00F5FF' } },
+            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.5)' }
+          }}
+        />
+        <TextField
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          fullWidth
+          variant="outlined"
+          placeholder="username"
+          InputProps={{
+            startAdornment: <Typography sx={{ color: 'rgba(255, 255, 255, 0.3)', mr: 0.5 }}>@</Typography>
+          }}
           sx={{ 
             '& .MuiOutlinedInput-root': { color: 'white', borderRadius: '16px', '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' }, '&:hover fieldset': { borderColor: '#00F5FF' } },
             '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.5)' }

@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, lazy, Suspense, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getCurrentUser, getUser, createUser } from '@/lib/appwrite';
+import { getCurrentUser, getUser, createUser, updateUser } from '@/lib/appwrite';
+import { getEffectiveUsername } from '@/lib/utils';
 
 // Lazy load email verification reminder (loading screen removed for instant app feel)
 const EmailVerificationReminder = lazy(() => import('./EmailVerificationReminder').then(m => ({ default: m.EmailVerificationReminder })));
@@ -53,21 +54,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
+        let dbUser;
         try {
-          await getUser(currentUser.$id);
+          dbUser = await getUser(currentUser.$id);
+          
+          // Auto-generate username if missing in DB
+          if (!dbUser.username) {
+            const autoUsername = getEffectiveUsername(dbUser);
+            if (autoUsername) {
+              try {
+                await updateUser(currentUser.$id, { username: autoUsername });
+                // Re-fetch to get updated document
+                dbUser = await getUser(currentUser.$id);
+              } catch (updateError) {
+                console.error('Failed to auto-save username:', updateError);
+              }
+            }
+          }
         } catch (e) {
           try {
-            await createUser({
+            // Document doesn't exist, create it with auto-generated username
+            const autoUsername = getEffectiveUsername({
+              name: currentUser.name,
+              email: currentUser.email,
+              username: null
+            });
+            
+            dbUser = await createUser({
               id: currentUser.$id,
               email: currentUser.email,
               name: currentUser.name,
+              username: autoUsername
             });
           } catch (createError) {
             console.error('Failed to create user profile:', createError);
           }
         }
+        
+        // Merge DB info into user state so fields like 'username' are available
+        setUser({ ...currentUser, ...dbUser });
+      } else {
+        setUser(null);
       }
-      setUser(currentUser);
       setIsLoading(false);
       return currentUser;
     } catch (error: any) {
