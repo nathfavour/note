@@ -26,6 +26,7 @@ import {
   ArrowBack as BackIcon
 } from '@mui/icons-material';
 import { useToast } from '@/components/ui/Toast';
+import CommentsSection from '@/app/(app)/notes/Comments';
 
 export default function NoteEditorPage() {
   const { id } = useParams();
@@ -178,6 +179,10 @@ export default function NoteEditorPage() {
             showExpandButton={false}
             showHeaderDeleteButton={false}
           />
+        </Box>
+
+        <Box sx={{ mt: 6, pt: 4, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <CommentsSection noteId={id as string} />
         </Box>
       </Container>
 

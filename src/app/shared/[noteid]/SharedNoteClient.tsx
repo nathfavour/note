@@ -32,6 +32,7 @@ import MuiLink from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
+import CommentsSection from '@/app/(app)/notes/Comments';
 
 interface SharedNoteClientProps {
    noteId: string;
@@ -345,6 +346,10 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         <SharedNoteHeader />
         <Container maxWidth="md" sx={{ py: 8, pt: 12 }}>
           <NoteContent />
+          
+          <Box sx={{ mt: 4 }}>
+            <CommentsSection noteId={noteId} />
+          </Box>
 
           <Box sx={{ mt: 8, textAlign: 'center' }}>
             <Paper
@@ -447,6 +452,10 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
       <Container maxWidth="md" sx={{ py: 8 }}>
         <NoteContent />
+
+        <Box sx={{ mt: 4 }}>
+          <CommentsSection noteId={noteId} />
+        </Box>
 
         <Box sx={{ mt: 8, textAlign: 'center' }}>
           <Paper
