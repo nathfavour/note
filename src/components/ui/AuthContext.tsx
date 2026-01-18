@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, lazy, Suspense, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getCurrentUser, getUser, createUser, updateUser } from '@/lib/appwrite';
+import { getCurrentUser, getUser, createUser, updateUser, account } from '@/lib/appwrite';
 import { getEffectiveUsername } from '@/lib/utils';
 
 // Lazy load email verification reminder (loading screen removed for instant app feel)
