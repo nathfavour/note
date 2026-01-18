@@ -10,11 +10,13 @@ import { TargetType } from '@/types/appwrite';
 
 const DEFAULT_REACTIONS = ['❤️', '🔥', '👏', '😂', '👍', '😮'];
 
-interface NoteReactionsProps {
-  noteId: string;
+interface ReactionsProps {
+  targetId: string;
+  targetType?: TargetType;
+  size?: 'small' | 'medium';
 }
 
-export default function NoteReactions({ noteId }: NoteReactionsProps) {
+export default function NoteReactions({ targetId, targetType = TargetType.NOTE, size = 'medium' }: ReactionsProps) {
   const { user } = useAuth();
   const [reactions, setReactions] = useState<Reactions[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -25,8 +27,8 @@ export default function NoteReactions({ noteId }: NoteReactionsProps) {
     setIsLoading(true);
     try {
       const res = await listReactions([
-        Query.equal('targetType', TargetType.NOTE),
-        Query.equal('targetId', noteId),
+        Query.equal('targetType', targetType),
+        Query.equal('targetId', targetId),
         Query.orderAsc('createdAt'),
         Query.limit(500),
       ]);
@@ -37,22 +39,27 @@ export default function NoteReactions({ noteId }: NoteReactionsProps) {
       console.error('Failed to fetch reactions via client SDK:', err);
     }
 
-    try {
-      const res = await fetch(`/api/shared/${noteId}/reactions`);
-      if (!res.ok) throw new Error('Failed to fetch shared reactions');
-      const payload = await res.json();
-      setReactions((payload?.documents || []) as Reactions[]);
-    } catch (fallbackErr) {
-      console.error('Failed to fetch reactions via shared API:', fallbackErr);
-      setError('Reactions are unavailable right now.');
-    } finally {
+    // Only notes have shared API currently
+    if (targetType === TargetType.NOTE) {
+      try {
+        const res = await fetch(`/api/shared/${targetId}/reactions`);
+        if (!res.ok) throw new Error('Failed to fetch shared reactions');
+        const payload = await res.json();
+        setReactions((payload?.documents || []) as Reactions[]);
+      } catch (fallbackErr) {
+        console.error('Failed to fetch reactions via shared API:', fallbackErr);
+        setError('Reactions are unavailable right now.');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchReactions();
-  }, [noteId]);
+  }, [targetId, targetType]);
 
   const reactionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -74,8 +81,8 @@ export default function NoteReactions({ noteId }: NoteReactionsProps) {
         await deleteReaction(existing.$id);
       } else {
         await createReaction({
-          targetType: TargetType.NOTE,
-          targetId: noteId,
+          targetType: targetType,
+          targetId: targetId,
           emoji,
           userId: user.$id,
           createdAt: new Date().toISOString(),
@@ -89,29 +96,38 @@ export default function NoteReactions({ noteId }: NoteReactionsProps) {
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          Reactions
-        </Typography>
-        {isLoading && <Typography variant="caption" color="text.secondary">Loading…</Typography>}
-      </Stack>
+    <Box sx={{ mt: size === 'small' ? 1 : 2 }}>
+      {size !== 'small' && (
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            Reactions
+          </Typography>
+          {isLoading && <Typography variant="caption" color="text.secondary">Loading…</Typography>}
+        </Stack>
+      )}
 
-      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={size === 'small' ? 0.5 : 1} sx={{ flexWrap: 'wrap' }}>
         {DEFAULT_REACTIONS.map((emoji) => {
           const isSelected = userReactions.has(emoji);
+          const count = reactionCounts[emoji] || 0;
+          
+          if (size === 'small' && count === 0 && !user?.$id) return null;
+
           return (
             <Chip
               key={emoji}
-              label={`${emoji} ${reactionCounts[emoji] || 0}`}
+              label={`${emoji} ${count}`}
               onClick={() => handleReact(emoji)}
               clickable={!!user?.$id}
+              size={size}
               sx={{
                 borderRadius: 3,
                 bgcolor: isSelected ? 'primary.main' : 'rgba(255,255,255,0.06)',
                 border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
                 fontWeight: 600,
                 color: isSelected ? 'primary.contrastText' : 'inherit',
+                height: size === 'small' ? 24 : 32,
+                fontSize: size === 'small' ? '0.75rem' : '0.875rem',
                 '&:hover': {
                   bgcolor: isSelected ? 'primary.dark' : 'rgba(255,255,255,0.1)',
                 }
