@@ -13,8 +13,10 @@ import {
 import { 
   Send as SendIcon, 
   Add as AddIcon,
-  Description as NoteIcon
+  Description as NoteIcon,
+  Bolt as ZapIcon
 } from '@mui/icons-material';
+import { MeshProtocol } from '@/lib/ecosystem/mesh';
 
 /**
  * QuickNote Contribution
@@ -34,6 +36,23 @@ export const QuickNote = () => {
             setIsSaving(false);
             alert('Note saved to WhisperrNote!');
         }, 800);
+    };
+
+    const handleCreateTask = () => {
+        if (!note.trim()) return;
+        MeshProtocol.broadcast({
+            type: 'RPC_REQUEST',
+            targetNode: 'flow',
+            payload: {
+                method: 'CREATE_TASK',
+                params: {
+                    title: `Task from Note: ${note.substring(0, 30)}...`,
+                    description: note,
+                    source: 'whisperrnote'
+                }
+            }
+        }, 'note');
+        alert('Task request sent to WhisperrFlow mesh node!');
     };
 
     return (
@@ -83,7 +102,22 @@ export const QuickNote = () => {
                 }}
             />
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1, gap: 1 }}>
+                <Tooltip title="Create Flow Task">
+                    <IconButton 
+                        onClick={handleCreateTask}
+                        disabled={!note.trim()}
+                        sx={{ 
+                            color: '#4ADE80',
+                            bgcolor: alpha('#4ADE80', 0.1),
+                            '&:hover': { bgcolor: alpha('#4ADE80', 0.2) },
+                            '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.1)' }
+                        }}
+                    >
+                        <ZapIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                </Tooltip>
+
                 <Tooltip title="Save to Note">
                     <IconButton 
                         onClick={handleSave}
