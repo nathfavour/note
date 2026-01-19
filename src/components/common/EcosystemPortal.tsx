@@ -26,13 +26,28 @@ import { SystemMonitor } from '@/ecosystem/contributions/SystemMonitor';
 import { Activity } from 'lucide-react';
 
 interface EcosystemPortalProps {
-    open: boolean;
-    onClose: () => void;
+    open?: boolean;
+    onClose?: () => void;
 }
 
-export default function EcosystemPortal({ open, onClose }: EcosystemPortalProps) {
+export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClose }: EcosystemPortalProps) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const [search, setSearch] = useState('');
     const { launchWindow } = useKernel();
+
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+    const onClose = controlledOnClose || (() => setInternalOpen(false));
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === ' ') {
+                e.preventDefault();
+                setInternalOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const filteredApps = ECOSYSTEM_APPS.filter(app =>
         app.label.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,20 +55,15 @@ export default function EcosystemPortal({ open, onClose }: EcosystemPortalProps)
     );
 
     const handleAppClick = (subdomain: string, label: string, appId: string) => {
-        // Shift + Click opens in a virtual window
-        if (typeof window !== 'undefined' && (window.event as MouseEvent)?.shiftKey) {
-            const url = getEcosystemUrl(subdomain);
-            launchWindow({
-                title: label,
-                url: `${url}?is_embedded=true`,
-                mode: 'remote',
-                appId,
-                dimensions: { width: 500, height: 700 }
-            });
-            onClose();
-            return;
-        }
-        window.location.href = getEcosystemUrl(subdomain);
+        // Shift + Click OR default for some apps opens in a virtual window
+        const url = getEcosystemUrl(subdomain);
+        launchWindow({
+            title: label,
+            url: `${url}?is_embedded=true`,
+            mode: 'remote',
+            appId,
+            dimensions: { width: 1000, height: 750 } // Prefer larger default for work nodes
+        });
         onClose();
     };
 
