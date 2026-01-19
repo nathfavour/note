@@ -39,6 +39,17 @@ export const MeshProtocol = {
   /**
    * Broadcasts a message to the mesh
    */
+  getPremiumIcon: (nodeId: string) => {
+    switch (nodeId) {
+      case 'id': return 'Fingerprint';
+      case 'note': return 'FileText';
+      case 'keep': return 'Shield';
+      case 'flow': return 'Waypoints';
+      case 'connect': return 'Zap';
+      default: return 'Layers';
+    }
+  },
+
   broadcast: (message: Omit<MeshMessage, 'id' | 'timestamp' | 'sourceNode'>, sourceId: string) => {
     const fullMessage: MeshMessage = {
       ...message,
