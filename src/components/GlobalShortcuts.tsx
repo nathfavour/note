@@ -6,6 +6,7 @@ import { useOverlay } from "@/components/ui/OverlayContext";
 
 // Lazy load heavy components
 const KeyboardShortcuts = lazy(() => import("@/components/KeyboardShortcuts"));
+const EcosystemPortal = lazy(() => import("@/components/common/EcosystemPortal"));
 
 
 
@@ -21,15 +22,24 @@ export default function GlobalShortcuts() {
   const router = useRouter();
   const { openOverlay } = useOverlay();
   const [openShortcuts, setOpenShortcuts] = useState(false);
+  const [openEcosystem, setOpenEcosystem] = useState(false);
 
 
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const hasMeta = e.metaKey || e.ctrlKey;
-      if (!hasMeta) return;
-
+      
       const key = e.key.toLowerCase();
+
+      // Cmd/Ctrl + Space => open ecosystem portal
+      if (hasMeta && key === " ") {
+        e.preventDefault();
+        setOpenEcosystem(prev => !prev);
+        return;
+      }
+
+      if (!hasMeta) return;
 
       // Cmd/Ctrl + / => open shortcuts
       if ((key === "/" || key === "?") && !e.altKey) {
@@ -77,6 +87,7 @@ export default function GlobalShortcuts() {
   return (
     <Suspense fallback={null}>
       {openShortcuts && <KeyboardShortcuts open={openShortcuts} onClose={() => setOpenShortcuts(false)} />}
+      <EcosystemPortal open={openEcosystem} onClose={() => setOpenEcosystem(false)} />
     </Suspense>
   );
 }

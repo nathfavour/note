@@ -20,6 +20,8 @@ import {
 import { motion } from 'framer-motion';
 import { ECOSYSTEM_APPS, getEcosystemUrl } from '@/constants/ecosystem';
 import { EcosystemWidgets } from '@/ecosystem/integration/Widgets';
+import { useWindowing } from '@/ecosystem/integration/WindowingSystem';
+import { EcosystemBridge } from '@/lib/ecosystem/bridge';
 
 interface EcosystemPortalProps {
     open: boolean;
@@ -28,13 +30,21 @@ interface EcosystemPortalProps {
 
 export default function EcosystemPortal({ open, onClose }: EcosystemPortalProps) {
     const [search, setSearch] = useState('');
+    const { openWindow } = useWindowing();
 
     const filteredApps = ECOSYSTEM_APPS.filter(app =>
         app.label.toLowerCase().includes(search.toLowerCase()) ||
         app.description.toLowerCase().includes(search.toLowerCase())
     );
 
-    const handleAppClick = (subdomain: string) => {
+    const handleAppClick = (subdomain: string, label: string) => {
+        // Shift + Click opens in a window
+        if (typeof window !== 'undefined' && (window.event as MouseEvent)?.shiftKey) {
+            const url = getEcosystemUrl(subdomain);
+            openWindow(label, `${url}?is_embedded=true`);
+            onClose();
+            return;
+        }
         window.location.href = getEcosystemUrl(subdomain);
         onClose();
     };
@@ -151,7 +161,7 @@ export default function EcosystemPortal({ open, onClose }: EcosystemPortalProps)
                                 <Grid size={{ xs: 12, sm: 6 }} key={app.id}>
                                     <Box
                                         component="button"
-                                        onClick={() => handleAppClick(app.subdomain)}
+                                        onClick={() => handleAppClick(app.subdomain, app.label)}
                                         sx={{
                                             width: '100%',
                                             display: 'flex',

@@ -10,6 +10,8 @@ import Overlay from "@/components/ui/Overlay";
 import { ContextMenuProvider } from "@/components/ui/ContextMenuContext";
 import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
 import GlobalShortcuts from "@/components/GlobalShortcuts";
+import { WindowProvider } from "@/ecosystem/integration/WindowingSystem";
+import { EcosystemPortal } from "@/components/common/EcosystemPortal";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { darkTheme } from "@/theme/theme";
@@ -27,22 +29,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <AppThemeProvider>
             <MuiThemeWrapper>
-                <ToastProvider>
-                    <AuthProvider>
-                        <OverlayProvider>
-                            <LoadingProvider>
-                                <ContextMenuProvider>
-                                    <RouteGuard>
-                                        {children}
-                                    </RouteGuard>
-                                    <Overlay />
-                                    <GlobalContextMenu />
-                                    <GlobalShortcuts />
-                                </ContextMenuProvider>
-                            </LoadingProvider>
-                        </OverlayProvider>
-                    </AuthProvider>
-                </ToastProvider>
+                <WindowProvider>
+                    <ToastProvider>
+                        <AuthProvider>
+                            <OverlayProvider>
+                                <LoadingProvider>
+                                    <ContextMenuProvider>
+                                        <RouteGuard>
+                                            {children}
+                                        </RouteGuard>
+                                        <Overlay />
+                                        <GlobalContextMenu />
+                                        <GlobalShortcuts />
+                                        <EcosystemPortal />
+                                    </ContextMenuProvider>
+                                </LoadingProvider>
+                            </OverlayProvider>
+                        </AuthProvider>
+                    </ToastProvider>
+                </WindowProvider>
             </MuiThemeWrapper>
         </AppThemeProvider>
     );
