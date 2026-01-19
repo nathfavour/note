@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { MeshProtocol, NodeIdentity, MeshMessage } from '@/lib/ecosystem/mesh';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
 
 /**
  * Kernel Types & Interfaces
@@ -72,6 +73,9 @@ export const KernelProvider = ({ children }: { children: ReactNode }) => {
    * Node Pulse & Discovery (Mesh Integration)
    */
   useEffect(() => {
+    // Initialize security synchronization
+    ecosystemSecurity.init('note');
+
     const unsub = MeshProtocol.subscribe((msg: MeshMessage) => {
       if (msg.type === 'PULSE') {
         setActiveNodesInfo(prev => ({
