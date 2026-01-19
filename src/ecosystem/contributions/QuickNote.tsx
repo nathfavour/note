@@ -11,11 +11,11 @@ import {
   alpha 
 } from '@mui/material';
 import { 
-  Send as SendIcon, 
-  Add as AddIcon,
-  Description as NoteIcon,
-  Bolt as ZapIcon
-} from '@mui/icons-material';
+  Send, 
+  Plus,
+  StickyNote,
+  Zap
+} from 'lucide-react';
 import { MeshProtocol } from '@/lib/ecosystem/mesh';
 
 /**
@@ -46,7 +46,7 @@ export const QuickNote = () => {
             payload: {
                 method: 'CREATE_TASK',
                 params: {
-                    title: `Task from Note: ${note.substring(0, 30)}...`,
+                    title: \`Task from Note: \${note.substring(0, 30)}...\`,
                     description: note,
                     source: 'whisperrnote'
                 }
@@ -75,9 +75,12 @@ export const QuickNote = () => {
                     p: 1, 
                     borderRadius: '10px', 
                     bgcolor: alpha('#00F5FF', 0.1),
-                    color: '#00F5FF'
+                    color: '#00F5FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}>
-                    <NoteIcon sx={{ fontSize: 20 }} />
+                    <StickyNote size={20} strokeWidth={1.5} />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: '0.875rem', color: 'white' }}>
                     Quick Note
@@ -114,7 +117,7 @@ export const QuickNote = () => {
                             '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.1)' }
                         }}
                     >
-                        <ZapIcon sx={{ fontSize: 18 }} />
+                        <Zap size={18} strokeWidth={1.5} />
                     </IconButton>
                 </Tooltip>
 
@@ -129,7 +132,7 @@ export const QuickNote = () => {
                             '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.1)' }
                         }}
                     >
-                        <SendIcon sx={{ fontSize: 18 }} />
+                        <Send size={18} strokeWidth={1.5} />
                     </IconButton>
                 </Tooltip>
             </Box>

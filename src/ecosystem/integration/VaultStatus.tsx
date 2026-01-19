@@ -9,10 +9,10 @@ import {
   alpha 
 } from '@mui/material';
 import { 
-  Lock as LockIcon,
-  LockOpen as UnlockIcon,
-  Shield as ShieldIcon
-} from '@mui/icons-material';
+  Lock,
+  LockKeyholeOpen,
+  Shield
+} from 'lucide-react';
 
 export const VaultStatus = () => {
     const [isLocked, setIsLocked] = useState(false);
@@ -34,9 +34,12 @@ export const VaultStatus = () => {
                         p: 1, 
                         borderRadius: '10px', 
                         bgcolor: alpha('#F59E0B', 0.1),
-                        color: '#F59E0B'
+                        color: '#F59E0B',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }}>
-                        <ShieldIcon sx={{ fontSize: 20 }} />
+                        <Shield size={20} strokeWidth={1.5} />
                     </Box>
                     <Typography sx={{ fontWeight: 800, fontSize: '0.875rem', color: 'white' }}>
                         Keep Vault
@@ -64,7 +67,7 @@ export const VaultStatus = () => {
             <Button
                 fullWidth
                 variant="outlined"
-                startIcon={isLocked ? <UnlockIcon sx={{ fontSize: 16 }} /> : <LockIcon sx={{ fontSize: 16 }} />}
+                startIcon={isLocked ? <LockKeyholeOpen size={16} strokeWidth={1.5} /> : <Lock size={16} strokeWidth={1.5} />}
                 onClick={() => setIsLocked(!isLocked)}
                 sx={{
                     borderRadius: '12px',
