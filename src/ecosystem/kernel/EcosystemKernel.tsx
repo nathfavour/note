@@ -11,8 +11,32 @@ import {
   GripHorizontal,
   Lock,
   Layers,
-  ChevronUp
+  ChevronUp,
+  Fingerprint,
+  FileText,
+  Shield,
+  Waypoints,
+  Zap,
+  Globe
 } from 'lucide-react';
+
+/**
+ * Premium Icon Component
+ */
+const PremiumIcon = ({ name, size = 18, color = 'currentColor' }: { name: string, size?: number, color?: string }) => {
+  const icons: Record<string, any> = {
+    Fingerprint,
+    FileText,
+    Shield,
+    Waypoints,
+    Zap,
+    Globe,
+    Layers
+  };
+  
+  const IconComponent = icons[name] || Layers;
+  return <IconComponent size={size} color={color} strokeWidth={1.5} />;
+};
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { MeshProtocol, NodeIdentity, MeshMessage } from '@/lib/ecosystem/mesh';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
@@ -327,7 +351,7 @@ const EcosystemWindow = ({ window: win, isActive }: { window: WindowInstance, is
         >
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Box sx={{ color: isActive ? '#00F0FF' : 'rgba(255,255,255,0.4)', display: 'flex' }}>
-              {win.icon || <Layers size={14} />}
+              {win.icon || <PremiumIcon name={MeshProtocol.getPremiumIcon(win.appId)} size={16} />}
             </Box>
             <Typography variant="subtitle2" sx={{ 
               fontWeight: isActive ? 800 : 600, 
@@ -465,7 +489,7 @@ const Pocket = ({ windows }: { windows: WindowInstance[] }) => {
                   }
                 }}
               >
-                {win.icon || <Layers size={20} color="rgba(255,255,255,0.6)" />}
+                {win.icon || <PremiumIcon name={MeshProtocol.getPremiumIcon(win.appId)} size={20} color="rgba(255,255,255,0.6)" />}
               </Box>
             </Tooltip>
           </motion.div>
