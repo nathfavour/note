@@ -4,9 +4,9 @@ import React from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 import { Box, IconButton, Typography, Stack } from '@mui/material';
 import { 
-  LightMode as SunIcon, 
-  DarkMode as MoonIcon 
-} from '@mui/icons-material';
+  Sun, 
+  Moon 
+} from 'lucide-react';
 
 interface ThemeToggleProps {
   showLabel?: boolean;
@@ -44,7 +44,7 @@ export function ThemeToggle({
         }}
         aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       >
-        {isDark ? <MoonIcon /> : <SunIcon />}
+        {isDark ? <Moon size={20} strokeWidth={1.5} /> : <Sun size={20} strokeWidth={1.5} />}
       </IconButton>
     </Stack>
   );

@@ -22,16 +22,16 @@ import {
   alpha
 } from '@mui/material';
 import {
-  Home as HomeIcon,
-  Share as ShareIcon,
-  LocalOffer as TagIcon,
-  Settings as SettingsIcon,
-  Extension as ExtensionIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  Logout as LogoutIcon,
-  Bolt as PulseIcon
-} from '@mui/icons-material';
+  FileText,
+  Link2,
+  Tag,
+  Settings,
+  Puzzle,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Zap
+} from 'lucide-react';
 
 interface NavigationProps {
 }
@@ -42,10 +42,10 @@ export const MobileBottomNav: React.FC<NavigationProps> = () => {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
   const navLinks = [
-    { icon: HomeIcon, href: '/notes', label: 'Notes' },
-    { icon: ShareIcon, href: '/shared', label: 'Links' },
-    { icon: TagIcon, href: '/tags', label: 'Tags' },
-    { icon: ExtensionIcon, href: '/extensions', label: 'Caps' },
+    { icon: FileText, href: '/notes', label: 'Notes' },
+    { icon: Link2, href: '/shared', label: 'Links' },
+    { icon: Tag, href: '/tags', label: 'Tags' },
+    { icon: Puzzle, href: '/extensions', label: 'Caps' },
   ];
 
   return (
@@ -97,7 +97,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = () => {
               })
             }}
           >
-            <Icon sx={{ fontSize: 26 }} />
+            <Icon size={24} strokeWidth={1.5} />
           </IconButton>
         ))}
       </Paper>
@@ -137,11 +137,11 @@ export const DesktopSidebar: React.FC<NavigationProps> = () => {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
   const navItems = [
-    { icon: HomeIcon, label: 'Notes', path: '/notes' },
-    { icon: ShareIcon, label: 'Shared Links', path: '/shared' },
-    { icon: TagIcon, label: 'Tags', path: '/tags' },
-    { icon: ExtensionIcon, label: 'Extensions', path: '/extensions' },
-    { icon: SettingsIcon, label: 'Settings', path: '/settings' },
+    { icon: FileText, label: 'Notes', path: '/notes' },
+    { icon: Link2, label: 'Shared Links', path: '/shared' },
+    { icon: Tag, label: 'Tags', path: '/tags' },
+    { icon: Puzzle, label: 'Extensions', path: '/extensions' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   return (
@@ -184,7 +184,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = () => {
             '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)', color: 'white' }
           }}
         >
-          {isCollapsed ? <ChevronRightIcon fontSize="small" /> : <ChevronLeftIcon fontSize="small" />}
+          {isCollapsed ? <ChevronRight size={18} strokeWidth={1.5} /> : <ChevronLeft size={18} strokeWidth={1.5} />}
         </IconButton>
       </Box>
 
@@ -221,7 +221,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = () => {
                   color: 'inherit',
                   justifyContent: 'center'
                 }}>
-                  <Icon sx={{ fontSize: 22 }} />
+                  <Icon size={20} strokeWidth={1.5} />
                 </ListItemIcon>
                 {!isCollapsed && (
                   <ListItemText 
@@ -338,7 +338,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = () => {
           }}
         >
           <ListItemIcon sx={{ minWidth: isCollapsed ? 0 : 40, color: 'inherit', justifyContent: 'center' }}>
-            <LogoutIcon sx={{ fontSize: 22 }} />
+            <LogOut size={20} strokeWidth={1.5} />
           </ListItemIcon>
           {!isCollapsed && (
             <ListItemText 
