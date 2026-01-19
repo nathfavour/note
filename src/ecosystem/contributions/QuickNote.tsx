@@ -46,7 +46,7 @@ export const QuickNote = () => {
             payload: {
                 method: 'CREATE_TASK',
                 params: {
-                    title: \`Task from Note: \${note.substring(0, 30)}...\`,
+                    title: `Task from Note: ${note.substring(0, 30)}...`,
                     description: note,
                     source: 'whisperrnote'
                 }
