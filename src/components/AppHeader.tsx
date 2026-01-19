@@ -34,7 +34,7 @@ import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePrevi
 import { ECOSYSTEM_APPS, getEcosystemUrl } from '@/constants/ecosystem';
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { AICommandModal } from '@/components/ai/AICommandModal';
-import EcosystemPortal from '@/components/common/EcosystemPortal';
+import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 
 interface AppHeaderProps {
   className?: string;
