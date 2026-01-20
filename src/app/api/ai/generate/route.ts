@@ -12,12 +12,23 @@ export async function POST(req: Request) {
 
     const { prompt, history, systemInstruction } = await req.json();
     
-    // 1. Key Source Determination
+    // 1. Key Source Determination & Pro Check
     const userKey = req.headers.get("x-user-gemini-key");
     const apiKey = userKey || process.env.GOOGLE_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json({ error: "AI service not configured" }, { status: 500 });
+    }
+
+    // Pro Check: If using system key, user must be PRO/ORG/LIFETIME
+    if (!userKey) {
+      const plan = user.prefs?.subscriptionTier || 'FREE';
+      const isPro = ['PRO', 'ORG', 'LIFETIME'].includes(plan);
+      if (!isPro) {
+        return NextResponse.json({ 
+          error: "AI features require a Pro account. Upgrade to continue or provide your own API key in settings." 
+        }, { status: 403 });
+      }
     }
 
     // 2. Initialize Model
