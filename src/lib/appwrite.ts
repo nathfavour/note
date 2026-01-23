@@ -416,7 +416,6 @@ export async function createNote(data: Partial<Notes>) {
 
   if (data.isPublic) {
     initialPermissions.push(Permission.read(Role.any()));
-    initialPermissions.push(Permission.read(Role.guests()));
   }
 
   const docId = ID.unique();
@@ -561,7 +560,6 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
     ];
     if (data.isPublic) {
       permissions.push(Permission.read(Role.any()));
-      permissions.push(Permission.read(Role.guests()));
     }
   }
 
