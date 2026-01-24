@@ -137,8 +137,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   // Initial fetch or auth state change
   useEffect(() => {
-    if (isAuthLoading) return; // Wait for auth to be determined
-
     if (isAuthenticated && user?.$id) {
       fetchBatch(true);
     } else if (!isAuthLoading && !isAuthenticated) {
@@ -150,6 +148,33 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setPinnedIds([]);
     }
   }, [isAuthenticated, isAuthLoading, user?.$id, fetchBatch]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!isAuthenticated || !user?.$id) return;
+
+    const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_TABLE_ID_NOTES}.documents`;
+    
+    const unsubscribe = realtime.subscribe(channel, (response) => {
+      const payload = response.payload as Notes;
+      
+      // Only handle notes belonging to the current user (or public notes)
+      // Note: Appwrite RLS should handle this, but payload might contain public notes from others
+      if (payload.userId !== user.$id && !payload.isPublic) return;
+
+      if (response.events.some(e => e.includes('.create'))) {
+        upsertNote(payload);
+      } else if (response.events.some(e => e.includes('.update'))) {
+        upsertNote(payload);
+      } else if (response.events.some(e => e.includes('.delete'))) {
+        removeNote(payload.$id);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [isAuthenticated, user?.$id, upsertNote, removeNote]);
 
   const upsertNote = useCallback((note: Notes) => {
     const existed = notesRef.current.some((n) => n.$id === note.$id);
