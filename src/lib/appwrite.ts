@@ -1291,7 +1291,13 @@ export async function listCollaborators(noteId: string) {
 // --- ACTIVITY LOG CRUD ---
 
 export async function createActivityLog(data: Partial<ActivityLog>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, ID.unique(), cleanDocumentData(data));
+  const logData = {
+    ...cleanDocumentData(data),
+    timestamp: new Date().toISOString(),
+    // Standardize ecosystem metadata if not present
+    details: data.details || JSON.stringify({ ecosystemApp: 'whisperrnote' })
+  };
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, ID.unique(), logData);
 }
 
 export async function getActivityLog(activityLogId: string): Promise<ActivityLog> {
@@ -1422,7 +1428,6 @@ export async function createTaskFromNote(note: Notes) {
   const now = new Date().toISOString();
 
   // Create document in WhisperrFlow tasks collection
-  // Collection schema: title, description, status, priority, userId, parentId, etc.
   const taskDoc = await databases.createDocument(
     FLOW_DATABASE_ID,
     FLOW_COLLECTION_ID_TASKS,
@@ -1434,8 +1439,13 @@ export async function createTaskFromNote(note: Notes) {
       userId: user.$id,
       createdAt: now,
       updatedAt: now,
-      // No metadata column in tasks collection, using description to reference note
-      description: `${note.content || ''}\n\n--- Origin: WhisperrNote (${note.$id}) ---`
+      description: note.content || '',
+      // Add ecosystem metadata for deep linking
+      metadata: JSON.stringify({
+        sourceApp: 'whisperrnote',
+        sourceId: note.$id,
+        convertedAt: now
+      })
     }
   );
 
