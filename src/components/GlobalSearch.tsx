@@ -124,7 +124,8 @@ export default function GlobalSearch() {
         type: 'user' as const,
         title: u.title,
         excerpt: u.subtitle,
-        avatar: u.avatar
+        avatar: u.avatar,
+        profilePicId: u.profilePicId
       }));
 
       setResults([...noteResults, ...peopleResults]);

@@ -203,10 +203,16 @@ export default function GlobalSearch({
       try {
         const { searchGlobalUsers } = await import('@/lib/ecosystem/identity');
         const peopleDocs = await searchGlobalUsers(query);
-        globalPeople = peopleDocs.map(p => ({
-          ...p,
-          icon: <PersonIcon />
-        })) as SearchResult[];
+        const peopleResults = peopleDocs.map(u => ({
+          id: u.id,
+          type: 'user' as const,
+          title: u.title,
+          subtitle: u.subtitle,
+          icon: <PersonIcon />,
+          avatar: u.avatar,
+          profilePicId: u.profilePicId
+        }));
+        globalPeople = peopleResults as SearchResult[];
       } catch (err) {
         console.error('Global search failed', err);
       }
