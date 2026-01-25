@@ -160,6 +160,9 @@ export type Notes = Models.Document & {
     // Virtual attributes (hydrated from metadata)
     linkedTaskId?: string;
     linkedSource?: string;
+    linkedTaskIds?: string[];
+    linkedEventIds?: string[];
+    linkedCredentialIds?: string[];
 }
 
 export type Tags = Models.Document & {
@@ -272,7 +275,8 @@ export type AiGenerations = Models.Document & {
     promptHash: string | null;
     prompt: string | null;
     mode: string | null;
-    providerId: string | null; model: string | null; durationMs: number | null; tokensUsed: number | null; success: boolean | null; error: string | null; createdAt: string | null; }
+    providerId: string | null; model: string | null; durationMs: number | null; tokensUsed: number | null; success: boolean | null; error: string | null; createdAt: string | null;
+}
 
 export type Subscriptions = Models.Document & { userId: string; plan: Plan; status: Status | null; currentPeriodStart: string | null; currentPeriodEnd: string | null; seats: number | null; createdAt: string | null; updatedAt: string | null; }
 
