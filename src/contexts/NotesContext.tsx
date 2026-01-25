@@ -155,31 +155,43 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_TABLE_ID_NOTES}.documents`;
     
-    const unsubscribe = realtime.subscribe(channel, (response) => {
-      const payload = response.payload as Notes;
+    let unsub: () => void;
+    try {
+      const sub = realtime.subscribe(channel, (response) => {
+        const payload = response.payload as Notes;
+        
+        // Only handle notes belonging to the current user (or public notes)
+        if (payload.userId !== user.$id && !payload.isPublic) return;
+
+        const isCreate = response.events.some(e => e.includes('.create'));
+        const isUpdate = response.events.some(e => e.includes('.update'));
+        const isDelete = response.events.some(e => e.includes('.delete'));
+
+        if (isCreate) {
+          setNotes(prev => {
+            if (prev.some(n => n.$id === payload.$id)) return prev;
+            return [payload, ...prev];
+          });
+          setTotalNotes(prev => prev + 1);
+        } else if (isUpdate) {
+          setNotes(prev => prev.map(n => n.$id === payload.$id ? payload : n));
+        } else if (isDelete) {
+          removeNote(payload.$id);
+        }
+      });
       
-      // Only handle notes belonging to the current user (or public notes)
-      if (payload.userId !== user.$id && !payload.isPublic) return;
-
-      const isCreate = response.events.some(e => e.includes('.create'));
-      const isUpdate = response.events.some(e => e.includes('.update'));
-      const isDelete = response.events.some(e => e.includes('.delete'));
-
-      if (isCreate) {
-        setNotes(prev => {
-          if (prev.some(n => n.$id === payload.$id)) return prev;
-          return [payload, ...prev];
-        });
-        setTotalNotes(prev => prev + 1);
-      } else if (isUpdate) {
-        setNotes(prev => prev.map(n => n.$id === payload.$id ? payload : n));
-      } else if (isDelete) {
-        removeNote(payload.$id);
+      if (typeof sub === 'function') {
+        unsub = sub;
+      } else {
+        // Handle cases where it might return an object with unsubscribe
+        unsub = () => (sub as any).unsubscribe?.();
       }
-    });
+    } catch (e) {
+      console.error('Realtime subscription failed', e);
+    }
 
     return () => {
-      unsubscribe();
+      if (unsub) unsub();
     };
   }, [isAuthenticated, user?.$id, upsertNote, removeNote]);
 
