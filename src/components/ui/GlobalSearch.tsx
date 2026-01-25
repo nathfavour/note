@@ -41,6 +41,63 @@ interface SearchResult {
   title: string;
   subtitle?: string;
   icon: React.ReactNode;
+  profilePicId?: string;
+  avatar?: string;
+}
+
+function SearchResultAvatar({ result }: { result: SearchResult }) {
+  const [url, setUrl] = useState<string | null>(result.avatar || null);
+
+  useEffect(() => {
+    if (result.type !== 'user' || !result.profilePicId || result.avatar) return;
+
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { fetchProfilePreview } = await import('@/lib/profilePreview');
+        const previewUrl = await fetchProfilePreview(result.profilePicId, 48, 48);
+        if (mounted) setUrl(previewUrl);
+      } catch (err) {
+        console.error('Failed to load search result avatar', err);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [result]);
+
+  if (result.type === 'user') {
+    return (
+      <Avatar
+        src={url || undefined}
+        sx={{
+          width: 32,
+          height: 32,
+          fontSize: '0.75rem',
+          bgcolor: '#A855F7',
+          color: '#fff',
+          fontWeight: 800,
+          fontFamily: '"Space Grotesk", sans-serif'
+        }}
+      >
+        {result.title.charAt(0).toUpperCase()}
+      </Avatar>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        width: 32,
+        height: 32,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: result.type === 'note' ? '#00F5FF' : '#10B981'
+      }}
+    >
+      {result.icon}
+    </Box>
+  );
 }
 
 interface GlobalSearchProps {
@@ -377,15 +434,10 @@ export default function GlobalSearch({
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: 40,
-                      color: result.type === 'note'
-                        ? '#00F5FF'
-                        : result.type === 'user'
-                          ? '#A855F7'
-                          : '#10B981'
+                      minWidth: 48,
                     }}
                   >
-                    {result.icon}
+                    <SearchResultAvatar result={result} />
                   </ListItemIcon>
                   <ListItemText
                     primary={result.title}

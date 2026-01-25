@@ -75,32 +75,68 @@ export async function ensureGlobalIdentity(user: any, force = false) {
 
 /**
  * Searches for users across the entire ecosystem via the global directory.
+ * Supports email, username, and display name.
  */
 export async function searchGlobalUsers(query: string, limit = 10) {
     if (!query || query.length < 2) return [];
 
+    const isEmail = /@/.test(query) && /\./.test(query);
+
     try {
+        // Primary search in Global Directory (Connect)
         const res = await databases.listDocuments(
             CONNECT_DATABASE_ID,
             CONNECT_COLLECTION_ID_USERS,
             [
                 Query.or([
-                    Query.startsWith('username', query.toLowerCase()),
+                    Query.startsWith('username', query.toLowerCase().replace(/^@/, '')),
                     Query.search('displayName', query)
                 ]),
                 Query.limit(limit)
             ]
         );
 
-        return res.documents.map(doc => ({
+        const results = res.documents.map(doc => ({
             id: doc.$id,
             type: 'user' as const,
             title: doc.displayName || doc.username,
             subtitle: `@${doc.username}`,
-            icon: 'person', // caller handles mapping to actual icon component
+            icon: 'person',
             avatar: doc.avatarUrl,
+            profilePicId: doc.avatarFileId || doc.profilePicId,
             apps: doc.appsActive || []
         }));
+
+        // If it looks like an email and we have few results, check the main user table
+        if (isEmail && results.length < limit) {
+            try {
+                const { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_USERS } = await import('../appwrite');
+                const noteRes = await databases.listDocuments(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_TABLE_ID_USERS,
+                    [Query.equal('email', query.toLowerCase()), Query.limit(1)]
+                );
+
+                for (const doc of noteRes.documents) {
+                    if (!results.find(r => r.id === doc.$id)) {
+                        results.push({
+                            id: doc.$id,
+                            type: 'user' as const,
+                            title: doc.name || doc.email.split('@')[0],
+                            subtitle: doc.email,
+                            icon: 'person',
+                            avatar: doc.avatar || null,
+                            profilePicId: doc.profilePicId || doc.avatarFileId,
+                            apps: ['note']
+                        });
+                    }
+                }
+            } catch (err) {
+                // Secondary search failure is non-fatal
+            }
+        }
+
+        return results;
     } catch (error) {
         console.error('[Identity] Global search failed:', error);
         return [];

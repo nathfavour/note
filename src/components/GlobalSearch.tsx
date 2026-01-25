@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -13,7 +13,8 @@ import {
   InputAdornment,
   Chip,
   IconButton,
-  alpha
+  alpha,
+  Avatar
 } from '@mui/material';
 import { PersonOutline as PersonIcon, Search as SearchIcon, NoteOutlined as NoteIcon, FolderOutlined as FolderIcon, LocalOfferOutlined as TagIcon, Close as CloseIcon } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +28,67 @@ type SearchResult = {
   date?: string;
   tags?: string[];
   avatar?: string;
+  profilePicId?: string;
 };
+
+function SearchResultAvatar({ result }: { result: SearchResult }) {
+  const [url, setUrl] = useState<string | null>(result.avatar || null);
+
+  useEffect(() => {
+    if (result.type !== 'user' || !result.profilePicId || result.avatar) return;
+
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { fetchProfilePreview } = await import('@/lib/profilePreview');
+        const previewUrl = await fetchProfilePreview(result.profilePicId, 48, 48);
+        if (mounted) setUrl(previewUrl);
+      } catch (err) {
+        console.error('Failed to load search result avatar', err);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [result]);
+
+  if (result.type === 'user') {
+    return (
+      <Avatar
+        src={url || undefined}
+        sx={{
+          width: 32,
+          height: 32,
+          fontSize: '0.75rem',
+          bgcolor: '#A855F7',
+          color: '#fff',
+          fontWeight: 800,
+          fontFamily: 'inherit'
+        }}
+      >
+        {result.title.charAt(0).toUpperCase()}
+      </Avatar>
+    );
+  }
+
+  const getIcon = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'note':
+        return <NoteIcon sx={{ color: '#00F5FF' }} />;
+      case 'collection':
+        return <FolderIcon sx={{ color: '#00F5FF' }} />;
+      case 'tag':
+        return <TagIcon sx={{ color: '#00F5FF' }} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Box sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {getIcon(result.type)}
+    </Box>
+  );
+}
 
 export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,19 +134,6 @@ export default function GlobalSearch() {
       setLoading(false);
     }
   }, 300);
-
-  const getIcon = (type: SearchResult['type']) => {
-    switch (type) {
-      case 'note':
-        return <NoteIcon sx={{ color: '#00F5FF' }} />;
-      case 'collection':
-        return <FolderIcon sx={{ color: '#00F5FF' }} />;
-      case 'tag':
-        return <TagIcon sx={{ color: '#00F5FF' }} />;
-      case 'user':
-        return <PersonIcon sx={{ color: '#A855F7' }} />;
-    }
-  };
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -194,8 +242,8 @@ export default function GlobalSearch() {
                         }
                       }}
                     >
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        {getIcon(result.type)}
+                      <ListItemIcon sx={{ minWidth: 48 }}>
+                        <SearchResultAvatar result={result} />
                       </ListItemIcon>
                       <ListItemText
                         primary={result.title}
