@@ -367,7 +367,10 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                       <Box sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.3)', display: 'flex' }}>
                         <SearchIcon fontSize="small" />
                       </Box>
-                    )
+                    ),
+                    endAdornment: isSearching ? (
+                      <CircularProgress size={16} sx={{ color: '#00F5FF' }} />
+                    ) : null
                   }
                 }}
                 sx={{
@@ -432,6 +435,30 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                       </ListItem>
                     ))}
                   </List>
+                </Paper>
+              )}
+
+              {query.trim().length >= 2 && results.length === 0 && !isSearching && !selectedUser && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    zIndex: 10,
+                    mt: 1,
+                    bgcolor: 'rgba(20, 20, 20, 0.98)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    p: 2,
+                    textAlign: 'center'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                    No users found matching "@{query}"
+                  </Typography>
                 </Paper>
               )}
             </Box>

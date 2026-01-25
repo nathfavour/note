@@ -108,7 +108,7 @@ export async function searchGlobalUsers(query: string, limit = 10) {
     const isEmail = /@/.test(query) && /\./.test(query);
 
     try {
-        // Primary search in Global Directory (Connect)
+        // 1. Primary search in Global Directory (Connect)
         const res = await databases.listDocuments(
             CONNECT_DATABASE_ID,
             CONNECT_COLLECTION_ID_USERS,
@@ -132,14 +132,20 @@ export async function searchGlobalUsers(query: string, limit = 10) {
             apps: doc.appsActive || []
         }));
 
-        // If it looks like an email and we have few results, check the main user table
-        if (isEmail && results.length < limit) {
+        // 2. Secondary Fallback to main users table if results are low
+        if (results.length < 5) {
             try {
                 const { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_USERS } = await import('../appwrite');
                 const noteRes = await databases.listDocuments(
                     APPWRITE_DATABASE_ID,
                     APPWRITE_TABLE_ID_USERS,
-                    [Query.equal('email', query.toLowerCase()), Query.limit(1)]
+                    [
+                        Query.or([
+                            Query.startsWith('name', query),
+                            Query.startsWith('email', query.toLowerCase())
+                        ]),
+                        Query.limit(5)
+                    ]
                 );
 
                 for (const doc of noteRes.documents) {
