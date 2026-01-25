@@ -41,8 +41,12 @@ import { useRouter } from 'next/navigation';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/contexts/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, Query } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
+import {
+  PlaylistAddCheck as TaskIcon,
+  OpenInNew as OpenIcon,
+} from '@mui/icons-material';
 import { useAutosave } from '@/hooks/useAutosave';
 
 interface NoteDetailSidebarProps {
@@ -85,7 +89,32 @@ export function NoteDetailSidebar({
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
   const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
+  const [linkedTasks, setLinkedTasks] = useState<any[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch linked tasks from WhisperrFlow
+  useEffect(() => {
+    const fetchLinkedTasks = async () => {
+      const taskIds = (note as any).linkedTaskIds || ((note as any).linkedTaskId ? [(note as any).linkedTaskId] : []);
+      if (!taskIds || taskIds.length === 0) {
+        setLinkedTasks([]);
+        return;
+      }
+
+      setIsLoadingTasks(true);
+      try {
+        const res = await listFlowTasks([Query.equal('$id', taskIds)]);
+        setLinkedTasks(res.documents);
+      } catch (err) {
+        console.error('Failed to fetch linked tasks:', err);
+      } finally {
+        setIsLoadingTasks(false);
+      }
+    };
+
+    fetchLinkedTasks();
+  }, [note.$id, (note as any).linkedTaskIds, (note as any).linkedTaskId]);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const titleContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
@@ -887,6 +916,63 @@ export function NoteDetailSidebar({
           </Box>
         ) : (
           <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No attachments</Typography>
+        )}
+      </Box>
+
+      {/* Linked Tasks */}
+      <Box>
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            mb: 2,
+            color: '#00F5FF',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            fontFamily: '"Space Grotesk", sans-serif'
+          }}
+        >
+          Linked Tasks (Flow)
+        </Typography>
+        {isLoadingTasks ? (
+          <CircularProgress size={20} sx={{ color: '#00F5FF', ml: 1 }} />
+        ) : linkedTasks.length > 0 ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {linkedTasks.map((task) => (
+              <Box key={task.$id} sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                p: 2,
+                borderRadius: '16px',
+                bgcolor: 'rgba(0, 245, 255, 0.03)',
+                border: '1px solid rgba(0, 245, 255, 0.1)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'rgba(0, 245, 255, 0.06)',
+                  borderColor: 'rgba(0, 245, 255, 0.3)'
+                }
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                  <TaskIcon sx={{ color: task.status === 'done' ? '#4CAF50' : '#00F5FF', fontSize: 18 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
+                    {task.title}
+                  </Typography>
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => window.open(`https://flow.whisperrnote.space/tasks?taskId=${task.$id}`, '_blank')}
+                  sx={{ color: '#00F5FF' }}
+                >
+                  <OpenIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No linked tasks</Typography>
         )}
       </Box>
 
