@@ -5,10 +5,11 @@
    ▲ Next.js 15.4.7
    - Environments: .env
    - Experiments (use with caution):
+     ✓ reactCompiler
      · optimizePackageImports
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 10.0s
+ ✓ Compiled successfully in 9.0s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -22,10 +23,10 @@
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                      459 B         121 kB
+┌ ○ /                                      628 B         123 kB
 ├ ○ /_not-found                            151 B         101 kB
-├ ○ /admin/dashboard                     4.74 kB         140 kB
-├ ○ /admin/messages                      4.27 kB         198 kB
+├ ○ /admin/dashboard                     5.19 kB         140 kB
+├ ○ /admin/messages                      4.25 kB         200 kB
 ├ ƒ /api/ai/generate                       151 B         101 kB
 ├ ƒ /api/attachments/download              151 B         101 kB
 ├ ƒ /api/og/note/[noteid]                  151 B         101 kB
@@ -33,21 +34,21 @@ Route (app)                                 Size  First Load JS
 ├ ƒ /api/shared/[noteid]/comments          151 B         101 kB
 ├ ƒ /api/shared/[noteid]/reactions         151 B         101 kB
 ├ ƒ /api/turnstile/verify                  151 B         101 kB
-├ ○ /extensions                          7.34 kB         205 kB
-├ ○ /landing                             8.57 kB         174 kB
-├ ○ /notes                               37.6 kB         320 kB
-├ ƒ /notes/[id]                          7.49 kB         278 kB
+├ ○ /extensions                          9.37 kB         208 kB
+├ ○ /landing                             9.54 kB         177 kB
+├ ○ /notes                               43.4 kB         338 kB
+├ ƒ /notes/[id]                          8.84 kB         290 kB
 ├ ƒ /notes/[id]/[attachmentId]           5.45 kB         157 kB
-├ ○ /pitch                               7.82 kB         145 kB
-├ ○ /popout                               1.9 kB         134 kB
-├ ○ /settings                            10.8 kB         211 kB
-├ ○ /shared                              4.64 kB         297 kB
-├ ƒ /shared/[noteid]                       60 kB         280 kB
-└ ○ /tags                                7.05 kB         287 kB
+├ ○ /pitch                               8.88 kB         147 kB
+├ ○ /popout                              2.23 kB         135 kB
+├ ○ /settings                            12.2 kB         215 kB
+├ ○ /shared                              7.33 kB         312 kB
+├ ƒ /shared/[noteid]                     61.1 kB         284 kB
+└ ○ /tags                                 7.3 kB         302 kB
 + First Load JS shared by all             101 kB
-  ├ chunks/4bd1b696-cc729d47eba2cee4.js  54.1 kB
-  ├ chunks/5964-366ccf0ec1d891e8.js      43.9 kB
-  └ other shared chunks (total)           2.6 kB
+  ├ chunks/4bd1b696-610fe0a72ecef554.js  54.1 kB
+  ├ chunks/5326-c9fa9305f4da7e65.js      44.2 kB
+  └ other shared chunks (total)          2.62 kB
 
 
 ○  (Static)   prerendered as static content
