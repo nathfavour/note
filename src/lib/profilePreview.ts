@@ -1,6 +1,25 @@
 import { getProfilePicturePreview } from '@/lib/appwrite';
 
 const previewCache = new Map<string, string | null>();
+const PREVIEW_STORE_KEY = 'whisperr_avatar_cache';
+
+// Initialize from session to persist between refreshes
+if (typeof window !== 'undefined') {
+  try {
+    const stored = sessionStorage.getItem(PREVIEW_STORE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      Object.entries(parsed).forEach(([k, v]) => previewCache.set(k, v as string | null));
+    }
+  } catch (e) { }
+}
+
+function persistCache() {
+  if (typeof window !== 'undefined') {
+    const obj = Object.fromEntries(previewCache.entries());
+    sessionStorage.setItem(PREVIEW_STORE_KEY, JSON.stringify(obj));
+  }
+}
 
 export async function fetchProfilePreview(fileId?: string | null, width: number = 64, height: number = 64): Promise<string | null> {
   if (!fileId) return null;
@@ -9,9 +28,11 @@ export async function fetchProfilePreview(fileId?: string | null, width: number 
     const url = await getProfilePicturePreview(fileId, width, height);
     const str = url as unknown as string | null;
     previewCache.set(fileId, str);
+    persistCache();
     return str;
   } catch (err) {
     previewCache.set(fileId, null);
+    persistCache();
     return null;
   }
 }

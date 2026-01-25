@@ -2,19 +2,24 @@ import { databases, CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, Query, Per
 import { getEffectiveUsername, getEffectiveDisplayName } from '../utils';
 
 const PROFILE_SYNC_KEY = 'whisperr_ecosystem_identity_synced';
+const SESSION_SYNC_KEY = 'whisperr_ecosystem_session_synced';
 
 /**
  * Ensures the user has a record in the global WhisperrConnect Directory.
- * Uses a lightweight "local-first" check to avoid redundant DB calls.
+ * Uses a multi-layered cache check (session + local) to minimize DB calls.
  */
 export async function ensureGlobalIdentity(user: any, force = false) {
     if (!user?.$id) return;
 
-    // Efficiency check: if we've already synced this session on this device, skip.
     if (typeof window !== 'undefined' && !force) {
+        // Step 1: Session-level skip (Fastest, reset on tab close)
+        if (sessionStorage.getItem(SESSION_SYNC_KEY)) return;
+
+        // Step 2: Global device-level skip (24h TTL)
         const lastSync = localStorage.getItem(PROFILE_SYNC_KEY);
-        // Only skip if sync happened in the last 24 hours
         if (lastSync && (Date.now() - parseInt(lastSync)) < 24 * 60 * 60 * 1000) {
+            // Even if skip global, mark session as synced to avoid future local checks
+            sessionStorage.setItem(SESSION_SYNC_KEY, '1');
             return;
         }
     }
@@ -66,6 +71,7 @@ export async function ensureGlobalIdentity(user: any, force = false) {
         // Mark as successfully synced
         if (typeof window !== 'undefined') {
             localStorage.setItem(PROFILE_SYNC_KEY, Date.now().toString());
+            sessionStorage.setItem(SESSION_SYNC_KEY, '1');
         }
     } catch (error) {
         console.warn('[Identity] Global identity sync failed:', error);
