@@ -31,10 +31,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <AppThemeProvider>
             <MuiThemeWrapper>
-                <KernelProvider>
-                    <IslandProvider>
-                        <ToastProvider>
-                            <AuthProvider>
+                <AuthProvider>
+                    <KernelProvider>
+                        <IslandProvider>
+                            <ToastProvider>
                                 <OverlayProvider>
                                     <LoadingProvider>
                                         <ContextMenuProvider>
@@ -49,10 +49,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                         </ContextMenuProvider>
                                     </LoadingProvider>
                                 </OverlayProvider>
-                            </AuthProvider>
-                        </ToastProvider>
-                    </IslandProvider>
-                </KernelProvider>
+                            </ToastProvider>
+                        </IslandProvider>
+                    </KernelProvider>
+                </AuthProvider>
             </MuiThemeWrapper>
         </AppThemeProvider>
     );
