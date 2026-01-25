@@ -1,8 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
-import { Box, Typography, Stack, IconButton, useTheme, useMediaQuery } from '@mui/material';
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { Box, Typography, Stack, IconButton, useTheme, useMediaQuery, Button } from '@mui/material';
+import { motion, AnimatePresence, useSpring, useTransform, useAnimation } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/ui/AuthContext';
 import { 
   CheckCircle as SuccessIcon, 
   Error as ErrorIcon, 
@@ -10,10 +12,14 @@ import {
   Warning as WarningIcon,
   Close as CloseIcon,
   Star as ProIcon,
-  AutoAwesome as SparklesIcon
+  AutoAwesome as SparklesIcon,
+  EmojiObjects as IdeaIcon,
+  Message as ConnectIcon,
+  Assignment as TaskIcon,
+  Description as NoteIcon
 } from '@mui/icons-material';
 
-export type IslandType = 'success' | 'error' | 'warning' | 'info' | 'pro' | 'system';
+export type IslandType = 'success' | 'error' | 'warning' | 'info' | 'pro' | 'system' | 'suggestion' | 'connect';
 
 export interface IslandNotification {
   id: string;
@@ -25,6 +31,9 @@ export interface IslandNotification {
     onClick: () => void;
   };
   duration?: number;
+  majestic?: boolean;
+  shape?: 'island' | 'ball' | 'pill';
+  personal?: boolean;
 }
 
 interface IslandContextType {
@@ -44,18 +53,77 @@ export function useIsland() {
 
 export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<IslandNotification[]>([]);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const showIsland = useCallback((notification: Omit<IslandNotification, 'id'>) => {
     const id = Math.random().toString(36).substring(7);
-    const newNotif = { ...notification, id, duration: notification.duration || 6000 };
+    const newNotif = { ...notification, id, duration: notification.duration || (notification.majestic ? 10000 : 6000) };
     setNotifications(prev => [...prev, newNotif]);
   }, []);
 
   const dismissIsland = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
+
+  // Track user activity
+  useEffect(() => {
+    const activityHandler = () => setLastActivity(Date.now());
+    window.addEventListener('mousemove', activityHandler);
+    window.addEventListener('keydown', activityHandler);
+    window.addEventListener('click', activityHandler);
+    
+    return () => {
+      window.removeEventListener('mousemove', activityHandler);
+      window.removeEventListener('keydown', activityHandler);
+      window.removeEventListener('click', activityHandler);
+    };
+  }, []);
+
+  // Proactive suggestions when idle
+  useEffect(() => {
+    const idleInterval = setInterval(() => {
+      const now = Date.now();
+      const idleTime = now - lastActivity;
+
+      // If idle for more than 40 seconds and no active island
+      if (idleTime > 40000 && notifications.length === 0) {
+        const userName = user?.name?.split(' ')[0] || '';
+        
+        const suggestions = [
+          {
+            type: 'suggestion' as IslandType,
+            title: userName || "Thinking time?",
+            message: "You've been quiet. How about reviewing your latest notes?",
+            action: { label: "Open Notes", onClick: () => window.location.href = '/notes' },
+            personal: !!userName
+          },
+          {
+            type: 'connect' as IslandType,
+            title: userName || "Stay Connected",
+            message: "Share a quick snippet of what you're working on with someone in Connect.",
+            action: { label: "Go to Connect", onClick: () => window.location.href = 'https://connect.whisperrnote.space' },
+            majestic: true,
+            personal: !!userName
+          },
+          {
+            type: 'suggestion' as IslandType,
+            title: "Focus Check",
+            message: "Need to clear your head? Try organizing your tags.",
+            action: { label: "Manage Tags", onClick: () => window.location.href = '/notes?tab=tags' }
+          }
+        ];
+        
+        const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+        showIsland(randomSuggestion);
+        setLastActivity(Date.now()); // Reset to avoid spam
+      }
+    }, 10000);
+
+    return () => clearInterval(idleInterval);
+  }, [lastActivity, notifications.length, showIsland, user]);
 
   return (
     <IslandContext.Provider value={{ showIsland, dismissIsland }}>
@@ -73,6 +141,11 @@ const DynamicIslandOverlay: React.FC<{
   const current = notifications[notifications.length - 1]; // Show most recent
   const [isExpanded, setIsExpanded] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const controls = useAnimation();
+  const pathname = usePathname();
+
+  // Hide island if user is focusing on content
+  const isHiddenRoute = pathname?.includes('/edit') || pathname?.includes('/n/');
 
   useEffect(() => {
     if (current) {
@@ -81,11 +154,24 @@ const DynamicIslandOverlay: React.FC<{
       
       timeoutRef.current = setTimeout(() => {
         onDismiss(current.id);
-      }, current.duration || 5000);
-    }
-  }, [current, onDismiss]);
+      }, current.duration || 6000);
 
-  if (!current) return null;
+      // Majestic entrance and pulsing logic
+      if (current.majestic) {
+        controls.start({
+          y: [0, -4, 0],
+          transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        });
+      } else {
+        controls.start({
+          y: [0, -2, 0],
+          transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+        });
+      }
+    }
+  }, [current, onDismiss, controls]);
+
+  if (!current || isHiddenRoute) return null;
 
   const getTypeStyle = () => {
     switch (current.type) {
@@ -93,6 +179,8 @@ const DynamicIslandOverlay: React.FC<{
       case 'error': return { color: '#FF3B30', icon: <ErrorIcon fontSize="small" /> };
       case 'pro': return { color: '#FFD700', icon: <ProIcon fontSize="small" /> };
       case 'warning': return { color: '#FF9500', icon: <WarningIcon fontSize="small" /> };
+      case 'suggestion': return { color: '#A855F7', icon: <IdeaIcon fontSize="small" /> };
+      case 'connect': return { color: '#00F5FF', icon: <ConnectIcon fontSize="small" /> };
       default: return { color: '#00F5FF', icon: <InfoIcon fontSize="small" /> };
     }
   };
@@ -100,201 +188,260 @@ const DynamicIslandOverlay: React.FC<{
   const style = getTypeStyle();
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: isMobile ? 12 : 24,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 10000,
-        pointerEvents: 'none'
-      }}
-    >
-      <AnimatePresence mode="wait">
+    <>
+      {/* Majestic Glow Effect */}
+      {current.majestic && (
         <motion.div
-          key={current.id}
-          initial={{ y: -100, scale: 0.8, opacity: 0 }}
-          animate={{ y: 0, scale: 1, opacity: 1 }}
-          exit={{ y: -100, scale: 0.5, opacity: 0 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 400, 
-            damping: 30,
-            mass: 0.8 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 60%)',
+            pointerEvents: 'none',
+            zIndex: 9999
           }}
-          onHoverStart={() => setIsExpanded(true)}
-          onHoverEnd={() => setIsExpanded(false)}
-          onClick={() => setIsExpanded(!isExpanded)}
-          style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-        >
+        />
+      )}
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: isMobile ? 12 : 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10000,
+          pointerEvents: 'none'
+        }}
+      >
+        <AnimatePresence mode="wait">
           <motion.div
-            animate={{
-              width: isExpanded ? (isMobile ? '340px' : '420px') : (isMobile ? '180px' : '220px'),
-              height: isExpanded ? 'auto' : '44px',
-              borderRadius: isExpanded ? '28px' : '22px',
+            key={current.id}
+            initial={{ y: -100, scale: 0.8, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: -100, scale: 0.5, opacity: 0 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 400, 
+              damping: 30,
+              mass: 0.8 
             }}
-            style={{
-              background: 'rgba(10, 10, 10, 0.9)',
-              backdropFilter: 'blur(32px) saturate(200%)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 12px 48px rgba(0,0,0,0.6)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              position: 'relative'
-            }}
+            onHoverStart={() => setIsExpanded(true)}
+            onHoverEnd={() => setIsExpanded(false)}
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{ pointerEvents: 'auto', cursor: 'pointer' }}
           >
-            {/* Compressed Reality */}
-            <Box
-              sx={{
-                height: 44,
+            <motion.div
+              animate={controls}
+              style={{
+                width: isExpanded ? (isMobile ? '340px' : '420px') : (isMobile ? (current.shape === 'ball' ? '44px' : '180px') : (current.shape === 'ball' ? '50px' : '240px')),
+                height: isExpanded ? 'auto' : (current.shape === 'ball' ? (isMobile ? '44px' : '50px') : '44px'),
+                borderRadius: isExpanded ? '28px' : (current.shape === 'ball' ? '50%' : '22px'),
+                background: 'rgba(10, 10, 10, 0.9)',
+                backdropFilter: 'blur(32px) saturate(200%)',
+                border: current.majestic ? '1.5px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: current.majestic ? '0 0 30px rgba(0, 240, 255, 0.3)' : '0 12px 48px rgba(0,0,0,0.6)',
+                overflow: 'hidden',
                 display: 'flex',
-                alignItems: 'center',
-                px: 2,
-                gap: 1.5,
-                opacity: isExpanded ? 0 : 1,
-                transition: 'opacity 0.2s',
-                width: '100%',
-                position: isExpanded ? 'absolute' : 'relative'
+                flexDirection: 'column',
+                position: 'relative',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
-              <Box sx={{ color: style.color, display: 'flex' }}>
-                {style.icon}
-              </Box>
-              <Typography
-                variant="caption"
+              {/* Internal Pulsing Dots */}
+              {!isExpanded && current.shape !== 'ball' && (
+                <Box sx={{ 
+                  position: 'absolute', 
+                  right: 16, 
+                  top: '50%', 
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  gap: 0.6
+                }}>
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ 
+                        scale: [1, 1.5, 1],
+                        opacity: [0.3, 1, 0.3] 
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                      style={{
+                        width: 3,
+                        height: 3,
+                        borderRadius: '50%',
+                        background: style.color
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Compressed Content */}
+              <Box
                 sx={{
-                  color: 'white',
-                  fontWeight: 900,
-                  fontSize: '0.8rem',
-                  fontFamily: 'var(--font-space-grotesk)',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  height: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 2,
+                  gap: 1.5,
+                  opacity: isExpanded ? 0 : 1,
+                  transition: 'opacity 0.2s',
+                  width: '100%',
+                  position: isExpanded ? 'absolute' : 'relative',
+                  justifyContent: current.shape === 'ball' ? 'center' : 'flex-start'
                 }}
               >
-                {current.title}
-              </Typography>
-            </Box>
-
-            {/* Expanded Reality */}
-            <Box
-              sx={{
-                p: 2.5,
-                opacity: isExpanded ? 1 : 0,
-                transition: 'opacity 0.3s 0.1s',
-                display: isExpanded ? 'block' : 'none'
-              }}
-            >
-              <Stack spacing={2}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: '12px',
-                      bgcolor: `${style.color}15`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: style.color,
-                      border: `1px solid ${style.color}30`
-                    }}
-                  >
-                    {style.icon}
-                  </Box>
-                  <Box>
-                    <Typography
-                      sx={{
-                        color: 'white',
-                        fontWeight: 900,
-                        fontFamily: 'var(--font-space-grotesk)',
-                        fontSize: '1rem',
-                        lineHeight: 1.2
-                      }}
+                <Box sx={{ color: style.color, display: 'flex' }}>
+                  {style.icon}
+                </Box>
+                {current.shape !== 'ball' && (
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={current.title}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
                     >
-                      {current.title}
-                    </Typography>
-                    {current.type === 'pro' && (
                       <Typography
                         variant="caption"
                         sx={{
-                          color: style.color,
-                          fontWeight: 800,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em'
+                          color: 'white',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          fontFamily: 'var(--font-space-grotesk)',
+                          whiteSpace: 'nowrap'
                         }}
                       >
-                        Elite Status Required
+                        {current.personal ? `Hey, ${current.title}` : current.title}
                       </Typography>
-                    )}
-                  </Box>
-                </Stack>
-
-                {current.message && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      lineHeight: 1.5,
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {current.message}
-                  </Typography>
+                    </motion.div>
+                  </AnimatePresence>
                 )}
+              </Box>
 
-                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDismiss(current.id);
-                    }}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      padding: '8px 16px',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Dismiss
-                  </motion.button>
-                  {current.action && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        current.action?.onClick();
-                        onDismiss(current.id);
-                      }}
-                      style={{
-                        background: current.type === 'pro' ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' : '#00F5FF',
-                        border: 'none',
-                        color: 'black',
-                        padding: '8px 20px',
-                        borderRadius: '12px',
-                        fontSize: '0.8rem',
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        boxShadow: `0 4px 12px ${style.color}30`
+              {/* Expanded Reality */}
+              <Box
+                sx={{
+                  p: 2.5,
+                  opacity: isExpanded ? 1 : 0,
+                  transition: 'opacity 0.3s 0.1s',
+                  display: isExpanded ? 'block' : 'none'
+                }}
+              >
+                <Stack spacing={2}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <motion.div
+                      animate={current.majestic ? { rotate: [0, 10, -10, 0] } : {}}
+                      transition={{ duration: 4, repeat: Infinity }}
+                    >
+                      <Box
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: '12px',
+                          bgcolor: `${style.color}15`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: style.color,
+                          border: `1px solid ${style.color}30`,
+                          boxShadow: current.majestic ? `0 0 15px ${style.color}40` : 'none'
+                        }}
+                      >
+                        {style.icon}
+                      </Box>
+                    </motion.div>
+                    <Box>
+                      <Typography
+                        sx={{
+                          color: 'white',
+                          fontWeight: 900,
+                          fontFamily: 'var(--font-space-grotesk)',
+                          fontSize: '1rem',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {current.title}
+                      </Typography>
+                      {current.majestic && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: style.color,
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em',
+                            fontSize: '0.65rem'
+                          }}
+                        >
+                          Ecosystem Pulse
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+
+                  {current.message && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        lineHeight: 1.6,
+                        fontSize: '0.875rem'
                       }}
                     >
-                      {current.action.label}
-                    </motion.button>
+                      {current.message}
+                    </Typography>
                   )}
+
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDismiss(current.id);
+                      }}
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.4)',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        '&:hover': { color: 'white' }
+                      }}
+                    >
+                      Later
+                    </Button>
+                    {current.action && (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          current.action?.onClick();
+                          onDismiss(current.id);
+                        }}
+                        sx={{
+                          background: current.majestic ? `linear-gradient(135deg, ${style.color} 0%, #FFFFFF 200%)` : style.color,
+                          color: 'black',
+                          fontWeight: 900,
+                          borderRadius: '10px',
+                          textTransform: 'none',
+                          boxShadow: `0 4px 14px ${style.color}40`
+                        }}
+                      >
+                        {current.action.label}
+                      </Button>
+                    )}
+                  </Stack>
                 </Stack>
-              </Stack>
-            </Box>
+              </Box>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    </Box>
+        </AnimatePresence>
+      </Box>
+    </>
   );
 };
