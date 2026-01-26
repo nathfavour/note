@@ -64,14 +64,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         let dbUser;
         try {
           dbUser = await getUser(currentUser.$id);
-
+          
           // Auto-generate username if missing in DB
           if (!dbUser.username) {
             const autoUsername = getEffectiveUsername(dbUser);
             if (autoUsername) {
               try {
                 await updateUser(currentUser.$id, { username: autoUsername });
-
+                
                 // Sync to account prefs for ecosystem coherence
                 const currentPrefs = await account.getPrefs();
                 if (currentPrefs.username !== autoUsername) {
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               email: currentUser.email,
               username: null
             });
-
+            
             dbUser = await createUser({
               id: currentUser.$id,
               email: currentUser.email,
@@ -110,25 +110,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error('Failed to create user profile:', createError);
           }
         }
-
+        
         // Merge DB info into user state so fields like 'username' are available
-        const syncedUser = { ...currentUser, ...dbUser };
-        setUser(syncedUser);
-        sessionStorage.setItem('whisperr_auth_hint', 'true');
-
-        // Sync to Global Identity Directory (WhisperrConnect)
-        const { ensureGlobalIdentity } = await import('@/lib/ecosystem/identity');
-        ensureGlobalIdentity(syncedUser);
+        setUser({ ...currentUser, ...dbUser });
       } else {
         setUser(null);
-        sessionStorage.removeItem('whisperr_auth_hint');
       }
       setIsLoading(false);
       return currentUser;
     } catch (error: any) {
       // Check for auth=success signal in URL
       const hasAuthSignal = typeof window !== 'undefined' && window.location.search.includes('auth=success');
-
+      
       if (hasAuthSignal && retryCount < 3) {
         console.log(`Auth signal detected but session not found in note. Retrying... (${retryCount + 1})`);
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -213,19 +206,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuthStarted.current = true;
 
     const initAuth = async () => {
-      // Step 1: Check session storage hint for instant app feel
-      const hint = typeof window !== 'undefined' ? sessionStorage.getItem('whisperr_auth_hint') : null;
-      if (hint === 'true') {
-        // Optimistically keep loading true but prepared for user
-        console.log('Optimistic auth hint detected');
-      }
-
       const localUser = await refreshUser();
-
-      if (localUser) {
-        sessionStorage.setItem('whisperr_auth_hint', 'true');
-      } else {
-        sessionStorage.removeItem('whisperr_auth_hint');
+      if (!localUser) {
         // Only attempt silent discovery if we definitely don't have a session locally
         await attemptSilentAuth();
       }

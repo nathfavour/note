@@ -27,9 +27,6 @@ import {
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import { TaskSelectorModal } from './TaskSelectorModal';
-import { EventSelectorModal } from './EventSelectorModal';
-import { CredentialSelectorModal } from './CredentialSelectorModal';
 import { updateNote, createNote, toggleNoteVisibility, createTaskFromNote } from '@/lib/appwrite';
 import { useToast } from './Toast';
 import { useAuth } from './AuthContext';
@@ -39,8 +36,6 @@ import {
   PlaylistAdd as TodoIcon,
   Summarize as SummarizeIcon,
   Spellcheck as GrammarIcon,
-  Event as EventIcon,
-  VpnKey as KeyIcon,
 } from '@mui/icons-material';
 
 interface NoteCardProps {
@@ -58,88 +53,11 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   const { showSuccess, showError, showInfo } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
-  const [isTaskModalOpen, setIsTaskModalOpen] = React.useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = React.useState(false);
-  const [isCredentialModalOpen, setIsCredentialModalOpen] = React.useState(false);
   const [isAIProcessing, setIsAIProcessing] = React.useState(false);
 
   const isPro = user?.prefs?.subscriptionTier === 'PRO' || 
                 user?.prefs?.subscriptionTier === 'ORG' || 
                 user?.prefs?.subscriptionTier === 'LIFETIME';
-
-  const handleAttachTask = async (taskId: string) => {
-    setIsTaskModalOpen(false);
-    try {
-      const currentTasks = Array.isArray((note as any).linkedTaskIds) 
-        ? (note as any).linkedTaskIds 
-        : ((note as any).linkedTaskId ? [(note as any).linkedTaskId] : []);
-      
-      if (currentTasks.includes(taskId)) {
-        showInfo('Task already attached to this note');
-        return;
-      }
-
-      const updated = await updateNote(note.$id, {
-        linkedTaskIds: [...currentTasks, taskId]
-      });
-      upsertNote(updated);
-      showSuccess('Task attached successfully');
-    } catch (err: any) {
-      showError(err.message || 'Failed to attach task');
-    }
-  };
-
-  const handleAttachEvent = async (eventId: string) => {
-    setIsEventModalOpen(false);
-    try {
-      const currentEvents = Array.isArray((note as any).linkedEventIds) 
-        ? (note as any).linkedEventIds 
-        : ((note as any).linkedEventId ? [(note as any).linkedEventId] : []);
-      
-      if (currentEvents.includes(eventId)) {
-        showInfo('Event already attached to this note');
-        return;
-      }
-
-      const updated = await updateNote(note.$id, {
-        linkedEventIds: [...currentEvents, eventId]
-      });
-      upsertNote(updated);
-      showSuccess('Event attached successfully');
-    } catch (err: any) {
-      showError(err.message || 'Failed to attach event');
-    }
-  };
-
-  const handleAttachCredential = async (credentialId: string) => {
-    setIsCredentialModalOpen(false);
-    try {
-      const currentSecrets = Array.isArray((note as any).linkedCredentialIds) 
-        ? (note as any).linkedCredentialIds 
-        : ((note as any).linkedCredentialId ? [(note as any).linkedCredentialId] : []);
-      
-      if (currentSecrets.includes(credentialId)) {
-        showInfo('Secret already attached to this note');
-        return;
-      }
-
-      const updates: any = {
-        linkedCredentialIds: [...currentSecrets, credentialId]
-      };
-
-      // Mandatorily make private if secret attached
-      if (note.isPublic) {
-        updates.isPublic = false;
-        showInfo('Note has been made private for security.');
-      }
-
-      const updated = await updateNote(note.$id, updates);
-      upsertNote(updated);
-      showSuccess('Secret attached successfully');
-    } catch (err: any) {
-      showError(err.message || 'Failed to attach secret');
-    }
-  };
 
   const handleAIAction = async (action: 'summarize' | 'grammar' | 'expand') => {
     if (isAIProcessing) return;
@@ -388,21 +306,6 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       }
     ] : []),
     {
-      label: 'Attach Existing Task',
-      icon: <AttachFileIcon sx={{ fontSize: 18, color: '#00F5FF' }} />,
-      onClick: () => { setIsTaskModalOpen(true); }
-    },
-    {
-      label: 'Attach Existing Event',
-      icon: <EventIcon sx={{ fontSize: 18, color: '#00F5FF' }} />,
-      onClick: () => { setIsEventModalOpen(true); }
-    },
-    {
-      label: 'Attach Secret (Keep)',
-      icon: <KeyIcon sx={{ fontSize: 18, color: '#FFD700' }} />,
-      onClick: () => { setIsCredentialModalOpen(true); }
-    },
-    {
       label: 'Share with...',
       icon: <ShareIcon sx={{ fontSize: 18 }} />,
       onClick: () => setIsShareModalOpen(true)
@@ -422,21 +325,6 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
         onOpenChange={setIsShareModalOpen} 
         noteId={note.$id} 
         noteTitle={note.title || 'Untitled note'} 
-      />
-      <TaskSelectorModal
-        isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
-        onSelect={handleAttachTask}
-      />
-      <EventSelectorModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        onSelect={handleAttachEvent}
-      />
-      <CredentialSelectorModal
-        isOpen={isCredentialModalOpen}
-        onClose={() => setIsCredentialModalOpen(false)}
-        onSelect={handleAttachCredential}
       />
       <Card
         {...sidebarIgnoreProps}
