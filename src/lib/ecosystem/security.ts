@@ -42,66 +42,10 @@ export class EcosystemSecurity {
     if (typeof window === 'undefined') return;
 
     MeshProtocol.subscribe((msg) => {
-      // Sync unlock state across nodes
-      if (msg.type === 'COMMAND' && msg.payload.action === 'SYNC_MASTERPASS_KEY') {
-        if (msg.sourceNode === 'id' && this.nodeId !== 'id') {
-          // If ID (Control Node) broadcasts a key, other nodes import it
-          this.syncKeyFromMaster(msg.payload.keyBytes);
-        }
-      }
-
       if (msg.type === 'COMMAND' && msg.payload.action === 'LOCK_SYSTEM') {
         this.lock();
       }
-
-      // Handle key requests from other nodes
-      if (msg.type === 'RPC_REQUEST' && msg.payload.method === 'REQUEST_KEY_SYNC') {
-        if (this.nodeId === 'id' && this.masterKey && this.isUnlocked) {
-          this.reBroadcastKey(msg.sourceNode);
-        }
-      }
     });
-
-    // Request key if we are not ID and not unlocked
-    if (this.nodeId !== 'id' && !this.isUnlocked) {
-      MeshProtocol.broadcast({
-        type: 'RPC_REQUEST',
-        targetNode: 'id',
-        payload: { method: 'REQUEST_KEY_SYNC' }
-      }, this.nodeId);
-    }
-  }
-
-  private async reBroadcastKey(targetNode: string) {
-    if (!this.masterKey) return;
-    const keyBytes = await crypto.subtle.exportKey("raw", this.masterKey);
-    MeshProtocol.broadcast({
-      type: 'COMMAND',
-      targetNode: targetNode,
-      payload: { 
-        action: 'SYNC_MASTERPASS_KEY', 
-        keyBytes: keyBytes 
-      }
-    }, 'id');
-  }
-
-  private async syncKeyFromMaster(keyBytes: ArrayBuffer) {
-    try {
-      this.masterKey = await crypto.subtle.importKey(
-        "raw",
-        keyBytes,
-        { name: "AES-GCM", length: 256 },
-        true,
-        ["encrypt", "decrypt", "wrapKey", "unwrapKey"],
-      );
-      this.isUnlocked = true;
-      if (typeof sessionStorage !== "undefined") {
-          sessionStorage.setItem("kylrix_vault_unlocked", "true");
-      }
-      console.log(`[Security] Node ${this.nodeId} successfully synced MasterPass from ID`);
-    } catch (e) {
-      console.error("[Security] Key sync failed", e);
-    }
   }
 
   /**
