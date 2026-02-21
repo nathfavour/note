@@ -3,6 +3,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser, getNote, listNoteAttachments, verifySignedAttachmentURL, APPWRITE_BUCKET_NOTES_ATTACHMENTS } from '@/lib/appwrite';
 import { createRateLimiter } from '@/lib/rate-limit-middleware';
+import { APPWRITE_CONFIG } from '@/lib/appwrite/config';
 
 const rateLimiter = createRateLimiter({
   max: 30,
@@ -66,8 +67,8 @@ export async function GET(req: NextRequest) {
     if (!meta) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // Construct Appwrite file view URL
-    const endpoint = (process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || '').replace(/\/$/, '') || 'https://cloud.appwrite.io/v1';
-    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+    const endpoint = APPWRITE_CONFIG.ENDPOINT;
+    const projectId = APPWRITE_CONFIG.PROJECT_ID;
     const directUrl = `${endpoint}/storage/buckets/${APPWRITE_BUCKET_NOTES_ATTACHMENTS}/files/${fileId}/view?project=${projectId}`;
     return NextResponse.redirect(directUrl, { status: 302 });
   } catch (e: any) {

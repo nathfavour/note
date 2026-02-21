@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client, Account } from 'appwrite';
+import { APPWRITE_CONFIG } from '@/lib/appwrite/config';
 
 interface AdminGateState {
   loading: boolean;
@@ -18,8 +19,8 @@ export function useAdminGate() {
     if (creatingRef.current) return;
     creatingRef.current = true;
     try {
-      const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string;
-      const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string;
+      const endpoint = APPWRITE_CONFIG.ENDPOINT;
+      const project = APPWRITE_CONFIG.PROJECT_ID;
       if (!endpoint || !project) throw new Error('Missing Appwrite config');
       const client = new Client().setEndpoint(endpoint).setProject(project);
       const account = new Account(client);

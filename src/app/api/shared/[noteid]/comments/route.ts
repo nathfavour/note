@@ -1,16 +1,18 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { Client, Databases, Query } from 'node-appwrite';
 import { createRateLimiter } from '@/lib/rate-limit-middleware';
+import { APPWRITE_CONFIG } from '@/lib/appwrite/config';
 
 const rateLimiter = createRateLimiter({
   max: 20,
   windowMs: 60 * 1000,
 });
 
-const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ?? 'https://fra.cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '67fe9627001d97e37ef3';
-const APPWRITE_DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
-const APPWRITE_TABLE_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_COMMENTS!;
+const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
+const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
+const APPWRITE_DATABASE_ID = APPWRITE_CONFIG.DATABASES.NOTE;
+const APPWRITE_TABLE_ID_COMMENTS = APPWRITE_CONFIG.TABLES.NOTE.COMMENTS;
+const APPWRITE_TABLE_ID_NOTES = APPWRITE_CONFIG.TABLES.NOTE.NOTES;
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ noteid: string }> }) {
   const { noteid } = await params;
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ note
     // 1. Verify note is public
     const note = await databases.getDocument(
       APPWRITE_DATABASE_ID,
-      process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTES!,
+      APPWRITE_TABLE_ID_NOTES,
       noteid
     );
 
