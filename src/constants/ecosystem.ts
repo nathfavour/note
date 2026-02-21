@@ -1,3 +1,5 @@
+import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
+
 export interface EcosystemApp {
   id: string;
   label: string;
@@ -8,7 +10,7 @@ export interface EcosystemApp {
   description: string;
 }
 
-export const NEXT_PUBLIC_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'kylrixnote.space';
+export const NEXT_PUBLIC_DOMAIN = APPWRITE_CONFIG.SYSTEM.DOMAIN || 'kylrixnote.space';
 
 export const ECOSYSTEM_APPS: EcosystemApp[] = [
   { id: 'note', label: 'Note', subdomain: 'app', type: 'app', icon: 'file-text', color: '#00F5FF', description: 'Cognitive extension and smart notes.' },
