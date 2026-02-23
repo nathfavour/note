@@ -24,28 +24,28 @@ const getDesignTokens = (): ThemeOptions => ({
     divider: 'rgba(255, 255, 255, 0.1)', // Subtle Border
   },
   typography: {
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: 'var(--font-satoshi), "Satoshi", sans-serif',
     h1: {
-      fontFamily: '"Space Grotesk", sans-serif',
+      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
       fontSize: '3.5rem',
       fontWeight: 900,
       letterSpacing: '-0.04em',
       color: '#F2F2F2',
     },
     h2: {
-      fontFamily: '"Space Grotesk", sans-serif',
+      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
       fontSize: '2.5rem',
       fontWeight: 900,
       letterSpacing: '-0.03em',
     },
     h3: {
-      fontFamily: '"Space Grotesk", sans-serif',
+      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
       fontSize: '2rem',
       fontWeight: 900,
       letterSpacing: '-0.02em',
     },
     h4: {
-      fontFamily: '"Space Grotesk", sans-serif',
+      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
       fontSize: '1.5rem',
       fontWeight: 900,
     },
@@ -63,7 +63,7 @@ const getDesignTokens = (): ThemeOptions => ({
       color: '#A1A1AA',
     },
     button: {
-      fontFamily: '"Space Grotesk", sans-serif',
+      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
       textTransform: 'none',
       fontWeight: 700,
     },
@@ -78,21 +78,7 @@ const getDesignTokens = (): ThemeOptions => ({
         body: {
           backgroundColor: '#000000',
           color: '#F2F2F2',
-          scrollbarColor: '#222222 transparent',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            width: 6,
-            height: 6,
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 12,
-            backgroundColor: '#222222',
-            '&:hover': {
-              backgroundColor: '#404040',
-            },
-          },
-        },
-      },
-    },
+          fontFamily: 'var(--font-satoshi), "Satoshi", sans-serif',
     MuiButton: {
       styleOverrides: {
         root: {
