@@ -96,7 +96,7 @@ export const MeshProtocol = {
     // SECURITY: Validate message origin to prevent XSS spoofing (CVE-KYL-2026-001)
     const winHandler = (e: MessageEvent) => {
       const isLocalhost = e.origin.startsWith('http://localhost:');
-      const isKylrixDomain = e.origin.endsWith('.kylrix.app') || e.origin === 'https://kylrix.app';
+      const isKylrixDomain = e.origin.endsWith('.kylrix.space') || e.origin === 'https://kylrix.space';
       
       if (!isLocalhost && !isKylrixDomain) return;
 
