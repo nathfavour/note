@@ -93,7 +93,13 @@ export const MeshProtocol = {
     const bcHandler = (e: MessageEvent) => handleIncoming(e.data);
     bc?.addEventListener('message', bcHandler);
 
+    // SECURITY: Validate message origin to prevent XSS spoofing (CVE-KYL-2026-001)
     const winHandler = (e: MessageEvent) => {
+      const isLocalhost = e.origin.startsWith('http://localhost:');
+      const isKylrixDomain = e.origin.endsWith('.kylrix.app') || e.origin === 'https://kylrix.app';
+      
+      if (!isLocalhost && !isKylrixDomain) return;
+
       const data = e.data;
       if (data && typeof data === 'object' && data.id && data.sourceNode && data.type) {
         handleIncoming(data as MeshMessage);
