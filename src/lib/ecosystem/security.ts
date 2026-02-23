@@ -317,7 +317,7 @@ export class EcosystemSecurity {
       {
         name: "PBKDF2",
         salt: salt,
-        iterations: 100000, // Balanced for speed (<200ms) and security
+        iterations: 10000, // Optimized for instant (<20ms) unlock speed
         hash: "SHA-256",
       },
       keyMaterial,
