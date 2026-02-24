@@ -79,6 +79,9 @@ const getDesignTokens = (): ThemeOptions => ({
           backgroundColor: '#000000',
           color: '#F2F2F2',
           fontFamily: 'var(--font-satoshi), "Satoshi", sans-serif',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
