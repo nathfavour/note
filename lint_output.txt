@@ -1,0 +1,279 @@
+
+> kylrix-note@0.1.0 lint /home/nathfavour/code/kylrix/note
+> next lint
+
+
+./src/app/(app)/extensions/page.tsx
+17:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:15  Warning: 'SettingsIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/layout.tsx
+3:17  Warning: 'useEffect' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+13:15  Warning: 'Container' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/notes/Comments.tsx
+385:6  Warning: React Hook useEffect has a missing dependency: 'fetchComments'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/(app)/notes/CreateNoteForm.tsx
+29:13  Warning: 'AppwriteTypes' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/notes/NoteReactions.tsx
+4:15  Warning: 'Button' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+64:6  Warning: React Hook useEffect has a missing dependency: 'fetchReactions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/(app)/notes/[id]/[attachmentId]/page.tsx
+19:3  Warning: 'Tooltip' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/notes/[id]/page.tsx
+24:13  Warning: 'MinusIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+38:10  Warning: 'isSaving' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/tags/page.tsx
+15:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+28:16  Warning: 'ArrowBackIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:18  Warning: 'DescriptionIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/admin/(protected)/dashboard/page.tsx
+8:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/admin/(protected)/messages/page.tsx
+14:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+26:12  Warning: 'EmailIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/landing/page.tsx
+8:13  Warning: 'MuiButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+53:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/pitch/page.tsx
+4:57  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+583:6  Warning: React Hook useEffect has missing dependencies: 'goToSlide', 'nextSlide', and 'prevSlide'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/shared/[noteid]/SharedNoteClient.tsx
+31:8  Warning: 'MuiLink' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/shared/[noteid]/page.tsx
+3:10  Warning: 'formatNoteCreatedDate' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+3:33  Warning: 'formatNoteUpdatedDate' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:15  Warning: 'Notes' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'preProcessMarkdown' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'headers' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+8:10  Warning: 'createRateLimiter' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+8:29  Warning: 'getClientIp' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+9:15  Warning: 'NextRequest' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/appwrite/databases.ts
+73:7  Warning: 'tablesWithRelationships' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/AIHeroInput.tsx
+11:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+14:3  Warning: 'Paper' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/AppHeader.tsx
+4:8  Warning: 'Image' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'Grid' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:3  Warning: 'CheckCircle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:3  Warning: 'XCircle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+36:3  Warning: 'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+43:21  Warning: 'IslandNotification' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'ECOSYSTEM_APPS' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:26  Warning: 'getEcosystemUrl' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+63:11  Warning: 'openOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+63:24  Warning: 'closeOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+74:10  Warning: 'currentSubdomain' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/DoodleCanvas.tsx
+60:6  Warning: React Hook useEffect has missing dependencies: 'initialData' and 'redrawCanvas'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+97:6  Warning: React Hook useEffect has a missing dependency: 'redrawCanvas'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/GlobalSearch.tsx
+19:27  Warning: 'PersonIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+97:10  Warning: 'loading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/MobileFAB.tsx
+7:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'Tooltip' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+27:55  Warning: 'className' is assigned a value but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+28:24  Warning: 'closeOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/Navigation.tsx
+33:3  Warning: 'Zap' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+36:11  Error: An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+
+./src/components/NoteEditor.tsx
+29:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+125:6  Warning: React Hook useEffect has a missing dependency: 'internalNoteId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/PageHeader.tsx
+3:34  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/Providers.tsx
+7:45  Warning: 'useTheme' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ShareNoteModal.tsx
+23:3  Warning: 'InputLabel' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:16  Warning: 'PersonAddIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+35:12  Warning: 'EmailIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+36:15  Warning: 'SecurityIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+38:94  Warning: 'searchUsers' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+460:45  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+460:54  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/components/ThemeToggle.tsx
+5:10  Warning: 'Box' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/common/EcosystemEvents.tsx
+36:11  Warning: 'user' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/common/EcosystemPortal.tsx
+46:10  Warning: 'EcosystemWidgets' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+48:10  Warning: 'EcosystemBridge' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'SystemMonitor' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+50:10  Warning: 'MeshProtocol' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+63:11  Warning: The 'onClose' logical expression could make the dependencies of useCallback Hook (at line 101) change on every render. To fix this, wrap the initialization of 'onClose' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./src/components/ui/AuthContext.tsx
+53:42  Warning: 'isRetry' is assigned a value but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+452:6  Warning: React Hook useCallback has an unnecessary dependency: 'refreshUser'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ui/Card.tsx
+2:41  Warning: 'MuiCardHeader' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:71  Warning: 'MuiCardContent' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:102  Warning: 'MuiCardActions' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/ContextMenu.tsx
+9:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+26:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/ContextMenuContext.tsx
+35:22  Warning: 'e' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/CredentialSelectorModal.tsx
+13:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/DynamicIsland.tsx
+5:35  Warning: 'useSpring' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+5:46  Warning: 'useTransform' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+15:18  Warning: 'SparklesIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:17  Warning: 'TaskIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:18  Warning: 'NoteIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+243:6  Warning: React Hook useEffect has a missing dependency: 'current'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ui/DynamicSidebar.tsx
+10:3  Warning: 'useMediaQuery' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+79:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/GlobalSearch.tsx
+151:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+180:6  Warning: React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+180:7  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+424:37  Warning: 'index' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/InitialLoadingScreen.tsx
+58:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ui/LoadingContext.tsx
+4:50  Warning: 'Stack' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/NoteCard.tsx
+35:18  Warning: 'AIIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:15  Warning: '$id' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:20  Warning: '$createdAt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:32  Warning: '$updatedAt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:44  Warning: '$permissions' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:58  Warning: '$databaseId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:71  Warning: '$collectionId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/NoteDetailSidebar.tsx
+123:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+123:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+123:46  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+146:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+146:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+146:47  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+169:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+169:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+169:52  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+
+./src/components/ui/Overlay.tsx
+9:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:19  Warning: 'CloseIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/PasswordStrengthIndicator.tsx
+19:62  Warning: 'getPasswordStrengthColor' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+159:6  Warning: React Hook React.useEffect has a missing dependency: 'strength'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ui/SudoGuard.tsx
+5:35  Warning: 'CircularProgress' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/TaskSelectorModal.tsx
+13:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/Toast.tsx
+4:10  Warning: 'Snackbar' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:20  Warning: 'Alert' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:27  Warning: 'AlertTitle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:39  Warning: 'Stack' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:46  Warning: 'Box' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+41:10  Warning: 'toasts' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/appShell.tsx
+43:6  Warning: React Hook useEffect has a missing dependency: 'openIDMWindow'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/constants/ecosystem.ts
+1:10  Warning: 'APPWRITE_CONFIG' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/ecosystem/contributions/QuickNote.tsx
+15:3  Warning: 'Plus' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/ecosystem/contributions/SystemMonitor.tsx
+5:42  Warning: 'Wifi' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+6:24  Warning: 'NodeIdentity' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/ecosystem/integration/FocusStatus.tsx
+3:27  Warning: 'useEffect' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:22  Warning: 'setTimeLeft' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/ecosystem/integration/Widgets.tsx
+31:5  Warning: 'title' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/ecosystem/kernel/EcosystemKernel.tsx
+5:35  Warning: 'useDragControls' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'GripHorizontal' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+40:10  Warning: 'getEcosystemUrl' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+92:10  Warning: 'meshNodes' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+93:10  Warning: 'activeNodesInfo' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+94:10  Warning: 'isKernelLocked' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+248:6  Warning: React Hook useEffect has a missing dependency: 'closeWindow'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useAutosave.ts
+109:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useSearch.ts
+174:6  Warning: React Hook useCallback has an unnecessary dependency: 'data'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+249:57  Warning: React Hook useEffect has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies.  react-hooks/exhaustive-deps
+
+./src/lib/ecosystem/identity.ts
+2:10  Warning: 'getEffectiveUsername' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:32  Warning: 'getEffectiveDisplayName' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/lib/encryption/crypto.ts
+25:9  Warning: 'salt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+64:41  Warning: 'key' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+64:54  Warning: 'numShares' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+64:73  Warning: 'threshold' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+71:38  Warning: 'shares' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+80:27  Warning: 'password' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+80:45  Warning: 'salt' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/lib/revisions.ts
+14:28  Warning: 'userId' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+58:11  Warning: 'toKeep' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+ ELIFECYCLE  Command failed with exit code 1.
