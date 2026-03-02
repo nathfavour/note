@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Box, Typography, LinearProgress, Paper } from '@mui/material';
+import Image from 'next/image';
 
 interface InitialLoadingScreenProps {
   show?: boolean;
@@ -55,10 +56,12 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
             overflow: 'hidden',
           }}
         >
-          <img
+          <Image
             src="/logo/kylrixnote.png"
             alt="WhisperNote logo"
-            style={{ width: 72, height: 72, opacity: 0.8 }}
+            width={72}
+            height={72}
+            style={{ opacity: 0.8 }}
           />
         </Box>
 

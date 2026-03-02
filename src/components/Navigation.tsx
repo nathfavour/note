@@ -33,11 +33,7 @@ import {
   Zap
 } from 'lucide-react';
 
-interface NavigationProps {
-}
-
-
-export const MobileBottomNav: React.FC<NavigationProps> = () => {
+export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 

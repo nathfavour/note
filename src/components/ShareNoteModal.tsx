@@ -457,7 +457,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                   }}
                 >
                   <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                    No users found matching "@{query}"
+                    No users found matching &quot;@{query}&quot;
                   </Typography>
                 </Paper>
               )}
@@ -466,7 +466,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
             <FormControl sx={{ minWidth: 140 }}>
               <Select
                 value={permission}
-                onChange={(_e) => setPermission(e.target.value as 'read' | 'write' | 'admin')}
+                onChange={(_e) => setPermission(_e.target.value as 'read' | 'write' | 'admin')}
                 sx={{
                   borderRadius: '12px',
                   bgcolor: 'rgba(255, 255, 255, 0.03)',
