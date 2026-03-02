@@ -513,41 +513,6 @@ const DynamicIslandOverlay: React.FC<{
     </>
   );
 };
-                          color: 'white',
-                          fontWeight: 900,
-                          fontFamily: 'var(--font-space-grotesk)',
-                          fontSize: '1rem',
-                          lineHeight: 1.2
-                        }}
-                      >
-                        {current.title}
-                      </Typography>
-                      {current.majestic && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: style.color,
-                            fontWeight: 800,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
-                            fontSize: '0.65rem'
-                          }}
-                        >
-                          Ecosystem Pulse
-                        </Typography>
-                      )}
-                    </Box>
-                    {current.type === 'error' && current.message && (
-                      <Tooltip title={copied ? "Copied!" : "Copy Error"}>
-                        <IconButton 
-                          size="small" 
-                          onClick={handleCopy}
-                          sx={{ 
-                            color: copied ? '#00F5FF' : 'rgba(255,255,255,0.3)',
-                            '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.05)' }
-                          }}
-                        >
-                          <CopyIcon sx={{ fontSize: 16 }} />
                         </IconButton>
                       </Tooltip>
                     )}
