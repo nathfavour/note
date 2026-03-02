@@ -155,11 +155,13 @@ export default function NotesPage() {
   }, [removeNote]);
 
   // Re-open sidebar on mount/reload if we have an active key but it's not open
+  const hasReopenedRef = useRef(false);
   useEffect(() => {
-    if (!activeContentKey || isDynamicSidebarOpen || !allNotes.length) return;
+    if (!activeContentKey || isDynamicSidebarOpen || !allNotes.length || hasReopenedRef.current) return;
     
     const targetNote = allNotes.find((candidate) => candidate.$id === activeContentKey);
     if (targetNote) {
+      hasReopenedRef.current = true;
       openSidebar(
         <NoteDetailSidebar
           note={targetNote}

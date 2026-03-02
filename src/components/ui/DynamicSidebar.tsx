@@ -46,11 +46,11 @@ export function DynamicSidebarProvider({ children }: { children: ReactNode }) {
 
   const closeSidebar = React.useCallback(() => {
     setIsOpen(false);
+    setActiveContentKey(null);
     localStorage.removeItem('kylrixnote_dynamic_sidebar_key');
     // Delay clearing content to allow for exit animation
     setTimeout(() => {
       setContent(null);
-      setActiveContentKey(null);
     }, 300);
   }, []);
 

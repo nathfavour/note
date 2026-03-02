@@ -475,7 +475,7 @@ export function NoteDetailSidebar({
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
         <IconButton
-          onClick={closeSidebar}
+          onClick={onBack || closeSidebar}
           sx={{
             color: 'rgba(255, 255, 255, 0.5)',
             '&:hover': { color: '#00F5FF', bgcolor: 'rgba(0, 245, 255, 0.1)' }

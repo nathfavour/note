@@ -88,6 +88,7 @@ export function TagNotesListSidebar({
           note={selectedNote}
           onUpdate={handleNoteUpdate}
           onDelete={handleNoteDelete}
+          onBack={() => setSelectedNote(null)}
           showExpandButton={false}
         />
       );
