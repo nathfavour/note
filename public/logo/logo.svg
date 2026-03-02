@@ -5,8 +5,10 @@
       <stop offset="100%" stopColor="#A855F7" />
     </linearGradient>
   </defs>
-  <path d="M30 20V45M30 55V80" stroke="#00F5FF" stroke-width="10" stroke-linecap="round" />
-  <path d="M70 20L50 37" stroke="#A855F7" stroke-width="8" stroke-linecap="round" />
-  <path d="M35 50L55 67L75 84" stroke="url(#grad)" stroke-width="8" stroke-linecap="round" />
-  <circle cx="30" cy="50" r="4" fill="#00F5FF" />
+  <g stroke="url(#grad)" stroke-width="10" stroke-linecap="round">
+    <path d="M30 20V80" />
+    <path d="M50 25H80" opacity="0.8" />
+    <path d="M50 50H80" opacity="0.6" />
+    <path d="M50 75H80" opacity="0.4" />
+  </g>
 </svg>

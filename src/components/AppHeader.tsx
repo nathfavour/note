@@ -137,7 +137,8 @@ export default function AppHeader({ className }: AppHeaderProps) {
         {/* Left: Logo */}
         <Logo 
           app="note" 
-          size={32} 
+          size={40} 
+          variant="full"
           sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
           component="a"
           href="/"
