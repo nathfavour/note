@@ -4,486 +4,444 @@
 
 
 ./src/app/(app)/extensions/page.tsx
-17:3  Error: 'IconButton' is defined but never used.  @typescript-eslint/no-unused-vars
-31:15  Error: 'SettingsIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+17:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:15  Warning: 'SettingsIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+170:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+180:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+199:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+210:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/layout.tsx
-3:17  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
-13:15  Error: 'Container' is defined but never used.  @typescript-eslint/no-unused-vars
+3:17  Warning: 'useEffect' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+13:15  Warning: 'Container' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/notes/AttachmentViewer.tsx
+42:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+61:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/Collaborators.tsx
-12:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-56:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+27:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+36:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+61:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+71:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/Comments.tsx
+353:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 385:6  Warning: React Hook useEffect has a missing dependency: 'fetchComments'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+403:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+414:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+437:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/CreateNoteForm.tsx
-29:13  Error: 'AppwriteTypes' is defined but never used.  @typescript-eslint/no-unused-vars
-460:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:13  Warning: 'AppwriteTypes' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+126:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/NoteReactions.tsx
-4:15  Error: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+4:15  Warning: 'Button' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+39:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 64:6  Warning: React Hook useEffect has a missing dependency: 'fetchReactions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+105:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/TagManager.tsx
-56:27  Error: '_unusedKey' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+22:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+35:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/[id]/[attachmentId]/page.tsx
-19:3  Error: 'Tooltip' is defined but never used.  @typescript-eslint/no-unused-vars
-64:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:3  Warning: 'Tooltip' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+64:16  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/notes/[id]/page.tsx
-24:13  Error: 'MinusIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-38:10  Error: 'isSaving' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+24:13  Warning: 'MinusIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+38:10  Warning: 'isSaving' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+60:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+79:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+93:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(app)/shared/page.tsx
+58:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/(app)/tags/page.tsx
-15:3  Error: 'IconButton' is defined but never used.  @typescript-eslint/no-unused-vars
-28:16  Error: 'ArrowBackIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-31:18  Error: 'DescriptionIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+28:16  Warning: 'ArrowBackIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:18  Warning: 'DescriptionIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+83:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+137:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+162:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+268:26  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/admin/(protected)/dashboard/page.tsx
-8:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/app/admin/(protected)/messages/page.tsx
-14:3  Error: 'IconButton' is defined but never used.  @typescript-eslint/no-unused-vars
-26:12  Error: 'EmailIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-42:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-73:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-101:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+14:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+26:12  Warning: 'EmailIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+73:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+101:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/api/ai/generate/route.ts
-8:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-46:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-57:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/api/attachments/download/route.ts
-56:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-57:89  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-74:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+74:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/api/og/note/[noteid]/route.tsx
-55:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+219:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/shared/[noteid]/comments/route.ts
+69:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/shared/[noteid]/reactions/route.ts
+75:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/shared/[noteid]/route.ts
+38:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/turnstile/verify/route.ts
+44:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/landing/page.tsx
-8:13  Error: 'MuiButton' is defined but never used.  @typescript-eslint/no-unused-vars
-16:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-53:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-63:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+8:13  Warning: 'MuiButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+16:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+53:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/app/pitch/page.tsx
-4:57  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
+4:57  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 583:6  Warning: React Hook useEffect has missing dependencies: 'goToSlide', 'nextSlide', and 'prevSlide'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
 
 ./src/app/popout/page.tsx
-9:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+18:16  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/shared/[noteid]/SharedNoteClient.tsx
-31:8  Error: 'MuiLink' is defined but never used.  @typescript-eslint/no-unused-vars
-179:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+31:8  Warning: 'MuiLink' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+179:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/app/shared/[noteid]/page.tsx
-3:10  Error: 'formatNoteCreatedDate' is defined but never used.  @typescript-eslint/no-unused-vars
-3:33  Error: 'formatNoteUpdatedDate' is defined but never used.  @typescript-eslint/no-unused-vars
-4:15  Error: 'Notes' is defined but never used.  @typescript-eslint/no-unused-vars
-5:10  Error: 'preProcessMarkdown' is defined but never used.  @typescript-eslint/no-unused-vars
-7:10  Error: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
-8:10  Error: 'createRateLimiter' is defined but never used.  @typescript-eslint/no-unused-vars
-8:29  Error: 'getClientIp' is defined but never used.  @typescript-eslint/no-unused-vars
-9:15  Error: 'NextRequest' is defined but never used.  @typescript-eslint/no-unused-vars
-85:11  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-86:13  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+3:10  Warning: 'formatNoteCreatedDate' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+3:33  Warning: 'formatNoteUpdatedDate' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:15  Warning: 'Notes' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'preProcessMarkdown' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'headers' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+8:10  Warning: 'createRateLimiter' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+8:29  Warning: 'getClientIp' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+9:15  Warning: 'NextRequest' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+86:13  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/appwrite/databases.ts
-6:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-7:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-8:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-9:80  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-10:76  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-11:86  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-12:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-18:73  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-18:85  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-73:7  Error: 'tablesWithRelationships' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-102:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-117:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-134:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:7  Warning: 'tablesWithRelationships' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/AIHeroInput.tsx
-11:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-14:3  Error: 'Paper' is defined but never used.  @typescript-eslint/no-unused-vars
-32:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+14:3  Warning: 'Paper' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/AppHeader.tsx
-4:8  Error: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
-18:3  Error: 'Grid' is defined but never used.  @typescript-eslint/no-unused-vars
-31:3  Error: 'CheckCircle' is defined but never used.  @typescript-eslint/no-unused-vars
-32:3  Error: 'XCircle' is defined but never used.  @typescript-eslint/no-unused-vars
-36:3  Error: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
-43:21  Error: 'IslandNotification' is defined but never used.  @typescript-eslint/no-unused-vars
-49:10  Error: 'ECOSYSTEM_APPS' is defined but never used.  @typescript-eslint/no-unused-vars
-49:26  Error: 'getEcosystemUrl' is defined but never used.  @typescript-eslint/no-unused-vars
-63:11  Error: 'openOverlay' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-63:24  Error: 'closeOverlay' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-74:10  Error: 'currentSubdomain' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+4:8  Warning: 'Image' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'Grid' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+31:3  Warning: 'CheckCircle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:3  Warning: 'XCircle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+36:3  Warning: 'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+43:21  Warning: 'IslandNotification' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'ECOSYSTEM_APPS' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:26  Warning: 'getEcosystemUrl' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+63:11  Warning: 'openOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+63:24  Warning: 'closeOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+74:10  Warning: 'currentSubdomain' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+115:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/AttachmentsManager.tsx
-18:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-41:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/DoodleCanvas.tsx
 60:6  Warning: React Hook useEffect has missing dependencies: 'initialData' and 'redrawCanvas'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
 97:6  Warning: React Hook useEffect has a missing dependency: 'redrawCanvas'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-195:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-216:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-216:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./src/components/GlobalSearch.tsx
-19:27  Error: 'PersonIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-97:10  Error: 'loading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+19:27  Warning: 'PersonIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+46:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+97:10  Warning: 'loading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+132:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/MobileFAB.tsx
-7:3  Error: 'IconButton' is defined but never used.  @typescript-eslint/no-unused-vars
-11:3  Error: 'Tooltip' is defined but never used.  @typescript-eslint/no-unused-vars
-12:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-27:55  Error: 'className' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-28:24  Error: 'closeOverlay' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+7:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'Tooltip' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+27:55  Warning: 'className' is assigned a value but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+28:24  Warning: 'closeOverlay' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/Navigation.tsx
-33:3  Error: 'Zap' is defined but never used.  @typescript-eslint/no-unused-vars
+33:3  Warning: 'Zap' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 36:11  Error: An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
 - If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
 - If you want a type meaning "any object", you probably want `object` instead.
 - If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
-128:16  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+128:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/NoteEditor.tsx
-29:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-89:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-90:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 125:6  Warning: React Hook useEffect has a missing dependency: 'internalNoteId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-132:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-152:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+152:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/PageHeader.tsx
-3:34  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
+3:34  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/Providers.tsx
-7:45  Error: 'useTheme' is defined but never used.  @typescript-eslint/no-unused-vars
+7:45  Warning: 'useTheme' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ShareNoteModal.tsx
-23:3  Error: 'InputLabel' is defined but never used.  @typescript-eslint/no-unused-vars
-32:16  Error: 'PersonAddIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-35:12  Error: 'EmailIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-36:15  Error: 'SecurityIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-38:94  Error: 'searchUsers' is defined but never used.  @typescript-eslint/no-unused-vars
-94:14  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
-127:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-260:87  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-276:81  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-279:87  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-297:87  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+23:3  Warning: 'InputLabel' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+32:16  Warning: 'PersonAddIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+35:12  Warning: 'EmailIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+36:15  Warning: 'SecurityIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+38:94  Warning: 'searchUsers' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+94:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+115:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+168:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+259:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+278:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+294:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 460:45  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
 460:54  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
 
 ./src/components/ThemeToggle.tsx
-5:10  Error: 'Box' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'Box' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/TopBarSearch.tsx
+99:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/TurnstileWidget.tsx
-9:16  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+86:18  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ai/AICommandModal.tsx
-29:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-29:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-285:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/common/EcosystemEvents.tsx
-36:11  Error: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+36:11  Warning: 'user' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/common/EcosystemPortal.tsx
-31:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-46:10  Error: 'EcosystemWidgets' is defined but never used.  @typescript-eslint/no-unused-vars
-48:10  Error: 'EcosystemBridge' is defined but never used.  @typescript-eslint/no-unused-vars
-49:10  Error: 'SystemMonitor' is defined but never used.  @typescript-eslint/no-unused-vars
-50:10  Error: 'MeshProtocol' is defined but never used.  @typescript-eslint/no-unused-vars
+46:10  Warning: 'EcosystemWidgets' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+48:10  Warning: 'EcosystemBridge' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'SystemMonitor' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+50:10  Warning: 'MeshProtocol' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 63:11  Warning: The 'onClose' logical expression could make the dependencies of useCallback Hook (at line 101) change on every render. To fix this, wrap the initialization of 'onClose' in its own useMemo() Hook.  react-hooks/exhaustive-deps
 
-./src/components/common/Logo.tsx
-7:8  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-11:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
 ./src/components/overlays/SudoModal.tsx
-54:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-84:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+99:18  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+121:18  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/AuthContext.tsx
-16:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-53:42  Error: 'isRetry' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-88:18  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
-121:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:42  Warning: 'isRetry' is assigned a value but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+88:18  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+121:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+306:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+330:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+444:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 452:6  Warning: React Hook useCallback has an unnecessary dependency: 'refreshUser'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
 
-./src/components/ui/Button.tsx
-54:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
 ./src/components/ui/Card.tsx
-2:41  Error: 'MuiCardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
-2:71  Error: 'MuiCardContent' is defined but never used.  @typescript-eslint/no-unused-vars
-2:102  Error: 'MuiCardActions' is defined but never used.  @typescript-eslint/no-unused-vars
-6:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-28:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-49:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-71:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-91:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-110:3  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+2:41  Warning: 'MuiCardHeader' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:71  Warning: 'MuiCardContent' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:102  Warning: 'MuiCardActions' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/ContextMenu.tsx
-9:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-26:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+26:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/ContextMenuContext.tsx
-35:22  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+35:22  Warning: 'e' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/CredentialSelectorModal.tsx
-13:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-61:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-62:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+13:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+62:18  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/DynamicIsland.tsx
-5:35  Error: 'useSpring' is defined but never used.  @typescript-eslint/no-unused-vars
-5:46  Error: 'useTransform' is defined but never used.  @typescript-eslint/no-unused-vars
-15:18  Error: 'SparklesIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-18:17  Error: 'TaskIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-19:18  Error: 'NoteIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+5:35  Warning: 'useSpring' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+5:46  Warning: 'useTransform' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+15:18  Warning: 'SparklesIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+18:17  Warning: 'TaskIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+19:18  Warning: 'NoteIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 243:6  Warning: React Hook useEffect has a missing dependency: 'current'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 ./src/components/ui/DynamicSidebar.tsx
-10:3  Error: 'useMediaQuery' is defined but never used.  @typescript-eslint/no-unused-vars
-79:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+10:3  Warning: 'useMediaQuery' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+79:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/EventSelectorModal.tsx
-48:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-49:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:18  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/GlobalSearch.tsx
-151:9  Error: 'theme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+60:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+151:9  Warning: 'theme' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 180:6  Warning: React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 180:7  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
-424:37  Error: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+216:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+274:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+424:37  Warning: 'index' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/InitialLoadingScreen.tsx
 58:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
 ./src/components/ui/LoadingContext.tsx
-4:50  Error: 'Stack' is defined but never used.  @typescript-eslint/no-unused-vars
+4:50  Warning: 'Stack' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/NoteCard.tsx
-35:18  Error: 'AIIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-75:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-90:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-121:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-128:15  Error: '$id' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:20  Error: '$createdAt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:32  Error: '$updatedAt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:44  Error: '$permissions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:58  Error: '$databaseId' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:71  Error: '$collectionId' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-128:106  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-135:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-149:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+35:18  Warning: 'AIIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+75:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+90:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+121:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+128:15  Warning: '$id' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:20  Warning: '$createdAt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:32  Warning: '$updatedAt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:44  Warning: '$permissions' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:58  Warning: '$databaseId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+128:71  Warning: '$collectionId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+135:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+149:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/NoteDetailSidebar.tsx
+115:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 123:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 123:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
 123:46  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+138:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 146:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 146:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
 146:47  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+161:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 169:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 169:17  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
 169:52  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+194:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+210:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+438:18  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+515:26  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/Overlay.tsx
-9:3  Error: 'IconButton' is defined but never used.  @typescript-eslint/no-unused-vars
-11:19  Error: 'CloseIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'IconButton' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:19  Warning: 'CloseIcon' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/PasswordStrengthIndicator.tsx
-19:62  Error: 'getPasswordStrengthColor' is defined but never used.  @typescript-eslint/no-unused-vars
+19:62  Warning: 'getPasswordStrengthColor' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 159:6  Warning: React Hook React.useEffect has a missing dependency: 'strength'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 ./src/components/ui/SudoGuard.tsx
-5:35  Error: 'CircularProgress' is defined but never used.  @typescript-eslint/no-unused-vars
+5:35  Warning: 'CircularProgress' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/TagNotesListSidebar.tsx
+49:16  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/TaskSelectorModal.tsx
-13:3  Error: 'alpha' is defined but never used.  @typescript-eslint/no-unused-vars
-49:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-50:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+13:3  Warning: 'alpha' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+50:18  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/Toast.tsx
-4:10  Error: 'Snackbar' is defined but never used.  @typescript-eslint/no-unused-vars
-4:20  Error: 'Alert' is defined but never used.  @typescript-eslint/no-unused-vars
-4:27  Error: 'AlertTitle' is defined but never used.  @typescript-eslint/no-unused-vars
-4:39  Error: 'Stack' is defined but never used.  @typescript-eslint/no-unused-vars
-4:46  Error: 'Box' is defined but never used.  @typescript-eslint/no-unused-vars
-41:10  Error: 'toasts' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+4:10  Warning: 'Snackbar' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:20  Warning: 'Alert' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:27  Warning: 'AlertTitle' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:39  Warning: 'Stack' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+4:46  Warning: 'Box' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+41:10  Warning: 'toasts' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/components/ui/appShell.tsx
 43:6  Warning: React Hook useEffect has a missing dependency: 'openIDMWindow'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 ./src/constants/ecosystem.ts
-1:10  Error: 'APPWRITE_CONFIG' is defined but never used.  @typescript-eslint/no-unused-vars
+1:10  Warning: 'APPWRITE_CONFIG' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/contexts/NotesContext.tsx
+75:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+96:16  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+167:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+281:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+294:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+303:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/contexts/NotificationContext.tsx
-45:14  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
-116:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-117:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+64:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+141:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/ecosystem/contributions/QuickNote.tsx
-15:3  Error: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Warning: 'Plus' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/ecosystem/contributions/SystemMonitor.tsx
-5:42  Error: 'Wifi' is defined but never used.  @typescript-eslint/no-unused-vars
-6:24  Error: 'NodeIdentity' is defined but never used.  @typescript-eslint/no-unused-vars
-150:67  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+5:42  Warning: 'Wifi' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+6:24  Warning: 'NodeIdentity' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/ecosystem/integration/FocusStatus.tsx
-3:27  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
-20:22  Error: 'setTimeLeft' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+3:27  Warning: 'useEffect' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+20:22  Warning: 'setTimeLeft' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/ecosystem/integration/Widgets.tsx
-31:5  Error: 'title' is defined but never used.  @typescript-eslint/no-unused-vars
+31:5  Warning: 'title' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/ecosystem/kernel/EcosystemKernel.tsx
-5:35  Error: 'useDragControls' is defined but never used.  @typescript-eslint/no-unused-vars
-11:3  Error: 'GripHorizontal' is defined but never used.  @typescript-eslint/no-unused-vars
-27:31  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-40:10  Error: 'getEcosystemUrl' is defined but never used.  @typescript-eslint/no-unused-vars
-92:10  Error: 'meshNodes' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-93:10  Error: 'activeNodesInfo' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-94:10  Error: 'isKernelLocked' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+5:35  Warning: 'useDragControls' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'GripHorizontal' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+40:10  Warning: 'getEcosystemUrl' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+92:10  Warning: 'meshNodes' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+93:10  Warning: 'activeNodesInfo' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+94:10  Warning: 'isKernelLocked' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
 248:6  Warning: React Hook useEffect has a missing dependency: 'closeWindow'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
-423:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./src/hooks/useAdminGate.ts
-36:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/hooks/useAutosave.ts
+88:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 109:6  Warning: React Hook useEffect has a missing dependency: 'note'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 ./src/hooks/useSearch.ts
-24:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-57:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-57:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-71:67  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-145:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-167:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+145:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+167:14  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 174:6  Warning: React Hook useCallback has an unnecessary dependency: 'data'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
 249:57  Warning: React Hook useEffect has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies.  react-hooks/exhaustive-deps
 
 ./src/lib/api-key.ts
-25:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-33:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-41:16  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-73:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-73:93  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-83:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-97:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/lib/ecosystem/bridge.ts
-19:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-55:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/lib/ecosystem/identity.ts
-2:10  Error: 'getEffectiveUsername' is defined but never used.  @typescript-eslint/no-unused-vars
-2:32  Error: 'getEffectiveDisplayName' is defined but never used.  @typescript-eslint/no-unused-vars
-11:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-34:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-59:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-74:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-104:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-155:22  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/lib/ecosystem/mesh.ts
-17:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+2:10  Warning: 'getEffectiveUsername' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+2:32  Warning: 'getEffectiveDisplayName' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+89:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+124:18  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+155:22  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
+161:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/lib/ecosystem/security.ts
-77:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-88:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+121:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+265:14  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/lib/encryption/crypto.ts
-25:9  Error: 'salt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-64:41  Error: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
-64:54  Error: 'numShares' is defined but never used.  @typescript-eslint/no-unused-vars
-64:73  Error: 'threshold' is defined but never used.  @typescript-eslint/no-unused-vars
-71:38  Error: 'shares' is defined but never used.  @typescript-eslint/no-unused-vars
-80:27  Error: 'password' is defined but never used.  @typescript-eslint/no-unused-vars
-80:45  Error: 'salt' is defined but never used.  @typescript-eslint/no-unused-vars
+25:9  Warning: 'salt' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+64:41  Warning: 'key' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+64:54  Warning: 'numShares' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+64:73  Warning: 'threshold' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+71:38  Warning: 'shares' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+80:27  Warning: 'password' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+80:45  Warning: 'salt' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
 
 ./src/lib/extensions.ts
-45:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-83:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-83:69  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-83:83  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-103:85  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-103:109  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-103:123  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-202:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-246:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-246:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-250:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-250:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-250:77  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-254:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-259:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-259:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-263:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-263:68  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-263:82  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+94:16  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+185:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+196:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
+223:14  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/lib/profilePreview.ts
-14:12  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
-33:12  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+14:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+33:12  Warning: '_err' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./src/lib/revisions.ts
-14:28  Error: 'userId' is defined but never used.  @typescript-eslint/no-unused-vars
-48:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-55:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-58:11  Error: 'toKeep' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-97:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-124:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-139:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-140:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-182:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-183:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-191:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-191:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-221:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-224:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+14:28  Warning: 'userId' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+58:11  Warning: 'toKeep' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+69:16  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+73:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+101:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+128:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
+268:12  Warning: '_e' is defined but never used.  @typescript-eslint/no-unused-vars
 
-./src/lib/utils.ts
-5:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-5:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-18:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-23:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-28:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-33:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-37:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-42:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-72:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-93:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-98:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/theme/theme.ts
-74:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/types/ai.ts
-33:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-52:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-136:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/types/appwrite.ts
-137:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-140:13  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+./src/lib/turnstile.ts
+36:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
 
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
  ELIFECYCLE  Command failed with exit code 1.
