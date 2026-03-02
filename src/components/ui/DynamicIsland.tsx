@@ -288,46 +288,6 @@ const DynamicIslandOverlay: React.FC<{
             ref={islandRef}
             style={{ pointerEvents: 'auto', cursor: 'pointer' }}
           >
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 60%)',
-            pointerEvents: 'none',
-            zIndex: 9999
-          }}
-        />
-      )}
-
-      <Box
-        sx={{
-          position: 'fixed',
-          top: isMobile ? 12 : 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10000,
-          pointerEvents: 'none'
-        }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current.id}
-            initial={{ y: -100, scale: 0.8, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            exit={{ y: -100, scale: 0.5, opacity: 0 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 400, 
-              damping: 30,
-              mass: 0.8 
-            }}
-            onHoverStart={() => setIsExpanded(true)}
-            onHoverEnd={() => setIsExpanded(false)}
-            onClick={() => setIsExpanded(!isExpanded)}
-            style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-          >
             <motion.div
               animate={controls}
               style={{
@@ -445,9 +405,114 @@ const DynamicIslandOverlay: React.FC<{
                           border: `1px solid ${style.color}30`,
                           boxShadow: current.majestic ? `0 0 15px ${style.color}40` : 'none'
                         }}
-                      > sx={{ flex: 1 }}>
+                      >
+                        {style.icon}
+                      </Box>
+                    </motion.div>
+                    <Box sx={{ flex: 1 }}>
                       <Typography
                         sx={{
+                          color: 'white',
+                          fontWeight: 900,
+                          letterSpacing: '-0.02em',
+                          fontFamily: 'var(--font-space-grotesk)',
+                          fontSize: '1.1rem'
+                        }}
+                      >
+                        {current.title}
+                      </Typography>
+                      {current.message && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'rgba(255,255,255,0.5)',
+                            lineHeight: 1.4,
+                            mt: 0.5,
+                            fontFamily: 'Satoshi, sans-serif'
+                          }}
+                        >
+                          {current.message}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+
+                  {/* Actions Area */}
+                  <Stack direction="row" spacing={1.5}>
+                    {current.action && (
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          current.action?.onClick();
+                          onDismiss(current.id);
+                        }}
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                          borderRadius: '14px',
+                          textTransform: 'none',
+                          background: current.majestic ? `linear-gradient(45deg, ${style.color}, #00F5FF)` : 'white',
+                          color: current.majestic ? 'black' : 'black',
+                          fontWeight: 700,
+                          height: 48,
+                          '&:hover': {
+                            background: current.majestic ? `linear-gradient(45deg, ${style.color}, #00F5FF)` : 'rgba(255,255,255,0.9)',
+                            opacity: 0.9
+                          }
+                        }}
+                      >
+                        {current.action.label}
+                      </Button>
+                    )}
+                    
+                    {current.type === 'error' && (
+                      <IconButton
+                        onClick={handleCopy}
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '14px',
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                          color: copied ? '#00FF00' : 'rgba(255,255,255,0.4)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          '&:hover': {
+                            bgcolor: 'rgba(255,255,255,0.1)'
+                          }
+                        }}
+                      >
+                        <CopyIcon fontSize="small" />
+                      </IconButton>
+                    )}
+
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDismiss(current.id);
+                      }}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '14px',
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.4)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        '&:hover': {
+                          bgcolor: 'rgba(255,255,255,0.1)'
+                        }
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </Stack>
+              </Box>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </Box>
+    </>
+  );
+};
                           color: 'white',
                           fontWeight: 900,
                           fontFamily: 'var(--font-space-grotesk)',
