@@ -408,20 +408,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const idmUrl = `https://${authSubdomain}.${domain}/login`;
         const idmUrlObj = new URL(idmUrl);
-        const mobileTargetUrl = (() => {
-          const mobileUrl = new URL(idmUrl);
-          mobileUrl.searchParams.set('source', window.location.href);
-          return mobileUrl.toString();
+        const sourceUrl = window.location.origin + pathname;
+        const targetUrl = (() => {
+          const url = new URL(idmUrl);
+          url.searchParams.set('source', sourceUrl);
+          return url.toString();
         })();
-        const width = 400;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
 
         idmOriginRef.current = idmUrlObj.origin;
 
         if (isMobileDevice) {
-          window.location.assign(mobileTargetUrl);
+          window.location.assign(targetUrl);
           return;
         }
 
@@ -429,14 +426,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           idmWindowRef.current.focus();
         } else {
           const windowRef = window.open(
-            idmUrl,
+            targetUrl,
             'Kylrix NoteIDM',
             `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
           );
 
           if (!windowRef) {
             console.warn('Popup blocked, falling back to redirect in kylrixnote');
-            window.location.assign(mobileTargetUrl);
+            window.location.assign(targetUrl);
             return;
           }
 
