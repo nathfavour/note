@@ -31,10 +31,10 @@ const Logo: React.FC<LogoProps> = ({
 }) => {
   const configs = {
     root: { color1: "#00F5FF", color2: "#00A3FF", name: "KYLRIX", desc: "Ecosystem Hub" },
-    vault: { color1: "#00F5FF", color2: "#222222", name: "VAULT", desc: "Zero-Knowledge Storage" },
-    flow: { color1: "#00FF94", color2: "#00B2FF", name: "FLOW", desc: "AI Orchestration" },
-    note: { color1: "#6366F1", color2: "#A855F7", name: "NOTE", desc: "Structured Intelligence" },
-    connect: { color1: "#F43F5E", color2: "#FB923C", name: "CONNECT", desc: "P2P Encryption" }
+    vault: { color1: "#00F5FF", color2: "#3B82F6", name: "VAULT", desc: "Zero-Knowledge Storage" },
+    flow: { color1: "#00F5FF", color2: "#00FF94", name: "FLOW", desc: "AI Orchestration" },
+    note: { color1: "#00F5FF", color2: "#A855F7", name: "NOTE", desc: "Structured Intelligence" },
+    connect: { color1: "#00F5FF", color2: "#F43F5E", name: "CONNECT", desc: "P2P Encryption" }
   };
 
   const current = configs[app];
@@ -51,14 +51,14 @@ const Logo: React.FC<LogoProps> = ({
 
         {app === 'note' && (
           <>
-            <path d="M30 20V45M30 55V80" stroke={`url(#grad-${app})`} strokeWidth="10" strokeLinecap="round" />
-            <path d="M70 20L50 37" stroke={`url(#grad-${app})`} strokeWidth="8" strokeLinecap="round" />
+            <path d="M30 20V45M30 55V80" stroke={current.color1} strokeWidth="10" strokeLinecap="round" />
+            <path d="M70 20L50 37" stroke={current.color2} strokeWidth="8" strokeLinecap="round" />
             <path d="M35 50L55 67L75 84" stroke={`url(#grad-${app})`} strokeWidth="8" strokeLinecap="round" />
             <circle cx="30" cy="50" r="4" fill={current.color1} />
           </>
         )}
         
-        {(app === 'root' || app === 'vault' || app === 'flow' || app === 'connect') && (
+        {app !== 'note' && (
            <g>
              <path d="M30 20V80" stroke={`url(#grad-${app})`} strokeWidth="10" strokeLinecap="round" />
              <path d="M70 20L35 50L70 80" stroke={`url(#grad-${app})`} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />

@@ -11,6 +11,13 @@ const mono = JetBrains_Mono({
 export const metadata = {
   title: "Kylrix Note - High-End Note Taking",
   description: "Experience the next generation of note taking with Kylrix Note.",
+  icons: {
+    icon: '/logo/favicon.ico',
+    apple: '/logo/apple-touch-icon.png',
+  },
+  openGraph: {
+    images: ['/logo/og-image.png'],
+  }
 };
 
 export default function RootLayout({
