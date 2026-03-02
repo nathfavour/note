@@ -36,11 +36,13 @@ export interface IslandNotification {
   majestic?: boolean;
   shape?: 'island' | 'ball' | 'pill';
   personal?: boolean;
+  timestamp?: number;
 }
 
 interface IslandContextType {
   showIsland: (notification: Omit<IslandNotification, 'id'>) => void;
   dismissIsland: (id: string) => void;
+  allNotifications: IslandNotification[];
 }
 
 const IslandContext = createContext<IslandContextType | undefined>(undefined);
@@ -55,6 +57,7 @@ export function useIsland() {
 
 export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<IslandNotification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<IslandNotification[]>([]);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const { user } = useAuth();
   const theme = useTheme();
@@ -62,8 +65,21 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const showIsland = useCallback((notification: Omit<IslandNotification, 'id'>) => {
     const id = Math.random().toString(36).substring(7);
-    const newNotif = { ...notification, id, duration: notification.duration || (notification.majestic ? 10000 : 6000) };
+    const newNotif = { 
+      ...notification, 
+      id, 
+      duration: notification.duration || (notification.majestic ? 10000 : 6000),
+      timestamp: Date.now()
+    };
+    
     setNotifications(prev => [...prev, newNotif]);
+    
+    // Add to history if not a duplicate (by title and message)
+    setAllNotifications(prev => {
+      const isDuplicate = prev.some(n => n.title === notification.title && n.message === notification.message);
+      if (isDuplicate) return prev;
+      return [newNotif, ...prev].slice(0, 50); // Keep last 50
+    });
   }, []);
 
   const dismissIsland = useCallback((id: string) => {
@@ -128,7 +144,7 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [lastActivity, notifications.length, showIsland, user]);
 
   return (
-    <IslandContext.Provider value={{ showIsland, dismissIsland }}>
+    <IslandContext.Provider value={{ showIsland, dismissIsland, allNotifications }}>
       {children}
       <DynamicIslandOverlay notifications={notifications} onDismiss={dismissIsland} isMobile={isMobile} />
     </IslandContext.Provider>
@@ -142,12 +158,18 @@ const DynamicIslandOverlay: React.FC<{
 }> = ({ notifications, onDismiss, isMobile }) => {
   const current = notifications[notifications.length - 1]; // Show most recent
   const [isExpanded, setIsExpanded] = useState(false);
+  const isExpandedRef = useRef(false);
   const [lastSeenId, setLastSeenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const islandRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
   const pathname = usePathname();
+
+  // Sync ref with state
+  useEffect(() => {
+    isExpandedRef.current = isExpanded;
+  }, [isExpanded]);
 
   // Reset expansion ONLY when the notification ID actually changes
   useEffect(() => {
@@ -194,7 +216,8 @@ const DynamicIslandOverlay: React.FC<{
       const startTimeout = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          if (!isExpanded) {
+          // Use ref to avoid stale closure
+          if (!isExpandedRef.current) {
             onDismiss(current.id);
           }
         }, current.duration || 6000);
@@ -287,11 +310,16 @@ const DynamicIslandOverlay: React.FC<{
               damping: 30,
               mass: 0.8 
             }}
-            onHoverStart={() => {}}
-            onHoverEnd={() => {}}
+            onHoverStart={() => setIsExpanded(true)}
+            onHoverEnd={() => {
+              // Only auto-collapse if not mobile and NOT expanded via click/hover already
+              // This is a bit tricky, but usually, we want it to collapse on hover end
+              // UNLESS the user is actively interacting with it.
+              if (!isMobile) setIsExpanded(false);
+            }}
             onClick={(e) => {
               e.stopPropagation();
-              // Toggle expanded state - this should persist until outside click or ESC
+              // Force expansion on click, making it "sticky"
               setIsExpanded(true);
             }}
             ref={islandRef}
