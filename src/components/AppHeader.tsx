@@ -135,34 +135,13 @@ export default function AppHeader({ className }: AppHeaderProps) {
         minHeight: '72px' 
       }}>
         {/* Left: Logo */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-          <Box sx={{ 
-            width: 42, 
-            height: 42, 
-            bgcolor: 'rgba(255, 255, 255, 0.03)', 
-            border: '1px solid rgba(255, 255, 255, 0.1)', 
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-          }}>
-            <Image src="/logo/kylrixnote.png" alt="Logo" width={28} height={28} style={{ objectFit: 'contain' }} />
-          </Box>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              display: { xs: 'none', sm: 'block' },
-              fontWeight: 900, 
-              letterSpacing: '-0.05em',
-              fontFamily: 'var(--font-space-grotesk)',
-              color: 'white'
-            }}
-          >
-            KYLRIX<Box component="span" sx={{ color: '#00F5FF' }}>NOTE</Box>
-          </Typography>
-        </Box>
+        <Logo 
+          app="note" 
+          size={32} 
+          sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+          component="a"
+          href="/"
+        />
 
         {/* Center: Search */}
         <Box sx={{ flexGrow: 1, maxWidth: 700 }}>
