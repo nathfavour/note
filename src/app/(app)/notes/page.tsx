@@ -46,7 +46,7 @@ export default function NotesPage() {
   const { openOverlay } = useOverlay();
 
   const { isCollapsed, setIsCollapsed } = useSidebar();
-  const { isOpen: isDynamicSidebarOpen, openSidebar } = useDynamicSidebar();
+  const { isOpen: isDynamicSidebarOpen, openSidebar, activeContentKey } = useDynamicSidebar();
   const searchParams = useSearchParams();
   const router = useRouter();
   const openNoteIdParam = searchParams.get('openNoteId');
@@ -153,6 +153,23 @@ export default function NotesPage() {
     await deleteNote(noteId);
     removeNote(noteId);
   }, [removeNote]);
+
+  // Re-open sidebar on mount/reload if we have an active key but it's not open
+  useEffect(() => {
+    if (!activeContentKey || isDynamicSidebarOpen || !allNotes.length) return;
+    
+    const targetNote = allNotes.find((candidate) => candidate.$id === activeContentKey);
+    if (targetNote) {
+      openSidebar(
+        <NoteDetailSidebar
+          note={targetNote}
+          onUpdate={handleNoteUpdated}
+          onDelete={handleNoteDeleted}
+        />,
+        targetNote.$id || null
+      );
+    }
+  }, [activeContentKey, allNotes, isDynamicSidebarOpen, openSidebar, handleNoteUpdated, handleNoteDeleted]);
 
   useEffect(() => {
     if (!openNoteIdParam) return;

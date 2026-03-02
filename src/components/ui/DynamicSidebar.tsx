@@ -24,7 +24,10 @@ const DynamicSidebarContext = createContext<DynamicSidebarContextType | undefine
 export function DynamicSidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<ReactNode | null>(null);
-  const [activeContentKey, setActiveContentKey] = useState<string | null>(null);
+  const [activeContentKey, setActiveContentKey] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('kylrixnote_dynamic_sidebar_key');
+  });
 
   const openSidebar = React.useCallback(
     (newContent: ReactNode, key: string | null = null) => {
@@ -34,12 +37,16 @@ export function DynamicSidebarProvider({ children }: { children: ReactNode }) {
       setContent(newContent);
       setActiveContentKey(key);
       setIsOpen(true);
+      if (key) {
+        localStorage.setItem('kylrixnote_dynamic_sidebar_key', key);
+      }
     },
     [activeContentKey, isOpen]
   );
 
   const closeSidebar = React.useCallback(() => {
     setIsOpen(false);
+    localStorage.removeItem('kylrixnote_dynamic_sidebar_key');
     // Delay clearing content to allow for exit animation
     setTimeout(() => {
       setContent(null);

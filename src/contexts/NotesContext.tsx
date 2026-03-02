@@ -40,13 +40,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null); // last fetched document id
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
-
-  // Refs to avoid unnecessary re-creations / dependency loops
-  const isFetchingRef = useRef(false);
-  const notesRef = useRef<Notes[]>([]);
-  const cursorRef = useRef<string | null>(null);
-  useEffect(() => { notesRef.current = notes; }, [notes]);
-  useEffect(() => { cursorRef.current = cursor; }, [cursor]);
+  const [isCacheLoaded, setIsCacheLoaded] = useState(false);
 
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   
@@ -57,6 +51,62 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const limit = (plan === 'PRO' || plan === 'ORG' || plan === 'LIFETIME') ? 10 : 3;
     return pinnedIds.slice(0, limit);
   }, [pinnedIds, user]);
+
+  const CACHE_KEY = useMemo(() => user?.$id ? `notes_cache_${user.$id}` : null, [user?.$id]);
+
+  // Load from cache on mount
+  useEffect(() => {
+    if (typeof window === 'undefined' || !CACHE_KEY || isCacheLoaded) return;
+
+    try {
+      const saved = localStorage.getItem(CACHE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setNotes(parsed.notes || []);
+        setTotalNotes(parsed.totalNotes || 0);
+        setCursor(parsed.cursor || null);
+        setHasMore(parsed.hasMore ?? true);
+        setPinnedIds(parsed.pinnedIds || []);
+        // If we have cached notes, we can stop the initial loading spinner immediately
+        if (parsed.notes?.length > 0) {
+          setIsLoading(false);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load notes from cache', e);
+    } finally {
+      setIsCacheLoaded(true);
+    }
+  }, [CACHE_KEY, isCacheLoaded]);
+
+  // Save to cache whenever relevant state changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !CACHE_KEY || !isCacheLoaded) return;
+
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          notes,
+          totalNotes,
+          cursor,
+          hasMore,
+          pinnedIds,
+          timestamp: Date.now()
+        }));
+      } catch (e) {
+        console.warn('Failed to save notes to cache', e);
+      }
+    }, 1000); // Debounce saves
+
+    return () => clearTimeout(timer);
+  }, [notes, totalNotes, cursor, hasMore, pinnedIds, CACHE_KEY, isCacheLoaded]);
+
+  // Refs to avoid unnecessary re-creations / dependency loops
+  const isFetchingRef = useRef(false);
+  const notesRef = useRef<Notes[]>([]);
+  const cursorRef = useRef<string | null>(null);
+  useEffect(() => { notesRef.current = notes; }, [notes]);
+  useEffect(() => { cursorRef.current = cursor; }, [cursor]);
 
   const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_NOTES_PAGE_SIZE || 50);
 
@@ -75,8 +125,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Smart fetch: If we are doing a reset fetch but already have notes from cache, 
+    // and it's not a "force" refetch, we can skip or defer.
+    // For now, we'll implement the logic to skip if we have notes and it's the first auto-call.
+    
     isFetchingRef.current = true;
-    if (reset) {
+    if (reset && notesRef.current.length === 0) {
       setIsLoading(true);
       setError(null);
     }
@@ -91,7 +145,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       const res = await listNotesPaginated({
         limit: PAGE_SIZE,
         cursor: reset ? null : (cursorRef.current || null),
-        userId: user?.$id, // Use explicit user ID
+        userId: user?.$id,
       });
 
       const batch = res.documents as Notes[];
@@ -112,7 +166,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch notes');
-      if (reset) {
+      if (reset && notesRef.current.length === 0) {
         setNotes([]);
         setTotalNotes(0);
       }
@@ -121,7 +175,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isFetchingRef.current = false;
       setIsLoading(false);
     }
-  }, [isAuthenticated, isAuthLoading, user?.$id, PAGE_SIZE]); // include user?.$id
+  }, [isAuthenticated, isAuthLoading, user?.$id, PAGE_SIZE]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isFetchingRef.current) return;
@@ -135,10 +189,27 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     fetchBatch(true);
   }, [fetchBatch]);
 
-  // Initial fetch or auth state change
+  // Initial fetch logic - decoupled from reload if cache exists
+  const hasInitiallyFetched = useRef(false);
+
   useEffect(() => {
-    if (isAuthenticated && user?.$id) {
-      fetchBatch(true);
+    if (isAuthenticated && user?.$id && isCacheLoaded) {
+      // If we have cached notes, we don't fetch immediately on reload
+      // This makes reloads "instant"
+      if (notes.length > 0 && !hasInitiallyFetched.current) {
+        hasInitiallyFetched.current = true;
+        // We could do a background refresh here if we wanted to be extra sure,
+        // but the requirement says "instant" and rely on CRUD tracking.
+        console.log('Instant reload: Using cached notes');
+        setIsLoading(false);
+        return;
+      }
+
+      // If no cache or already fetched once, proceed with normal fetch
+      if (!hasInitiallyFetched.current) {
+        fetchBatch(true);
+        hasInitiallyFetched.current = true;
+      }
     } else if (!isAuthLoading && !isAuthenticated) {
       setNotes([]);
       setTotalNotes(0);
@@ -146,8 +217,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setError(null);
       setPinnedIds([]);
+      hasInitiallyFetched.current = false;
     }
-  }, [isAuthenticated, isAuthLoading, user?.$id, fetchBatch]);
+  }, [isAuthenticated, isAuthLoading, user?.$id, fetchBatch, isCacheLoaded, notes.length]);
 
   const upsertNote = useCallback((note: Notes) => {
     const existed = notesRef.current.some((n) => n.$id === note.$id);

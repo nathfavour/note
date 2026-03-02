@@ -17,7 +17,9 @@ import {
   ListItemText,
   Grid,
   Paper,
-  alpha
+  alpha,
+  Button,
+  Stack
 } from '@mui/material';
 import {
   Settings,
@@ -28,10 +30,18 @@ import {
   Bell,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  Maximize2,
+  Minimize2,
+  ChevronRight,
+  Info,
+  Layers,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useIsland, IslandNotification } from '@/components/ui/DynamicIsland';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { getUserProfilePicId } from '@/lib/utils';
@@ -49,9 +59,15 @@ interface AppHeaderProps {
 export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { allNotifications: islandHistory } = useIsland();
   const { openOverlay, closeOverlay } = useOverlay();
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
-  const [anchorElNotifications, setAnchorElNotifications] = useState<null | HTMLElement>(null);
+  
+  // Advanced Notifications State
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifViewMode, setNotifViewMode] = useState<'dropdown' | 'sidebar'>('dropdown');
+  const [notifTab, setNotifTab] = useState<'app' | 'island'>('app');
+
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
 
@@ -114,6 +130,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
     return null;
   }
 
+  const toggleNotifications = () => {
+    setIsNotificationsOpen(!isNotificationsOpen);
+    if (!isNotificationsOpen) setNotifViewMode('dropdown');
+  };
+
 
   return (
     <AppBar 
@@ -153,16 +174,17 @@ export default function AppHeader({ className }: AppHeaderProps) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
           <Tooltip title="Notifications">
             <IconButton 
-              onClick={(e) => setAnchorElNotifications(e.currentTarget)}
+              onClick={toggleNotifications}
               sx={{ 
-                color: unreadCount > 0 ? '#00F5FF' : 'rgba(255, 255, 255, 0.4)',
-                bgcolor: alpha('#00F5FF', 0.03),
+                color: (unreadCount > 0 || isNotificationsOpen) ? '#00F5FF' : 'rgba(255, 255, 255, 0.4)',
+                bgcolor: isNotificationsOpen ? alpha('#00F5FF', 0.1) : alpha('#00F5FF', 0.03),
                 border: '1px solid',
-                borderColor: unreadCount > 0 ? alpha('#00F5FF', 0.3) : alpha('#00F5FF', 0.1),
+                borderColor: (unreadCount > 0 || isNotificationsOpen) ? alpha('#00F5FF', 0.3) : alpha('#00F5FF', 0.1),
                 borderRadius: '12px',
                 width: 42,
                 height: 42,
                 position: 'relative',
+                zIndex: 1301,
                 '&:hover': { 
                   bgcolor: alpha('#00F5FF', 0.08), 
                   boxShadow: '0 0 15px rgba(0, 245, 255, 0.2)' 
@@ -193,6 +215,211 @@ export default function AppHeader({ className }: AppHeaderProps) {
               )}
             </IconButton>
           </Tooltip>
+
+          {/* Advanced Notifications Portal */}
+          <AnimatePresence>
+            {isNotificationsOpen && (
+              <>
+                {/* Backdrop for click-away */}
+                <Box 
+                  onClick={() => setIsNotificationsOpen(false)}
+                  sx={{ 
+                    position: 'fixed', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    bottom: 0, 
+                    zIndex: 1299,
+                    cursor: 'default'
+                  }} 
+                />
+                
+                <motion.div
+                  initial={notifViewMode === 'dropdown' ? { opacity: 0, scale: 0.9, y: -20, x: 'calc(100% - 460px)' } : { opacity: 0, x: 400 }}
+                  animate={notifViewMode === 'dropdown' 
+                    ? { opacity: 1, scale: 1, y: 80, x: 'calc(100% - 460px)', width: 380, height: 'auto', maxHeight: 600, borderRadius: 24, top: 0, right: 0 } 
+                    : { opacity: 1, x: 0, y: 0, width: 400, height: '100vh', maxHeight: '100vh', borderRadius: 0, top: 0, right: 0 }
+                  }
+                  exit={notifViewMode === 'dropdown' ? { opacity: 0, scale: 0.9, y: -20 } : { opacity: 0, x: 400 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  style={{
+                    position: 'fixed',
+                    zIndex: 1300,
+                    background: 'rgba(10, 10, 10, 0.98)',
+                    backdropFilter: 'blur(30px) saturate(200%)',
+                    borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  {/* Header */}
+                  <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Zap size={18} color="#00F5FF" />
+                      <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                        Intelligence Feed
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => setNotifViewMode(notifViewMode === 'dropdown' ? 'sidebar' : 'dropdown')}
+                        sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#00F5FF', bgcolor: alpha('#00F5FF', 0.1) } }}
+                      >
+                        {notifViewMode === 'dropdown' ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
+                      </IconButton>
+                    </Stack>
+                  </Box>
+
+                  {/* Tabs */}
+                  <Box sx={{ display: 'flex', p: 1, gap: 1, bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
+                    <Box 
+                      onClick={() => setNotifTab('app')}
+                      sx={{ 
+                        flex: 1, py: 1, textAlign: 'center', cursor: 'pointer', borderRadius: '12px',
+                        bgcolor: notifTab === 'app' ? alpha('#00F5FF', 0.1) : 'transparent',
+                        border: '1px solid',
+                        borderColor: notifTab === 'app' ? alpha('#00F5FF', 0.2) : 'transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'app' ? '#00F5FF' : 'rgba(255, 255, 255, 0.4)', letterSpacing: '0.05em' }}>
+                        SYSTEM ({notifications.length})
+                      </Typography>
+                    </Box>
+                    <Box 
+                      onClick={() => setNotifTab('island')}
+                      sx={{ 
+                        flex: 1, py: 1, textAlign: 'center', cursor: 'pointer', borderRadius: '12px',
+                        bgcolor: notifTab === 'island' ? alpha('#A855F7', 0.1) : 'transparent',
+                        border: '1px solid',
+                        borderColor: notifTab === 'island' ? alpha('#A855F7', 0.2) : 'transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'island' ? '#A855F7' : 'rgba(255, 255, 255, 0.4)', letterSpacing: '0.05em' }}>
+                        ISLAND ({islandHistory.length})
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Content */}
+                  <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+                    <AnimatePresence mode="wait">
+                      {notifTab === 'app' ? (
+                        <motion.div
+                          key="app-notifs"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                        >
+                          {notifications.length === 0 ? (
+                            <Box sx={{ py: 8, textAlign: 'center', opacity: 0.3 }}>
+                              <Clock size={40} style={{ margin: '0 auto 16px' }} />
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>No system activity</Typography>
+                            </Box>
+                          ) : (
+                            notifications.map((notif) => (
+                              <Paper
+                                key={notif.$id}
+                                elevation={0}
+                                sx={{ 
+                                  p: 2, mb: 1, borderRadius: '16px', bgcolor: 'rgba(10, 10, 10, 0.4)', 
+                                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)', borderColor: alpha('#00F5FF', 0.2) },
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => markAsRead(notif.$id)}
+                              >
+                                <Stack direction="row" spacing={2} alignItems="flex-start">
+                                  <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: alpha('#00F5FF', 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Layers size={18} color="#00F5FF" />
+                                  </Box>
+                                  <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', display: 'block', mb: 0.5 }}>
+                                      {notif.action.toUpperCase()}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', lineHeight: 1.4 }}>
+                                      {notif.details || notif.targetId}
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                              </Paper>
+                            ))
+                          )}
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="island-notifs"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                        >
+                          {islandHistory.length === 0 ? (
+                            <Box sx={{ py: 8, textAlign: 'center', opacity: 0.3 }}>
+                              <Sparkles size={40} style={{ margin: '0 auto 16px' }} />
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>Island has been quiet</Typography>
+                            </Box>
+                          ) : (
+                            islandHistory.map((notif) => (
+                              <Paper
+                                key={notif.id}
+                                elevation={0}
+                                sx={{ 
+                                  p: 2, mb: 1, borderRadius: '16px', bgcolor: 'rgba(10, 10, 10, 0.4)', 
+                                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)', borderColor: alpha('#A855F7', 0.2) },
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <Stack direction="row" spacing={2} alignItems="flex-start">
+                                  <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: alpha('#A855F7', 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Info size={18} color="#A855F7" />
+                                  </Box>
+                                  <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', display: 'block', mb: 0.5 }}>
+                                      {notif.title.toUpperCase()}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', lineHeight: 1.4 }}>
+                                      {notif.message}
+                                    </Typography>
+                                    {notif.timestamp && (
+                                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.2)', fontSize: '0.6rem', mt: 1, display: 'block' }}>
+                                        {new Date(notif.timestamp).toLocaleTimeString()}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Stack>
+                              </Paper>
+                            ))
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Box>
+
+                  {/* Footer */}
+                  <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <Button 
+                      fullWidth 
+                      variant="text" 
+                      onClick={() => markAllAsRead()}
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.4)', 
+                        fontWeight: 800, 
+                        fontSize: '0.7rem',
+                        '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' } 
+                      }}
+                    >
+                      Clear system feed
+                    </Button>
+                  </Box>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
 
           <Tooltip title="Cognitive Link (AI)">
             <IconButton 
@@ -325,104 +552,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
           <MenuItem onClick={handleLogout} sx={{ py: 2, px: 3, color: '#FF4D4D', '&:hover': { bgcolor: alpha('#FF4D4D', 0.05) } }}>
             <ListItemIcon><LogOut size={18} strokeWidth={1.5} color="#FF4D4D" /></ListItemIcon>
             <ListItemText primary="Sign Out" primaryTypographyProps={{ variant: 'caption', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
-          </MenuItem>
-        </Menu>
-
-        {/* Notifications Menu */}
-        <Menu
-          anchorEl={anchorElNotifications}
-          open={Boolean(anchorElNotifications)}
-          onClose={() => setAnchorElNotifications(null)}
-          PaperProps={{
-            sx: {
-              mt: 1.5,
-              width: 360,
-              bgcolor: 'rgba(10, 10, 10, 0.95)',
-              backdropFilter: 'blur(25px) saturate(180%)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '24px',
-              backgroundImage: 'none',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-              overflow: 'hidden'
-            }
-          }}
-        >
-          <Box sx={{ px: 3, py: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
-            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Intelligence Feed
-            </Typography>
-            {unreadCount > 0 && (
-              <Typography 
-                variant="caption" 
-                onClick={() => { markAllAsRead(); setAnchorElNotifications(null); }}
-                sx={{ cursor: 'pointer', fontWeight: 800, color: '#00F5FF', '&:hover': { textDecoration: 'underline' } }}
-              >
-                MARK ALL READ
-              </Typography>
-            )}
-          </Box>
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
-          <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
-            {notifications.length === 0 ? (
-              <Box sx={{ p: 4, textAlign: 'center' }}>
-                <Clock size={32} color="rgba(255, 255, 255, 0.1)" style={{ marginBottom: 12 }} />
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600 }}>
-                  No recent activity detected
-                </Typography>
-              </Box>
-            ) : (
-              notifications.slice(0, 10).map((notif) => {
-                const isRead = !!localStorage.getItem(`read_notif_${notif.$id}`);
-                return (
-                  <MenuItem 
-                    key={notif.$id} 
-                    onClick={() => { markAsRead(notif.$id); setAnchorElNotifications(null); }}
-                    sx={{ 
-                      py: 2, 
-                      px: 3, 
-                      gap: 2,
-                      borderLeft: isRead ? 'none' : '3px solid #00F5FF',
-                      bgcolor: isRead ? 'transparent' : alpha('#00F5FF', 0.03),
-                      '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } 
-                    }}
-                  >
-                    <Box sx={{ 
-                      width: 40, 
-                      height: 40, 
-                      borderRadius: '12px', 
-                      bgcolor: 'rgba(255, 255, 255, 0.03)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      {notif.action.toLowerCase().includes('delete') ? (
-                        <XCircle size={20} color="#FF4D4D" />
-                      ) : (
-                        <CheckCircle size={20} color="#00F5FF" />
-                      )}
-                    </Box>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', display: 'block' }}>
-                        {notif.action.toUpperCase()}
-                      </Typography>
-                      <Typography variant="body2" noWrap sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {notif.targetType}: {notif.details || notif.targetId}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.2)', fontSize: '0.65rem', fontWeight: 700 }}>
-                        {new Date(notif.timestamp).toLocaleString()}
-                      </Typography>
-                    </Box>
-                  </MenuItem>
-                );
-              })
-            )}
-          </Box>
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
-          <MenuItem sx={{ py: 2, justifyContent: 'center' }}>
-            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', letterSpacing: '0.05em' }}>
-              VIEW ALL ACTIVITY
-            </Typography>
           </MenuItem>
         </Menu>
 
