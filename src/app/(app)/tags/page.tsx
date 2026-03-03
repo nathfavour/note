@@ -12,7 +12,6 @@ import {
   Container,
   Card,
   CardContent,
-  IconButton,
   Chip,
   alpha,
   Dialog,
@@ -25,10 +24,8 @@ import {
   Add as AddIcon, 
   Edit as EditIcon, 
   Delete as DeleteIcon, 
-  ArrowBack as ArrowBackIcon,
   Label as LabelIcon,
-  AccessTime as AccessTimeIcon,
-  Description as DescriptionIcon
+  AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 import { Tags } from '@/types/appwrite';
 import { listTags, createTag, updateTag, deleteTag, updateNote } from '@/lib/appwrite';

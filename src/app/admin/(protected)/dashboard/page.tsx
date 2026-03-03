@@ -4,8 +4,7 @@ import {
   Box, 
   Typography, 
   Grid, 
-  Paper, 
-  alpha 
+  Paper 
 } from '@mui/material';
 import Link from 'next/link';
 import { 

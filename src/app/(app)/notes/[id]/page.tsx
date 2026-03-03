@@ -69,7 +69,6 @@ export default function NoteEditorPage() {
   }, [id, showError]);
 
   const handleUpdate = async (updated: Notes) => {
-    setIsSaving(true);
     try {
       const saved = await updateNote(updated.$id || (id as string) || '', updated);
       setNote(saved);
@@ -77,8 +76,6 @@ export default function NoteEditorPage() {
     } catch (error: any) {
       console.error('Update failed', error);
       showError('Update failed', 'Could not save your changes.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
