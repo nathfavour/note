@@ -1092,7 +1092,7 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#FFD700',
+            color: '#00F5FF',
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
@@ -1102,7 +1102,7 @@ export function NoteDetailSidebar({
           Linked Secrets (Keep)
         </Typography>
         {isLoadingSecrets ? (
-          <CircularProgress size={20} sx={{ color: '#FFD700', ml: 1 }} />
+          <CircularProgress size={20} sx={{ color: '#00F5FF', ml: 1 }} />
         ) : linkedSecrets.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {linkedSecrets.map((secret) => (
@@ -1113,16 +1113,16 @@ export function NoteDetailSidebar({
                 gap: 2,
                 p: 2,
                 borderRadius: '16px',
-                bgcolor: 'rgba(255, 215, 0, 0.03)',
-                border: '1px solid rgba(255, 215, 0, 0.1)',
+                bgcolor: 'rgba(0, 245, 255, 0.03)',
+                border: '1px solid rgba(0, 245, 255, 0.1)',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(255, 215, 0, 0.06)',
-                  borderColor: 'rgba(255, 215, 0, 0.3)'
+                  bgcolor: 'rgba(0, 245, 255, 0.06)',
+                  borderColor: 'rgba(0, 245, 255, 0.3)'
                 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                  <KeyIcon sx={{ color: '#FFD700', fontSize: 18 }} />
+                  <KeyIcon sx={{ color: '#00F5FF', fontSize: 18 }} />
                   <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
                     {secret.name}
                   </Typography>
@@ -1130,7 +1130,7 @@ export function NoteDetailSidebar({
                 <IconButton
                   size="small"
                   onClick={() => window.open(`https://vault.kylrix.space/vault?id=${secret.$id}`, '_blank')}
-                  sx={{ color: '#FFD700' }}
+                  sx={{ color: '#00F5FF' }}
                 >
                   <OpenIcon fontSize="small" />
                 </IconButton>

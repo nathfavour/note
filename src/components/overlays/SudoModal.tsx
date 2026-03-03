@@ -168,8 +168,8 @@ export default function SudoModal({
                     display: 'inline-flex', 
                     p: 1.5, 
                     borderRadius: '16px', 
-                    bgcolor: alpha('#f9c806', 0.1),
-                    color: '#f9c806',
+                    bgcolor: alpha('#00F5FF', 0.1),
+                    color: '#00F5FF',
                     mb: 2
                 }}>
                     <ShieldIcon sx={{ fontSize: 32 }} />
@@ -221,7 +221,7 @@ export default function SudoModal({
                                                 bgcolor: 'rgba(255, 255, 255, 0.03)',
                                                 '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
                                                 '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                                                '&.Mui-focused fieldset': { borderColor: '#f9c806' },
+                                                '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
                                             },
                                             '& .MuiInputBase-input': { color: 'white' }
                                         }}
@@ -236,13 +236,13 @@ export default function SudoModal({
                                     sx={{
                                         py: 1.5,
                                         borderRadius: '14px',
-                                        bgcolor: '#f9c806',
+                                        bgcolor: '#00F5FF',
                                         color: '#000',
                                         fontWeight: 700,
                                         '&:hover': {
-                                            bgcolor: '#e5b705',
+                                            bgcolor: '#00D1DA',
                                             transform: 'translateY(-1px)',
-                                            boxShadow: '0 8px 20px rgba(249, 200, 6, 0.3)'
+                                            boxShadow: '0 8px 20px rgba(0, 245, 255, 0.3)'
                                         }
                                     }}
                                 >
@@ -286,7 +286,7 @@ export default function SudoModal({
                                 height: 80,
                                 borderRadius: '50%',
                                 border: '2px dashed',
-                                borderColor: passkeyLoading ? '#f9c806' : 'rgba(255, 255, 255, 0.2)',
+                                borderColor: passkeyLoading ? '#00F5FF' : 'rgba(255, 255, 255, 0.2)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -294,12 +294,12 @@ export default function SudoModal({
                                 transition: 'all 0.3s ease',
                                 animation: passkeyLoading ? 'pulse 2s infinite' : 'none',
                                 '&:hover': {
-                                    borderColor: '#f9c806',
-                                    bgcolor: alpha('#f9c806', 0.05)
+                                    borderColor: '#00F5FF',
+                                    bgcolor: alpha('#00F5FF', 0.05)
                                 }
                             }}
                         >
-                            <FingerprintIcon sx={{ fontSize: 40, color: passkeyLoading ? '#f9c806' : 'rgba(255, 255, 255, 0.4)' }} />
+                            <FingerprintIcon sx={{ fontSize: 40, color: passkeyLoading ? '#00F5FF' : 'rgba(255, 255, 255, 0.4)' }} />
                         </Box>
                         
                         <Box sx={{ textAlign: 'center' }}>
@@ -319,11 +319,11 @@ export default function SudoModal({
                             sx={{
                                 py: 1.5,
                                 borderRadius: '14px',
-                                bgcolor: '#f9c806',
+                                bgcolor: '#00F5FF',
                                 color: '#000',
                                 fontWeight: 700,
                                 '&:hover': {
-                                    bgcolor: '#e5b705',
+                                    bgcolor: '#00D1DA',
                                 }
                             }}
                         >
@@ -384,7 +384,7 @@ export default function SudoModal({
                                                 bgcolor: 'rgba(255, 255, 255, 0.03)',
                                                 '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
                                                 '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                                                '&.Mui-focused fieldset': { borderColor: '#f9c806' },
+                                                '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
                                             },
                                             '& .MuiInputBase-input': { color: 'white' }
                                         }}
@@ -399,13 +399,13 @@ export default function SudoModal({
                                     sx={{
                                         py: 1.5,
                                         borderRadius: '14px',
-                                        bgcolor: '#f9c806',
+                                        bgcolor: '#00F5FF',
                                         color: '#000',
                                         fontWeight: 700,
                                         '&:hover': {
-                                            bgcolor: '#e5b705',
+                                            bgcolor: '#00D1DA',
                                             transform: 'translateY(-1px)',
-                                            boxShadow: '0 8px 20px rgba(249, 200, 6, 0.3)'
+                                            boxShadow: '0 8px 20px rgba(0, 245, 255, 0.3)'
                                         }
                                     }}
                                 >

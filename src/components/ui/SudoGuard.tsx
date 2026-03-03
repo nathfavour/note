@@ -39,8 +39,8 @@ export default function SudoGuard({ children }: SudoGuardProps) {
                     sx={{
                         p: 2,
                         borderRadius: "16px",
-                        bgcolor: alpha("#f9c806", 0.1),
-                        color: "#f9c806",
+                        bgcolor: alpha("#00F5FF", 0.1),
+                        color: "#00F5FF",
                         mb: 3,
                     }}
                 >
@@ -59,13 +59,13 @@ export default function SudoGuard({ children }: SudoGuardProps) {
                     variant="contained"
                     onClick={() => requestSudo({ onSuccess: () => {} })}
                     sx={{
-                        bgcolor: "#f9c806",
+                        bgcolor: "#00F5FF",
                         color: "#000",
                         fontWeight: 700,
                         px: 4,
                         py: 1.5,
                         borderRadius: "12px",
-                        '&:hover': { bgcolor: "#e5b705" }
+                        '&:hover': { bgcolor: "#00D1DA" }
                     }}
                 >
                     Unlock to Continue

@@ -79,7 +79,7 @@ export function CredentialSelectorModal({ isOpen, onClose, onSelect }: Credentia
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Attach Secret (Keep)">
       <Box sx={{ minHeight: '300px', maxHeight: '500px', display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="caption" sx={{ color: '#FFD700', fontWeight: 800, mb: 2, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Typography variant="caption" sx={{ color: '#00F5FF', fontWeight: 800, mb: 2, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           ⚠️ ATTACHING A SECRET WILL AUTOMATICALLY MAKE THIS NOTE PRIVATE
         </Typography>
 
@@ -128,12 +128,12 @@ export function CredentialSelectorModal({ isOpen, onClose, onSelect }: Credentia
                   mb: 1,
                   border: '1px solid rgba(255, 255, 255, 0.05)',
                   '&:hover': {
-                    bgcolor: 'rgba(255, 215, 0, 0.05)',
-                    borderColor: 'rgba(255, 215, 0, 0.2)',
+                    bgcolor: 'rgba(0, 245, 255, 0.05)',
+                    borderColor: 'rgba(0, 245, 255, 0.2)',
                   }
                 }}
               >
-                <Box sx={{ mr: 2, display: 'flex', color: '#FFD700' }}>
+                <Box sx={{ mr: 2, display: 'flex', color: '#00F5FF' }}>
                   {getItemIcon(item.itemType)}
                 </Box>
                 <ListItemText 

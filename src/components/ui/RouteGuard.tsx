@@ -63,7 +63,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
           color: '#fff',
         }}
       >
-        <CircularProgress sx={{ color: '#f9c806' }} />
+        <CircularProgress sx={{ color: '#00F5FF' }} />
       </Box>
     );
   }
@@ -97,7 +97,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
             Your IDM window is active. Once you finish signing in, this view will return automatically.
           </Typography>
-          <CircularProgress sx={{ color: '#f9c806', mt: 4 }} size={32} thickness={4} />
+          <CircularProgress sx={{ color: '#00F5FF', mt: 4 }} size={32} thickness={4} />
         </Box>
       </Box>
     );
