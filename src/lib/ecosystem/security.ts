@@ -129,6 +129,28 @@ export class EcosystemSecurity {
     }
   }
 
+  async verifyPin(pin: string): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+    const verifierStr = localStorage.getItem("kylrix_pin_verifier");
+    if (!verifierStr) return false;
+
+    try {
+      const verifier = JSON.parse(verifierStr);
+      const salt = new Uint8Array(atob(verifier.salt).split("").map(c => c.charCodeAt(0)));
+      const expectedHash = verifier.hash;
+      const actualHash = btoa(String.fromCharCode(...new Uint8Array(await this.derivePinHash(pin, salt))));
+      return actualHash === expectedHash;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  wipePin() {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("kylrix_pin_verifier");
+    sessionStorage.removeItem("kylrix_ephemeral_session");
+  }
+
   async unlock(password: string, keyChainEntry?: any): Promise<boolean> {
     try {
       if (!keyChainEntry) return false;
