@@ -5,15 +5,12 @@ import {
   Box, 
   Container, 
   Typography, 
-  Button as MuiButton, 
   Stack, 
   Grid, 
   AppBar, 
   Toolbar, 
   Link,
-  Avatar,
-  useTheme,
-  alpha
+  Avatar
 } from '@mui/material';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -50,7 +47,6 @@ const features = [
 export default function LandingPage() {
   const { openIDMWindow, isAuthenticated, user, isAuthenticating } = useAuth();
   const router = useRouter();
-  const theme = useTheme();
 
   useEffect(() => {
     if (isAuthenticated) {
