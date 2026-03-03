@@ -23,9 +23,9 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchReactions = async () => {
-    setError(null);
+  const fetchReactions = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await listReactions([
         Query.equal('targetType', targetType),
@@ -57,11 +57,11 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
     } else {
       setIsLoading(false);
     }
-  };
+  }, [targetId, targetType, noteId]);
 
   useEffect(() => {
     fetchReactions();
-  }, [targetId, targetType]);
+  }, [fetchReactions]);
 
   const reactionCounts = useMemo(() => {
     const counts: Record<string, number> = {};

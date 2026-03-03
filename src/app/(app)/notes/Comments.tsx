@@ -327,7 +327,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
   const [userMap, setUserMap] = useState<Record<string, Users>>({});
   const [commentsError, setCommentsError] = useState<string | null>(null);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setCommentsError(null);
     try {
       const res = await listComments(noteId);
@@ -378,11 +378,11 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       console.error('Failed to fetch comments via shared API:', fallbackError);
       setCommentsError('Comments are unavailable right now.');
     }
-  };
+  }, [noteId]);
 
   useEffect(() => {
     fetchComments();
-  }, [noteId]);
+  }, [fetchComments]);
 
   const handleAddComment = async (parentId: string | null = null, content: string = newComment) => {
     const text = parentId ? content : newComment;
