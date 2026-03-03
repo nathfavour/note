@@ -15,7 +15,7 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
-  Grid,
+  
   Paper,
   alpha,
   Button,
@@ -24,16 +24,16 @@ import {
 import {
   Settings,
   LogOut,
-  LayoutGrid,
+  Layout
   Download,
   Sparkles,
   Bell,
-  CheckCircle,
-  XCircle,
+  
+  
   Clock,
   Maximize2,
   Minimize2,
-  ChevronRight,
+  
   Info,
   Layers,
   Zap
@@ -46,7 +46,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
-import { ECOSYSTEM_APPS, getEcosystemUrl } from '@/constants/ecosystem';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { AICommandModal } from '@/components/ai/AICommandModal';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
@@ -60,7 +60,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const { allNotifications: islandHistory } = useIsland();
-  const { openOverlay, closeOverlay } = useOverlay();
+  const { } = useOverlay();
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
   
   // Advanced Notifications State

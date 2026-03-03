@@ -1,12 +1,6 @@
 import React from 'react';
 import { validatePublicNoteAccess } from '@/lib/appwrite';
-import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import type { Notes } from '@/types/appwrite';
-import { preProcessMarkdown } from '@/lib/markdown';
 import SharedNoteClient from './SharedNoteClient';
-import { headers } from 'next/headers';
-import { createRateLimiter, getClientIp } from '@/lib/rate-limit-middleware';
-import type { NextRequest } from 'next/server';
 
 function stripMarkdown(md?: string) {
    if (!md) return '';
