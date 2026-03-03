@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Box, Typography, Stack, IconButton, Container, alpha } from '@mui/material';
+import { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Stack, IconButton, Container } from '@mui/material';
 import { 
   ArrowBackIosNew as ArrowLeftIcon, 
   ArrowForwardIos as ArrowRightIcon 
@@ -542,7 +542,7 @@ export default function PitchPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const goToSlide = (index: number) => {
+  const goToSlide = useCallback((index: number) => {
     if (index >= 0 && index < slides.length && !isTransitioning) {
       setIsTransitioning(true);
       setTimeout(() => {
@@ -550,19 +550,19 @@ export default function PitchPage() {
         setIsTransitioning(false);
       }, 150);
     }
-  };
+  }, [isTransitioning]);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (currentSlide < slides.length - 1) {
       goToSlide(currentSlide + 1);
     }
-  };
+  }, [currentSlide, goToSlide]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (currentSlide > 0) {
       goToSlide(currentSlide - 1);
     }
-  };
+  }, [currentSlide, goToSlide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -580,7 +580,7 @@ export default function PitchPage() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide]);
+  }, [currentSlide, nextSlide, prevSlide, goToSlide]);
 
   const currentSlideData = slides[currentSlide];
 
