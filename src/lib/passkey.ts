@@ -25,7 +25,7 @@ export async function unlockWithPasskey(userId: string): Promise<boolean> {
 
     const authOptions = {
       challenge: challengeBase64,
-      rpId: window.location.hostname,
+      rpId: "kylrix.space",
       allowCredentials: passkeyEntries.map(entry => ({
         id: entry.credentialId!,
         type: 'public-key' as const,
