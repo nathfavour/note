@@ -25,14 +25,8 @@ import {
     Lock, 
     Shield, 
     Smartphone,
-    Key,
     Fingerprint,
-    Zap,
-    ShieldAlert,
-    ChevronRight,
-    Search,
-    Trash2,
-    AlertTriangle
+    Trash2
 } from 'lucide-react';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import SudoModal from '@/components/overlays/SudoModal';
@@ -59,7 +53,6 @@ export default function SettingsPage() {
     // Passkey state
     const [passkeyEntries, setPasskeyEntries] = useState<any[]>([]);
     const [loadingPasskeys, setLoadingPasskeys] = useState(true);
-    const [hasStalePasskeys, setHasStalePasskeys] = useState(false);
 
     useEffect(() => {
         setIsPinSet(ecosystemSecurity.isPinSet());
@@ -87,11 +80,6 @@ export default function SettingsPage() {
             }));
             
             setPasskeyEntries(pkEntries);
-            
-            const stale = pkEntries.some((e: any) => {
-                return !e.params?.rpId || e.params.rpId !== window.location.hostname;
-            });
-            setHasStalePasskeys(stale);
         } catch (e) {
             console.error("Failed to load passkeys", e);
         } finally {
@@ -241,42 +229,9 @@ export default function SettingsPage() {
                                     >
                                         Add Passkey
                                     </Button>
-                                </Box>
+                                    </Box>
 
-                                {hasStalePasskeys && (
-                                    <Alert 
-                                        severity="warning" 
-                                        icon={<AlertTriangle size={20} />}
-                                        sx={{ 
-                                            mb: 3, 
-                                            borderRadius: '16px', 
-                                            bgcolor: alpha(theme.palette.warning.main, 0.05),
-                                            border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                                            color: theme.palette.warning.main
-                                        }}
-                                    >
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Stale Passkeys</Typography>
-                                        <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                                            Some passkeys were registered on an old domain and are inactive.
-                                        </Typography>
-                                        <Button 
-                                            size="small" 
-                                            color="warning" 
-                                            onClick={() => {
-                                                const staleIds = passkeyEntries.filter(e => !e.params?.rpId || e.params.rpId !== window.location.hostname).map(e => e.$id);
-                                                Promise.all(staleIds.map(id => AppwriteService.deleteKeychainEntry(id))).then(() => {
-                                                    toast.success("Stale passkeys cleared");
-                                                    loadPasskeys();
-                                                });
-                                            }}
-                                            sx={{ fontWeight: 700, textTransform: 'none' }}
-                                        >
-                                            Clear Stale Passkeys
-                                        </Button>
-                                    </Alert>
-                                )}
-
-                                <List sx={{ bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', p: 0, overflow: 'hidden' }}>
+                                    <List sx={{ bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', p: 0, overflow: 'hidden' }}>
                                     {passkeyEntries.length === 0 ? (
                                         <Box sx={{ p: 2, textAlign: 'center', opacity: 0.5 }}>
                                             <Typography variant="body2">No passkeys registered.</Typography>
@@ -292,20 +247,21 @@ export default function SettingsPage() {
                                                     }
                                                 >
                                                     <ListItemIcon>
-                                                        <Fingerprint size={20} color={pk.params?.rpId === window.location.hostname ? theme.palette.primary.main : "#666"} />
+                                                        <Fingerprint size={20} color={theme.palette.primary.main} />
                                                     </ListItemIcon>
                                                     <ListItemText 
                                                         primary={pk.params?.name || `Passkey ${idx + 1}`}
-                                                        secondary={pk.params?.rpId !== window.location.hostname ? "Inactive (Old Domain)" : "Active"}
+                                                        secondary="Active"
                                                         primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }}
-                                                        secondaryTypographyProps={{ fontSize: '0.75rem', color: pk.params?.rpId !== window.location.hostname ? 'error.main' : 'inherit' }}
+                                                        secondaryTypographyProps={{ fontSize: '0.75rem' }}
                                                     />
                                                 </ListItem>
                                                 {idx < passkeyEntries.length - 1 && <Divider sx={{ opacity: 0.05 }} />}
                                             </React.Fragment>
                                         ))
                                     )}
-                                </List>
+                                    </List>
+
                             </Box>
 
                             <Divider sx={{ opacity: 0.05 }} />
