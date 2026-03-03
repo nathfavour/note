@@ -286,7 +286,7 @@ export class EcosystemSecurity {
     return crypto.subtle.deriveBits(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: salt as any,
         iterations: EcosystemSecurity.PIN_ITERATIONS,
         hash: "SHA-256",
       },
@@ -316,12 +316,12 @@ export class EcosystemSecurity {
     return crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: salt,
+        salt: salt as any,
         iterations: 10000, // Optimized for instant (<20ms) unlock speed
         hash: "SHA-256",
       },
       keyMaterial,
-      { name: "AES-GCM", length: 256 },
+      { name: "AES-GCM", length: 256 } as any,
       false, // SECURITY: Non-extractable. Key cannot be exported by XSS.
       ["encrypt", "decrypt"]
     );
