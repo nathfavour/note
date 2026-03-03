@@ -121,7 +121,7 @@ export function PasskeySetup({
         challenge: challengeBase64,
         rp: {
           name: "Kylrix",
-          id: window.location.hostname,
+          id: "kylrix.space",
         },
         user: {
           id: arrayBufferToBase64(userIdBytes.buffer as ArrayBuffer),
@@ -178,7 +178,7 @@ export function PasskeySetup({
           counter: 0,
           transports: regResp.response.transports || [],
           created: new Date().toISOString(),
-          rpId: window.location.hostname,
+          rpId: "kylrix.space",
         }),
         isBackup: false
       });
