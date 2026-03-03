@@ -104,13 +104,12 @@ export default function SudoModal({
         }
     };
 
-    const handlePinVerify = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-        if (pin.length !== 4) return;
+    const handlePinVerify = async (pinValue: string) => {
+        if (pinValue.length !== 4 || loading) return;
 
         setLoading(true);
         try {
-            const success = await ecosystemSecurity.unlockWithPin(pin);
+            const success = await ecosystemSecurity.unlockWithPin(pinValue);
             if (success) {
                 toast.success("Verified via PIN");
                 onSuccess();
@@ -118,13 +117,22 @@ export default function SudoModal({
                 toast.error("Incorrect PIN");
                 setPin("");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
             toast.error("PIN verification failed");
         } finally {
             setLoading(false);
         }
     };
+
+    const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+        setPin(val);
+        if (val.length === 4) {
+            handlePinVerify(val);
+        }
+    };
+
 
     const handlePasskeyVerify = async () => {
         // Passkey logic omitted for brevity, mirroring vault implementation
@@ -190,66 +198,41 @@ export default function SudoModal({
             <DialogContent sx={{ pb: 4 }}>
                 {mode === "pin" ? (
                     <Stack spacing={3} sx={{ mt: 2 }}>
-                        <form onSubmit={handlePinVerify}>
-                            <Stack spacing={2.5}>
-                                <Box>
-                                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, mb: 1, display: 'block', textAlign: 'center' }}>
-                                        ENTER 4-DIGIT PIN
-                                    </Typography>
-                                    <TextField
-                                        fullWidth
-                                        type="password"
-                                        placeholder="••••"
-                                        value={pin}
-                                        onChange={ (e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                        autoFocus
-                                        inputProps={{ 
-                                            maxLength: 4, 
-                                            inputMode: 'numeric',
-                                            style: { textAlign: 'center', fontSize: '2rem', letterSpacing: '0.5em' } 
-                                        }}
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <AppsIcon sx={{ fontSize: 18, color: "rgba(255, 255, 255, 0.3)" }} />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                borderRadius: '14px',
-                                                bgcolor: 'rgba(255, 255, 255, 0.03)',
-                                                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                                                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                                                '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
-                                            },
-                                            '& .MuiInputBase-input': { color: 'white' }
-                                        }}
-                                    />
-                                </Box>
-
-                                <Button
-                                    fullWidth
-                                    type="submit"
-                                    variant="contained"
-                                    disabled={loading || pin.length !== 4}
-                                    sx={{
-                                        py: 1.5,
+                        <Box>
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, mb: 1, display: 'block', textAlign: 'center' }}>
+                                ENTER 4-DIGIT PIN
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                type="password"
+                                placeholder="••••"
+                                value={pin}
+                                onChange={handlePinChange}
+                                autoFocus
+                                inputProps={{ 
+                                    maxLength: 4, 
+                                    inputMode: 'numeric',
+                                    style: { textAlign: 'center', fontSize: '2rem', letterSpacing: '0.5em' } 
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <AppsIcon sx={{ fontSize: 18, color: "rgba(255, 255, 255, 0.3)" }} />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
                                         borderRadius: '14px',
-                                        bgcolor: '#00F5FF',
-                                        color: '#000',
-                                        fontWeight: 700,
-                                        '&:hover': {
-                                            bgcolor: '#00D1DA',
-                                            transform: 'translateY(-1px)',
-                                            boxShadow: '0 8px 20px rgba(0, 245, 255, 0.3)'
-                                        }
-                                    }}
-                                >
-                                    {loading ? <CircularProgress size={24} color="inherit" /> : "Verify PIN"}
-                                </Button>
-                            </Stack>
-                        </form>
+                                        bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                        '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                                        '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                                        '&.Mui-focused fieldset': { borderColor: '#00F5FF' },
+                                    },
+                                    '& .MuiInputBase-input': { color: 'white' }
+                                }}
+                            />
+                        </Box>
 
                         <Box sx={{ width: '100%', position: 'relative', py: 1 }}>
                             <Box sx={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
