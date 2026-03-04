@@ -178,31 +178,41 @@ export default function SettingsPage() {
                     <Paper sx={{ 
                         p: 4, 
                         borderRadius: '32px', 
-                        bgcolor: 'rgba(255, 255, 255, 0.02)', 
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(20px)',
-                        backgroundImage: 'none'
+                        bgcolor: 'rgba(255, 255, 255, 0.01)', 
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(25px)',
+                        backgroundImage: 'none',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
                     }}>
                         <Stack spacing={4}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                                 <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 800, fontFamily: 'var(--font-space-grotesk)' }}>Vault Session</Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.6 }}>Your current encryption status for protected notes</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em' }}>Vault Session</Typography>
+                                    <Typography variant="body2" sx={{ opacity: 0.5, fontFamily: 'var(--font-satoshi)' }}>Your current encryption status for protected notes</Typography>
                                 </Box>
                                 <Button 
-                                    variant={isUnlocked ? "outlined" : "contained"}
+                                    variant={isUnlocked ? "text" : "contained"}
                                     onClick={() => isUnlocked ? ecosystemSecurity.lock() : setUnlockModalOpen(true)}
                                     color={isUnlocked ? "inherit" : "primary"}
-                                    startIcon={isUnlocked ? <Lock size={18} /> : <Shield size={18} />}
+                                    startIcon={isUnlocked ? <Lock size={18} strokeWidth={1.5} /> : <Shield size={18} strokeWidth={1.5} />}
                                     sx={{ 
                                         borderRadius: '16px', 
-                                        px: 3, 
-                                        py: 1.2, 
+                                        px: 4, 
+                                        py: 1.5, 
                                         fontWeight: 800,
+                                        fontFamily: 'var(--font-satoshi)',
                                         textTransform: 'none',
-                                        ...(isUnlocked && {
-                                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                                            color: 'rgba(255, 255, 255, 0.6)'
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        ...(isUnlocked ? {
+                                            bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                                            color: 'rgba(255, 255, 255, 0.6)',
+                                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.15)', color: 'white' }
+                                        } : {
+                                            background: 'linear-gradient(135deg, #00F5FF 0%, #00D1DA 100%)',
+                                            color: 'black',
+                                            boxShadow: '0 8px 20px rgba(0, 245, 255, 0.15)',
+                                            '&:hover': { background: 'linear-gradient(135deg, #00E5FF 0%, #00C1CA 100%)', transform: 'translateY(-1px)' }
                                         })
                                     }}
                                 >
@@ -210,66 +220,91 @@ export default function SettingsPage() {
                                 </Button>
                             </Box>
 
-                            <Divider sx={{ opacity: 0.05 }} />
+                            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
                             {/* Passkey Section */}
-                            <Box>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{ 
+                                bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                                p: 3.5, 
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
                                     <Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 800, fontFamily: 'var(--font-space-grotesk)' }}>Passkeys</Typography>
-                                        <Typography variant="body2" sx={{ opacity: 0.6 }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em' }}>Passkeys</Typography>
+                                        <Typography variant="body2" sx={{ opacity: 0.5, fontFamily: 'var(--font-satoshi)', mt: 0.5 }}>
                                             Use biometrics to securely unlock your notes.
                                         </Typography>
                                     </Box>
                                     <Button 
-                                        variant="contained" 
+                                        variant="text" 
                                         size="small" 
-                                        startIcon={<Fingerprint size={18} />}
+                                        startIcon={<Fingerprint size={16} strokeWidth={2} />}
                                         onClick={() => setPasskeySetupOpen(true)}
-                                        sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
+                                        sx={{ 
+                                            borderRadius: '12px', 
+                                            textTransform: 'none', 
+                                            fontWeight: 800, 
+                                            bgcolor: 'rgba(0, 245, 255, 0.05)',
+                                            color: '#00F5FF',
+                                            px: 2,
+                                            border: '1px solid rgba(0, 245, 255, 0.1)',
+                                            '&:hover': { bgcolor: 'rgba(0, 245, 255, 0.1)', border: '1px solid rgba(0, 245, 255, 0.2)' }
+                                        }}
                                     >
-                                        Add Passkey
+                                        Register
                                     </Button>
                                     </Box>
 
-                                    <List sx={{ bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', p: 0, overflow: 'hidden' }}>
+                                    <List sx={{ bgcolor: 'rgba(255, 255, 255, 0.01)', borderRadius: '20px', p: 1, border: '1px solid rgba(255, 255, 255, 0.03)' }}>
                                     {passkeyEntries.length === 0 ? (
-                                        <Box sx={{ p: 2, textAlign: 'center', opacity: 0.5 }}>
-                                            <Typography variant="body2">No passkeys registered.</Typography>
+                                        <Box sx={{ py: 3, textAlign: 'center', opacity: 0.3 }}>
+                                            <Typography variant="caption" sx={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>ZERO PASSKEYS DETECTED</Typography>
                                         </Box>
                                     ) : (
                                         passkeyEntries.map((pk, idx) => (
                                             <React.Fragment key={pk.$id}>
                                                 <ListItem 
+                                                    sx={{ 
+                                                        borderRadius: '14px', 
+                                                        mb: idx < passkeyEntries.length - 1 ? 1 : 0,
+                                                        transition: 'all 0.2s ease',
+                                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.02)' }
+                                                    }}
                                                     secondaryAction={
-                                                        <IconButton edge="end" color="error" onClick={() => handleRemovePasskey(pk.$id)}>
-                                                            <Trash2 size={18} />
+                                                        <IconButton edge="end" onClick={() => handleRemovePasskey(pk.$id)} sx={{ color: 'rgba(255, 77, 77, 0.4)', '&:hover': { color: '#FF4D4D', bgcolor: 'rgba(255, 77, 77, 0.1)' } }}>
+                                                            <Trash2 size={16} strokeWidth={1.5} />
                                                         </IconButton>
                                                     }
                                                 >
-                                                    <ListItemIcon>
-                                                        <Fingerprint size={20} color={theme.palette.primary.main} />
+                                                    <ListItemIcon sx={{ minWidth: 44 }}>
+                                                        <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(0, 245, 255, 0.05)', display: 'flex', border: '1px solid rgba(0, 245, 255, 0.1)' }}>
+                                                            <Fingerprint size={18} color="#00F5FF" strokeWidth={1.5} />
+                                                        </Box>
                                                     </ListItemIcon>
                                                     <ListItemText 
                                                         primary={pk.params?.name || `Passkey ${idx + 1}`}
-                                                        secondary="Active"
-                                                        primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }}
-                                                        secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                                                        secondary="Secure Hardware Key"
+                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-satoshi)' }}
+                                                        secondaryTypographyProps={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', opacity: 0.4 }}
                                                     />
                                                 </ListItem>
-                                                {idx < passkeyEntries.length - 1 && <Divider sx={{ opacity: 0.05 }} />}
                                             </React.Fragment>
                                         ))
                                     )}
                                     </List>
-
                             </Box>
 
-                            <Divider sx={{ opacity: 0.05 }} />
+                            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
-                            <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, fontFamily: 'var(--font-space-grotesk)', mb: 1 }}>Quick Unlock (PIN)</Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.6, mb: 4, maxWidth: 600 }}>
+                            <Box sx={{ 
+                                bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                                p: 3.5, 
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em', mb: 0.5 }}>Quick Unlock (PIN)</Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.5, mb: 3.5, maxWidth: 600, fontFamily: 'var(--font-satoshi)' }}>
                                     {isPinSet 
                                         ? "Your PIN is active. Use the form below to update it."
                                         : "Set a 4-digit PIN for instant access to your private notes between sessions."
@@ -277,12 +312,12 @@ export default function SettingsPage() {
                                 </Typography>
 
                                 {message && (
-                                    <Alert severity={message.type} sx={{ mb: 3, borderRadius: '16px', bgcolor: alpha(theme.palette[message.type].main, 0.05), color: theme.palette[message.type].main, border: `1px solid ${alpha(theme.palette[message.type].main, 0.1)}` }}>
+                                    <Alert severity={message.type} sx={{ mb: 3, borderRadius: '14px', bgcolor: alpha(theme.palette[message.type].main, 0.05), color: theme.palette[message.type].main, border: `1px solid ${alpha(theme.palette[message.type].main, 0.1)}`, fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>
                                         {message.text}
                                     </Alert>
                                 )}
 
-                                <Box component="form" onSubmit={handleSetPin} sx={{ maxWidth: 360 }}>
+                                <Box component="form" onSubmit={handleSetPin} sx={{ maxWidth: 380 }}>
                                     <Stack spacing={2}>
                                         {isPinSet && (
                                             <TextField
@@ -292,20 +327,20 @@ export default function SettingsPage() {
                                                 value={oldPin}
                                                 onChange={(e) => setOldPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 800, letterSpacing: '0.5em' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.04)' } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
                                             />
                                         )}
                                         <Box sx={{ display: 'flex', gap: 2 }}>
                                             <TextField
                                                 fullWidth
                                                 type="password"
-                                                placeholder={isPinSet ? "New PIN" : "Set PIN"}
+                                                placeholder={isPinSet ? "New" : "PIN"}
                                                 value={pin}
                                                 onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 800, letterSpacing: '0.5em' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.04)' } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
                                             />
                                             <TextField
                                                 fullWidth
@@ -314,8 +349,8 @@ export default function SettingsPage() {
                                                 value={confirmPin}
                                                 onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 800, letterSpacing: '0.5em' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.04)' } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
                                             />
                                         </Box>
                                         <Button 
@@ -327,14 +362,15 @@ export default function SettingsPage() {
                                                 borderRadius: '16px', 
                                                 py: 1.8, 
                                                 fontWeight: 800,
-                                                bgcolor: isPinSet ? alpha('#00F5FF', 0.1) : 'primary.main',
-                                                color: isPinSet ? '#00F5FF' : 'black',
-                                                border: isPinSet ? '1px solid rgba(0, 245, 255, 0.2)' : 'none',
-                                                '&:hover': { bgcolor: isPinSet ? alpha('#00F5FF', 0.2) : alpha('#00F5FF', 0.8) },
+                                                fontFamily: 'var(--font-satoshi)',
+                                                bgcolor: isPinSet ? 'rgba(255, 255, 255, 0.03)' : 'primary.main',
+                                                color: isPinSet ? 'white' : 'black',
+                                                border: isPinSet ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+                                                '&:hover': { bgcolor: isPinSet ? 'rgba(255, 255, 255, 0.06)' : alpha('#00F5FF', 0.8) },
                                                 textTransform: 'none'
                                             }}
                                         >
-                                            {loading ? <CircularProgress size={24} color="inherit" /> : (isPinSet ? "Update Quick Unlock PIN" : "Setup Quick Unlock PIN")}
+                                            {loading ? <CircularProgress size={24} color="inherit" /> : (isPinSet ? "Update Unlock PIN" : "Setup Quick Unlock")}
                                         </Button>
 
                                         {isPinSet && (
@@ -343,10 +379,10 @@ export default function SettingsPage() {
                                                 variant="text"
                                                 color="error"
                                                 onClick={handleWipePin}
-                                                startIcon={<Trash2 size={16} />}
-                                                sx={{ textTransform: 'none', fontWeight: 800 }}
+                                                startIcon={<Trash2 size={16} strokeWidth={1.5} />}
+                                                sx={{ textTransform: 'none', fontWeight: 800, fontFamily: 'var(--font-satoshi)', fontSize: '0.75rem', opacity: 0.6, '&:hover': { opacity: 1 } }}
                                             >
-                                                Forgot PIN? Reset with Password
+                                                Forgot PIN? Reset with Master Password
                                             </Button>
                                         )}
                                     </Stack>

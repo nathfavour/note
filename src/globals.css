@@ -10,14 +10,14 @@
   --font-clash: "Clash Display", "Satoshi", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-void: #000000;
-  --color-surface: #0A0A0A;
-  --color-surface-2: #141414;
+  --color-void: #050505;
+  --color-surface: rgba(255, 255, 255, 0.03);
+  --color-surface-2: rgba(255, 255, 255, 0.05);
   --color-titanium: #F2F2F2;
   --color-gunmetal: #A1A1AA;
-  --color-electric: #00F0FF;
-  --border-subtle: #222222;
-  --border-active: #404040;
+  --color-electric: #00F5FF;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-active: rgba(255, 255, 255, 0.15);
 
   --background: var(--color-void);
   --foreground: var(--color-titanium);
@@ -37,9 +37,9 @@ body {
 
 /* Glassmorphism 2.0 */
 .glass-panel {
-  background: rgba(10, 10, 10, 0.95);
+  background: var(--color-surface);
   backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
 }
 
 /* Custom scrollbar */
@@ -53,18 +53,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-active);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Selection styles */
 ::selection {
-  background-color: rgba(0, 240, 255, 0.2);
-  color: var(--color-electric);
+  background-color: rgba(0, 245, 255, 0.2);
+  color: #fff;
 }
 
 /* Animation keyframes */

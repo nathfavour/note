@@ -267,21 +267,40 @@ export default function NotesPage() {
             mb: 4,
             display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+            bgcolor: 'rgba(255, 255, 255, 0.01)',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           <Typography
             variant="h4"
             sx={{
               fontWeight: 900,
-              fontFamily: 'var(--font-space-grotesk)',
-              color: 'text.primary'
+              fontFamily: 'var(--font-clash-display)',
+              color: 'text.primary',
+              letterSpacing: '-0.04em',
             }}
           >
             Notes
           </Typography>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <IconButton onClick={handleCreateNoteClick} {...sidebarIgnoreProps} sx={{ color: 'primary.main' }}>
+            <IconButton 
+              onClick={handleCreateNoteClick} 
+              {...sidebarIgnoreProps} 
+              sx={{ 
+                color: 'primary.main',
+                bgcolor: 'rgba(0, 245, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 245, 255, 0.1)',
+                '&:hover': {
+                  bgcolor: 'rgba(0, 245, 255, 0.1)',
+                  borderColor: 'rgba(0, 245, 255, 0.2)',
+                }
+              }}
+            >
               <PlusCircleIcon />
             </IconButton>
           </Stack>
@@ -294,7 +313,12 @@ export default function NotesPage() {
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 4
+            mb: 6,
+            p: 4,
+            bgcolor: 'rgba(255, 255, 255, 0.01)',
+            borderRadius: '32px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
           }}
         >
           <Box>
@@ -302,9 +326,10 @@ export default function NotesPage() {
               variant="h3"
               sx={{
                 fontWeight: 900,
-                fontFamily: 'var(--font-space-grotesk)',
+                fontFamily: 'var(--font-clash-display)',
                 color: 'text.primary',
-                mb: 0.5
+                mb: 1,
+                letterSpacing: '-0.04em',
               }}
             >
               Notes
@@ -313,16 +338,18 @@ export default function NotesPage() {
               variant="body1"
               sx={{
                 color: 'text.secondary',
-                fontWeight: 500
+                fontWeight: 500,
+                fontFamily: 'var(--font-satoshi)',
+                opacity: 0.8
               }}
             >
               {allNotes.length < totalNotes && !hasSearchResults ? (
-                <>Syncing <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{allNotes.length}</Box> of <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{totalNotes}</Box> notes</>
+                <>Syncing <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#00F5FF', fontSize: '0.85rem' }}>{allNotes.length}</Box> of <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, fontSize: '0.85rem' }}>{totalNotes}</Box> notes</>
               ) : (
                 hasSearchResults ? (
-                  <><Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{totalCount}</Box> {totalCount === 1 ? 'result' : 'results'} found</>
+                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#00F5FF', fontSize: '0.85rem' }}>{totalCount}</Box> {totalCount === 1 ? 'result' : 'results'} found</>
                 ) : (
-                  <><Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#00F5FF' }}>{totalNotes}</Box> {totalNotes === 1 ? 'note' : 'notes'}</>
+                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#00F5FF', fontSize: '0.85rem' }}>{totalNotes}</Box> {totalNotes === 1 ? 'note' : 'notes'}</>
                 )
               )}
             </Typography>
@@ -332,7 +359,16 @@ export default function NotesPage() {
               onClick={handleToggleSidebar}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               {...sidebarIgnoreProps}
-              sx={{ color: 'text.secondary' }}
+              sx={{ 
+                color: 'text.secondary',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                }
+              }}
             >
               {isCollapsed ? (
                 <ArrowRightOnRectangleIcon />
@@ -340,7 +376,21 @@ export default function NotesPage() {
                 <ArrowLeftOnRectangleIcon />
               )}
             </IconButton>
-            <IconButton onClick={handleCreateNoteClick} {...sidebarIgnoreProps} sx={{ color: 'primary.main' }}>
+            <IconButton 
+              onClick={handleCreateNoteClick} 
+              {...sidebarIgnoreProps} 
+              sx={{ 
+                color: 'primary.main',
+                bgcolor: 'rgba(0, 245, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 245, 255, 0.1)',
+                px: 2,
+                '&:hover': {
+                  bgcolor: 'rgba(0, 245, 255, 0.1)',
+                  borderColor: 'rgba(0, 245, 255, 0.2)',
+                }
+              }}
+            >
               <PlusCircleIcon />
             </IconButton>
           </Stack>
@@ -352,9 +402,12 @@ export default function NotesPage() {
             direction="row"
             spacing={1.5}
             sx={{
-              mb: 3,
+              mb: 6,
               overflowX: 'auto',
-              pb: 1,
+              p: 1.5,
+              bgcolor: 'rgba(255, 255, 255, 0.01)',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
               alignItems: 'center',
               '&::-webkit-scrollbar': { display: 'none' },
               msOverflowStyle: 'none',
@@ -366,7 +419,23 @@ export default function NotesPage() {
                 key={index}
                 variant={searchQuery === tag ? 'contained' : 'outlined'}
                 size="small"
-                sx={{ whiteSpace: 'nowrap' }}
+                sx={{ 
+                  whiteSpace: 'nowrap',
+                  borderRadius: '12px',
+                  fontFamily: 'var(--font-satoshi)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                  py: 1,
+                  px: 2.5,
+                  bgcolor: searchQuery === tag ? 'primary.main' : 'rgba(255, 255, 255, 0.03)',
+                  borderColor: searchQuery === tag ? 'primary.main' : 'rgba(255, 255, 255, 0.08)',
+                  color: searchQuery === tag ? '#000' : 'rgba(255, 255, 255, 0.6)',
+                  '&:hover': {
+                    bgcolor: searchQuery === tag ? 'primary.light' : 'rgba(255, 255, 255, 0.05)',
+                    borderColor: searchQuery === tag ? 'primary.light' : 'rgba(255, 255, 255, 0.15)',
+                  }
+                }}
                 aria-pressed={searchQuery === tag}
                 onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
                 {...sidebarIgnoreProps}
@@ -376,7 +445,19 @@ export default function NotesPage() {
             ))}
 
             {hasSearchResults && (
-              <Button variant="text" size="small" onClick={clearSearch} sx={{ ml: 1 }} {...sidebarIgnoreProps}>
+              <Button 
+                variant="text" 
+                size="small" 
+                onClick={clearSearch} 
+                sx={{ 
+                  ml: 1, 
+                  color: 'primary.main',
+                  fontFamily: 'var(--font-jetbrains-mono)',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.05em'
+                }} 
+                {...sidebarIgnoreProps}
+              >
                 Clear
               </Button>
             )}
@@ -495,19 +576,37 @@ export default function NotesPage() {
         ) : (
           <Stack spacing={4}>
             {pinnedNotes.length > 0 && (
-              <Box>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, px: 0.5 }}>
-                  <PinIcon sx={{ fontSize: 16, color: 'primary.main', transform: 'rotate(45deg)' }} />
+              <Box 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  bgcolor: 'rgba(255, 255, 255, 0.01)', 
+                  borderRadius: '32px', 
+                  border: '1px solid rgba(255, 255, 255, 0.05)' 
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3, px: 1 }}>
+                  <Box 
+                    sx={{ 
+                      p: 1, 
+                      bgcolor: 'rgba(0, 245, 255, 0.05)', 
+                      borderRadius: '10px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      border: '1px solid rgba(0, 245, 255, 0.1)'
+                    }}
+                  >
+                    <PinIcon sx={{ fontSize: 16, color: 'primary.main', transform: 'rotate(45deg)' }} />
+                  </Box>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       fontWeight: 800, 
-                      fontFamily: 'var(--font-space-grotesk)', 
+                      fontFamily: 'var(--font-clash-display)', 
                       textTransform: 'uppercase', 
                       letterSpacing: '0.15em', 
-                      fontSize: '0.7rem', 
+                      fontSize: '0.75rem', 
                       color: 'primary.main',
-                      opacity: 0.8
                     }}
                   >
                     Pinned Notes
@@ -527,17 +626,37 @@ export default function NotesPage() {
             )}
 
             {regularNotes.length > 0 && (
-              <Box>
+              <Box 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  bgcolor: 'rgba(255, 255, 255, 0.01)', 
+                  borderRadius: '32px', 
+                  border: '1px solid rgba(255, 255, 255, 0.05)' 
+                }}
+              >
                 {pinnedNotes.length > 0 && (
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, px: 0.5 }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3, px: 1 }}>
+                    <Box 
+                      sx={{ 
+                        p: 1, 
+                        bgcolor: 'rgba(255, 255, 255, 0.03)', 
+                        borderRadius: '10px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        border: '1px solid rgba(255, 255, 255, 0.08)'
+                      }}
+                    >
+                      <MagnifyingGlassIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    </Box>
                     <Typography 
                       variant="h6" 
                       sx={{ 
                         fontWeight: 800, 
-                        fontFamily: 'var(--font-space-grotesk)', 
+                        fontFamily: 'var(--font-clash-display)', 
                         textTransform: 'uppercase', 
                         letterSpacing: '0.15em', 
-                        fontSize: '0.7rem', 
+                        fontSize: '0.75rem', 
                         color: 'text.secondary',
                         opacity: 0.6
                       }}
