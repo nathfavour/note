@@ -27,6 +27,7 @@ import { useAuth } from "@/components/ui/AuthContext";
 import { unlockWithPasskey } from "@/lib/passkey";
 import { PasskeySetup } from "./PasskeySetup";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface SudoModalProps {
     isOpen: boolean;
@@ -40,6 +41,7 @@ export default function SudoModal({
     onCancel,
 }: SudoModalProps) {
     const { user } = useAuth();
+    const router = useRouter();
     const [password, setPassword] = useState("");
     const [pin, setPin] = useState("");
     const [loading, setLoading] = useState(false);
@@ -58,8 +60,17 @@ export default function SudoModal({
             // Check for passkey keychain entry
             AppwriteService.listKeychainEntries(user.$id).then(entries => {
                 const passkeyPresent = entries.some((e: any) => e.type === 'passkey');
+                const passwordPresent = entries.some((e: any) => e.type === 'password');
                 setHasPasskey(passkeyPresent);
                 
+                // Enforce Master Password first
+                if (!passwordPresent && isOpen) {
+                    toast.error("Master password required for security actions");
+                    router.push("/masterpass");
+                    onCancel();
+                    return;
+                }
+
                 if (passkeyPresent) {
                     setMode("passkey");
                     handlePasskeyVerify();
