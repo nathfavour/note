@@ -27,9 +27,10 @@ export const DiscoverabilitySettings = () => {
     const [profile, setProfile] = useState<any>(null);
 
     const loadProfile = React.useCallback(async () => {
+        if (!user?.$id) return;
         try {
             // Document ID in the users table is mapped to the Appwrite Account ID
-            const p = await databases.getDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user!.$id);
+            const p = await databases.getDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id);
             setProfile(p);
         } catch (e) {
             console.error("Failed to load profile from Connect", e);

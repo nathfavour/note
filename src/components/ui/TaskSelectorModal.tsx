@@ -9,8 +9,7 @@ import {
   ListItemText, 
   CircularProgress, 
   TextField,
-  InputAdornment,
-  alpha
+  InputAdornment
 } from '@mui/material';
 import { 
   Search as SearchIcon,

@@ -40,7 +40,7 @@ export default function AppShell({ children }: AppShellProps) {
         openIDMWindow();
         setAuthChecked(true);
       });
-  }, [pathname, router]);
+  }, [pathname, openIDMWindow]);
 
   const handleCreateNote = () => {
     router.push('/notes/new');

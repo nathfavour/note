@@ -175,7 +175,7 @@ export default function GlobalSearch({
     };
     load();
     return () => { mounted = false; };
-  }, [user?.$id]);
+  }, [user?.$id, user]);
 
   useEffect(() => {
     let mounted = true;
@@ -419,7 +419,7 @@ export default function GlobalSearch({
         >
           {results.length > 0 ? (
             <List sx={{ py: 1 }}>
-              {results.map((result, index) => (
+              {results.map((result, _index) => (
                 <ListItem
                   key={result.id}
                   onClick={() => handleResultClick(result)}

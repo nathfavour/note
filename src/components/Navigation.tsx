@@ -120,7 +120,7 @@ export const DesktopSidebar: React.FC = () => {
           const url = await fetchProfilePreview(profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
         } else if (mounted) setSmallProfileUrl(null);
-      } catch (err: any) {
+      } catch (_err: any) {
         if (mounted) setSmallProfileUrl(null);
       }
     };

@@ -12,7 +12,6 @@ import {
   Warning as WarningIcon,
   Close as CloseIcon,
   Star as ProIcon,
-  AutoAwesome as SparklesIcon,
   EmojiObjects as IdeaIcon,
   Message as ConnectIcon,
   ContentCopy as CopyIcon

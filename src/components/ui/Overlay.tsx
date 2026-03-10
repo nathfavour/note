@@ -5,10 +5,8 @@ import {
   Modal, 
   Box, 
   Fade, 
-  Backdrop,
-  IconButton
+  Backdrop
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
 import { useOverlay } from './OverlayContext';
 
 const Overlay: React.FC = () => {

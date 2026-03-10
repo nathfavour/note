@@ -87,7 +87,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     try {
       const url = await fetchProfilePreview(fileId, 64, 64);
       return url;
-    } catch (err: any) {
+    } catch (_err: any) {
       return null;
     }
   }, []);

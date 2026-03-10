@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSudo } from "@/contexts/SudoContext";
-import { Box, Typography, Button, CircularProgress, alpha } from "@mui/material";
+import { Box, Typography, Button, alpha } from "@mui/material";
 import ShieldIcon from "@mui/icons-material/Shield";
 
 interface SudoGuardProps {

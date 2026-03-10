@@ -1,5 +1,3 @@
-import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
-
 export interface EcosystemApp {
   id: string;
   label: string;

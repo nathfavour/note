@@ -171,7 +171,7 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     } finally {
       setIsSearching(false);
     }
-  }, [useLocalSearch, performLocalSearch, performBackendSearch, data]);
+  }, [useLocalSearch, performLocalSearch, performBackendSearch]);
   
   // Debounced search function
   const debouncedSearch = useDebounce(executeSearch, debounceMs);
@@ -246,6 +246,7 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
         executeSearch('', 1);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, useLocalSearch, searchQuery, executeSearch, ...dependencies]);
   
   return {

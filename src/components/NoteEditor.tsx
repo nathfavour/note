@@ -28,6 +28,7 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [loaded, setLoaded] = React.useState(false);
   const [_theme, _setTheme] = React.useState(useTheme());
   const theme = _theme;
+  void theme;
 
   React.useEffect(() => {
     let cancelled = false;

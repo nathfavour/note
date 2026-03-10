@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { DoodleStroke } from '@/types/notes';
 import { 
   Box, 
@@ -46,23 +46,8 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
   const [isDraggingPip, setIsDraggingPip] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
-  // Initialize canvas with existing data
-  useEffect(() => {
-    if (initialData) {
-      try {
-        const data = JSON.parse(initialData);
-        setStrokes(data);
-        redrawCanvas(data);
-      } catch {
-        console.error('Failed to parse doodle data');
-      }
-    }
-  }, []);
-
-  const getCanvas = () => canvasRef.current;
-
-  const redrawCanvas = useCallback((strokesData: DoodleStroke[] = strokes) => {
-    const canvas = getCanvas();
+  const redrawCanvas = (strokesData: DoodleStroke[] = strokes) => {
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
@@ -90,7 +75,7 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
 
       ctx.globalAlpha = 1;
     });
-  }, [strokes]);
+  };
 
   // Initialize canvas with existing data
   useEffect(() => {
@@ -104,14 +89,15 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialData]);
 
   useEffect(() => {
     redrawCanvas();
-  }, [redrawCanvas]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [strokes]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = getCanvas();
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -128,7 +114,7 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
 
-    const canvas = getCanvas();
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -156,7 +142,7 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
 
   const handleClear = () => {
     setStrokes([]);
-    const canvas = getCanvas();
+    const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {

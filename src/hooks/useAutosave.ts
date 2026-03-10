@@ -106,7 +106,7 @@ export function useAutosave(note: Notes | null, options: AutosaveOptions = {}) {
     if (!lastSavedRef.current || lastSavedRef.current.$id !== note.$id) {
       lastSavedRef.current = note;
     }
-  }, [note?.$id]);
+  }, [note]);
 
   useEffect(() => {
     if (trigger === 'manual') return;

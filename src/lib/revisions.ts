@@ -11,7 +11,7 @@ const REVISION_LIMITS = {
  * Get user's subscription plan (free or paid)
  * TODO: Integrate with actual subscription system
  */
-async function getUserPlan(userId?: string): Promise<'free' | 'paid'> {
+async function getUserPlan(_userId?: string): Promise<'free' | 'paid'> {
   // For now, everyone is on free plan
   // When subscription system is integrated, check here
   return 'free';
@@ -20,8 +20,8 @@ async function getUserPlan(userId?: string): Promise<'free' | 'paid'> {
 /**
  * Get revision limit based on user plan
  */
-async function getRevisionLimit(userId?: string): Promise<number> {
-  const plan = await getUserPlan(userId);
+async function getRevisionLimit(_userId?: string): Promise<number> {
+  const plan = await getUserPlan(_userId);
   return REVISION_LIMITS[plan];
 }
 
@@ -55,7 +55,7 @@ export async function pruneRevisions(
     const docs = allRevisions.documents as any[];
 
     // Keep the latest `limit` revisions
-    const toKeep = docs.slice(0, limit).map((d) => d.$id);
+    const _toKeep = docs.slice(0, limit).map((d) => d.$id);
     const toDelete = docs.slice(limit).map((d) => d.$id);
 
     // Delete old revisions

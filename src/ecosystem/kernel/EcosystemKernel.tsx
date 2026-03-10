@@ -2,13 +2,12 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Box, Paper, IconButton, Typography, Stack, alpha, Tooltip } from '@mui/material';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Maximize2, 
   Minimize2, 
   ExternalLink,
-  GripHorizontal,
   Lock,
   Layers,
   ChevronUp,
@@ -37,8 +36,8 @@ const PremiumIcon = ({ name, size = 18, color = 'currentColor' }: { name: string
   const IconComponent = icons[name] || Layers;
   return <IconComponent size={size} color={color} strokeWidth={1.5} />;
 };
-import { getEcosystemUrl } from '@/constants/ecosystem';
-import { MeshProtocol, NodeIdentity, MeshMessage } from '@/lib/ecosystem/mesh';
+import { getEcosystemUrl as _getEcosystemUrl } from '@/constants/ecosystem';
+import { MeshProtocol, MeshMessage } from '@/lib/ecosystem/mesh';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 
 /**
@@ -89,9 +88,9 @@ export const KernelProvider = ({ children }: { children: ReactNode }) => {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
   const [maxZIndex, setMaxZIndex] = useState(1000);
-  const [meshNodes, setMeshNodes] = useState<NodeIdentity[]>(MeshProtocol.getNodes());
-  const [activeNodesInfo, setActiveNodesInfo] = useState<Record<string, { lastSeen: number, load: number }>>({});
-  const [isKernelLocked, setIsKernelLocked] = useState(false);
+  const [_meshNodes, setMeshNodes] = useState<NodeIdentity[]>(MeshProtocol.getNodes());
+  const [_activeNodesInfo, setActiveNodesInfo] = useState<Record<string, { lastSeen: number, load: number }>>({});
+  const [_isKernelLocked, setIsKernelLocked] = useState(false);
 
   /**
    * Node Pulse & Discovery (Mesh Integration)
@@ -171,26 +170,26 @@ export const KernelProvider = ({ children }: { children: ReactNode }) => {
     setMaxZIndex(prev => prev + 1);
   }, [maxZIndex, windows.length]);
 
-  const closeWindow = (id: string) => {
+  const closeWindow = useCallback((id: string) => {
     setWindows(prev => prev.filter(w => w.id !== id));
     if (activeWindowId === id) setActiveWindowId(null);
-  };
+  }, [activeWindowId]);
 
-  const minimizeWindow = (id: string) => {
+  const minimizeWindow = useCallback((id: string) => {
     setWindows(prev => prev.map(w => w.id === id ? { ...w, status: 'minimized' } : w));
-  };
+  }, []);
 
-  const maximizeWindow = (id: string) => {
+  const maximizeWindow = useCallback((id: string) => {
     setWindows(prev => prev.map(w => w.id === id ? { ...w, status: w.status === 'maximized' ? 'normal' : 'maximized' } : w));
-  };
+  }, []);
 
-  const lockWindow = (id: string) => {
+  const lockWindow = useCallback((id: string) => {
     setWindows(prev => prev.map(w => w.id === id ? { ...w, status: 'locked' } : w));
-  };
+  }, []);
 
-  const unlockWindow = (id: string) => {
+  const unlockWindow = useCallback((id: string) => {
     setWindows(prev => prev.map(w => (w.id === id && w.status === 'locked') ? { ...w, status: 'normal' } : w));
-  };
+  }, []);
 
   const popOutWindow = (id: string) => {
     const win = windows.find(w => w.id === id);
@@ -245,7 +244,7 @@ export const KernelProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [launchWindow, activeWindowId, windows]);
+  }, [launchWindow, activeWindowId, windows, closeWindow, lockWindow, unlockWindow]);
 
   return (
     <KernelContext.Provider value={{ 

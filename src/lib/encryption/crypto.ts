@@ -22,7 +22,7 @@ export async function encryptNote(content: string, publicKey: string): Promise<{
   iv: string;
 }> {
   const iv = randomBytes(IV_LENGTH);
-  const salt = randomBytes(SALT_LENGTH);
+  const _salt = randomBytes(SALT_LENGTH);
   const key = randomBytes(KEY_LENGTH);
   
   const cipher = createCipheriv(ALGORITHM, key, iv);
@@ -61,14 +61,14 @@ export async function decryptNote(
   return decrypted;
 }
 
-export async function generateKeyShares(key: string, numShares: number, threshold: number): Promise<string[]> {
+export async function generateKeyShares(_key: string, _numShares: number, _threshold: number): Promise<string[]> {
   // Implementation of Shamir's Secret Sharing
   const shares: string[] = [];
   // TODO: Implement actual Shamir's Secret Sharing algorithm
   return shares;
 }
 
-export async function reconstructKey(shares: string[]): Promise<string> {
+export async function reconstructKey(_shares: string[]): Promise<string> {
   // TODO: Implement key reconstruction from shares
   return '';
 }
@@ -77,7 +77,7 @@ export function generateSalt(): string {
   return randomBytes(SALT_LENGTH).toString('hex');
 }
 
-export function deriveKey(password: string, salt: string): Buffer {
+export function deriveKey(_password: string, _salt: string): Buffer {
   // TODO: Implement PBKDF2 key derivation
   return Buffer.from([]);
 }

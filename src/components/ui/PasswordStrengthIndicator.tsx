@@ -16,7 +16,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon
 } from '@mui/icons-material';
-import { validatePasswordStrength, getPasswordStrengthLabel, getPasswordStrengthColor, type PasswordStrength } from '@/lib/passwordUtils';
+import { validatePasswordStrength, getPasswordStrengthLabel, type PasswordStrength } from '@/lib/passwordUtils';
 
 interface PasswordStrengthIndicatorProps {
   password: string;
@@ -147,16 +147,10 @@ export const PasswordInputWithStrength: React.FC<PasswordInputWithStrengthProps>
 
   const strength = React.useMemo(() => validatePasswordStrength(value), [value]);
 
-  const lastNotifiedRef = React.useRef<{ score: number; isValid: boolean } | null>(null);
   React.useEffect(() => {
     if (!onStrengthChange) return;
-    const payload = { score: strength.score, isValid: strength.isValid };
-    const prev = lastNotifiedRef.current;
-    if (!prev || prev.score !== payload.score || prev.isValid !== payload.isValid) {
-      lastNotifiedRef.current = payload;
-      onStrengthChange(strength);
-    }
-  }, [strength.score, strength.isValid, onStrengthChange]);
+    onStrengthChange(strength);
+  }, [strength, onStrengthChange]);
 
   return (
     <Box>

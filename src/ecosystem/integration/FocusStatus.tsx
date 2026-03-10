@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   IconButton, 
@@ -17,7 +17,7 @@ import {
 
 export const FocusStatus = () => {
     const [isActive, setIsActive] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(1500);
+    const [_timeLeft, _setTimeLeft] = useState(1500);
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -25,7 +25,7 @@ export const FocusStatus = () => {
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    const progress = ((1500 - timeLeft) / 1500) * 100;
+    const progress = ((1500 - _timeLeft) / 1500) * 100;
 
     return (
         <Paper
@@ -68,7 +68,7 @@ export const FocusStatus = () => {
             <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 0.5 }}>
                   <Typography sx={{ fontSize: '1.25rem', fontWeight: 900, color: 'white', letterSpacing: '0.05em' }}>
-                      {formatTime(timeLeft)}
+                      {formatTime(_timeLeft)}
                   </Typography>
                 </Box>
                 <LinearProgress 

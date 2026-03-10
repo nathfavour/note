@@ -100,8 +100,8 @@ export class EcosystemSecurity {
         sessionStorage.setItem("kylrix_vault_unlocked", "true");
       }
       return true;
-    } catch (e) {
-      console.error("[Security] Failed to import master key", e);
+    } catch (_e) {
+      console.error("[Security] Failed to import master key", _e);
       return false;
     }
   }
@@ -148,8 +148,8 @@ export class EcosystemSecurity {
       sessionStorage.setItem("kylrix_vault_unlocked", "true");
 
       return true;
-    } catch (e: unknown) {
-      console.error("[Security] PIN setup failed", e);
+    } catch (_e: unknown) {
+      console.error("[Security] PIN setup failed", _e);
       return false;
     }
   }
@@ -165,7 +165,7 @@ export class EcosystemSecurity {
       const expectedHash = verifier.hash;
       const actualHash = btoa(String.fromCharCode(...new Uint8Array(await this.derivePinHash(pin, salt))));
       return actualHash === expectedHash;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
@@ -209,8 +209,8 @@ export class EcosystemSecurity {
       this.isUnlocked = true;
 
       return true;
-    } catch (e: any) {
-      console.error("[Security] Unlock failed", e);
+    } catch (_e: any) {
+      console.error("[Security] Unlock failed", _e);
       return false;
     }
   }
@@ -353,8 +353,8 @@ export class EcosystemSecurity {
 
       this.isUnlocked = true;
       return true;
-    } catch (e: any) {
-      console.error("[Security] PIN unlock failed", e);
+    } catch (_e: any) {
+      console.error("[Security] PIN unlock failed", _e);
       return false;
     }
   }

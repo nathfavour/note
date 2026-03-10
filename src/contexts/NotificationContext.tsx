@@ -42,7 +42,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (details.startsWith('{')) {
         return JSON.parse(details);
       }
-    } catch (e: any) {
+    } catch (_err: any) {
       // Not JSON, treat as raw string
     }
     return { read: false, originalDetails: details };
@@ -157,7 +157,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     // Sync to cloud in background
     Promise.all(unreadNotifications.map(n => markAsRead(n.$id)))
-      .catch (err => console.error('Bulk mark as read failed:', err));
+      .catch (_err => console.error('Bulk mark as read failed:', _err));
   };
 
   const clearNotifications = () => {

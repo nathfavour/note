@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Stack, LinearProgress, Grid, alpha, Chip } from '@mui/material';
-import { Cpu, Database, Activity, Globe, Wifi } from 'lucide-react';
-import { MeshProtocol, NodeIdentity, MeshMessage } from '@/lib/ecosystem/mesh';
+import { Cpu, Database, Activity, Globe } from 'lucide-react';
+import { MeshProtocol, MeshMessage } from '@/lib/ecosystem/mesh';
 
 export const SystemMonitor = () => {
     const [stats, setStats] = useState({

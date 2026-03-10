@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import { 
   Send, 
-  Plus,
   StickyNote,
   Zap
 } from 'lucide-react';

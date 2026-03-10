@@ -1,5 +1,4 @@
 import { databases, CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, Query, Permission, Role } from '../appwrite';
-import { getEffectiveUsername, getEffectiveDisplayName } from '../utils';
 
 const PROFILE_SYNC_KEY = 'kylrix_identity_synced_v2';
 const SESSION_SYNC_KEY = 'kylrix_session_identity_ok';
@@ -180,7 +179,7 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                         });
                     }
                 }
-            } catch (err: any) {
+            } catch (_err: any) {
                 // Ignore fallback errors
             }
         }

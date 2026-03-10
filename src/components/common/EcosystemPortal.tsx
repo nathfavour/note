@@ -56,7 +56,8 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
     const { launchWindow } = useKernel();
 
     const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-    const onClose = controlledOnClose || (() => setInternalOpen(false));
+    const fallbackOnClose = useCallback(() => setInternalOpen(false), []);
+    const onClose = controlledOnClose || fallbackOnClose;
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

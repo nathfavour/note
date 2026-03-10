@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Snackbar, Alert, AlertTitle, Stack, Box } from '@mui/material';
+import React, { createContext, useContext, useCallback, ReactNode } from 'react';
 import { useIsland, IslandType } from './DynamicIsland';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -38,7 +37,6 @@ interface ToastProviderProps {
 }
 
 export function ToastProvider({ children }: ToastProviderProps) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
   const { showIsland } = useIsland();
 
   const showToast = useCallback((type: ToastType, title: string, message?: string, duration = 5000, defaultExpanded = false) => {
@@ -50,15 +48,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
       duration,
       defaultExpanded
     });
-
-    const id = Date.now().toString();
-    const toast: Toast = { id, type, title, message, duration };
-    
-    setToasts(prev => [...prev, toast]);
   }, [showIsland]);
 
-  const dismissToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+  const dismissToast = useCallback((_id: string) => {
+    // No-op since toasts are handled by Dynamic Island
   }, []);
 
   const showError = useCallback((title: string, message?: string, defaultExpanded = false) => {
