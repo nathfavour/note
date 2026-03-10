@@ -5,10 +5,10 @@ import { Box, Typography, Stack, IconButton, useTheme, useMediaQuery, Button } f
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/ui/AuthContext';
-import { 
-  CheckCircle as SuccessIcon, 
-  Error as ErrorIcon, 
-  Info as InfoIcon, 
+import {
+  CheckCircle as SuccessIcon,
+  Error as ErrorIcon,
+  Info as InfoIcon,
   Warning as WarningIcon,
   Close as CloseIcon,
   Star as ProIcon,
@@ -63,15 +63,15 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const showIsland = useCallback((notification: Omit<IslandNotification, 'id'>) => {
     const id = Math.random().toString(36).substring(7);
-    const newNotif = { 
-      ...notification, 
-      id, 
+    const newNotif = {
+      ...notification,
+      id,
       duration: notification.duration || (notification.majestic ? 10000 : 6000),
       timestamp: Date.now()
     };
-    
+
     setNotifications(prev => [...prev, newNotif]);
-    
+
     // Add to history if not a duplicate (by title and message)
     setAllNotifications(prev => {
       const isDuplicate = prev.some(n => n.title === notification.title && n.message === notification.message);
@@ -90,7 +90,7 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     window.addEventListener('mousemove', activityHandler);
     window.addEventListener('keydown', activityHandler);
     window.addEventListener('click', activityHandler);
-    
+
     return () => {
       window.removeEventListener('mousemove', activityHandler);
       window.removeEventListener('keydown', activityHandler);
@@ -107,7 +107,7 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       // If idle for more than 40 seconds and no active island
       if (idleTime > 40000 && notifications.length === 0) {
         const userName = user?.name?.split(' ')[0] || '';
-        
+
         const suggestions = [
           {
             type: 'suggestion' as IslandType,
@@ -131,7 +131,7 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             action: { label: "Manage Tags", onClick: () => window.location.href = '/notes?tab=tags' }
           }
         ];
-        
+
         const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
         showIsland(randomSuggestion);
         setLastActivity(Date.now()); // Reset to avoid spam
@@ -149,10 +149,10 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   );
 };
 
-const DynamicIslandOverlay: React.FC<{ 
-  notifications: IslandNotification[], 
+const DynamicIslandOverlay: React.FC<{
+  notifications: IslandNotification[],
   onDismiss: (id: string) => void,
-  isMobile: boolean 
+  isMobile: boolean
 }> = ({ notifications, onDismiss, isMobile }) => {
   const current = notifications[notifications.length - 1]; // Show most recent
   const [isExpanded, setIsExpanded] = useState(false);
@@ -171,7 +171,7 @@ const DynamicIslandOverlay: React.FC<{
 
   // Reset expansion ONLY when the notification ID actually changes
   useEffect(() => {
-    if (current?.id && current.id !== lastSeenId) {
+    if (current && current.id && current.id !== lastSeenId) {
       setIsExpanded(current.defaultExpanded || false);
       setLastSeenId(current.id);
       setCopied(false);
@@ -209,46 +209,46 @@ const DynamicIslandOverlay: React.FC<{
   useEffect(() => {
     if (current) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      
+
       // Auto-dismiss logic (only if not expanded)
       const startTimeout = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-      // Use ref to avoid stale closure
-      if (!isExpandedRef.current) {
-        onDismiss(current.id);
+          // Use ref to avoid stale closure
+          if (!isExpandedRef.current) {
+            onDismiss(current.id);
+          }
+        }, current.duration || 6000);
+      };
+
+      if (!isExpanded) {
+        startTimeout();
       }
-    }, current.duration || 6000);
-  };
 
-  if (!isExpanded) {
-    startTimeout();
-  }
-}
+      // Majestic entrance and pulsing logic
+      if (current.majestic) {
+        controls.start({
+          y: [0, -4, 0],
+          transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        });
+      } else {
+        controls.start({
+          y: [0, -2, 0],
+          transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+        });
+      }
+    }
 
-  // Majestic entrance and pulsing logic
-  if (current.majestic) {
-    controls.start({
-      y: [0, -4, 0],
-      transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-    });
-  } else {
-    controls.start({
-      y: [0, -2, 0],
-      transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
-    });
-  }
-
-  return () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  };
-}, [current, onDismiss, controls, isExpanded]);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [current, onDismiss, controls, isExpanded]);
 
   if (!current || isHiddenRoute) return null;
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (current.message) {
+    if (current?.message) {
       navigator.clipboard.writeText(current.message);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -256,6 +256,7 @@ const DynamicIslandOverlay: React.FC<{
   };
 
   const getTypeStyle = () => {
+    if (!current) return { color: '#6366F1', icon: <InfoIcon fontSize="small" /> };
     switch (current.type) {
       case 'success': return { color: '#6366F1', icon: <SuccessIcon fontSize="small" /> };
       case 'error': return { color: '#FF3B30', icon: <ErrorIcon fontSize="small" /> };
@@ -270,9 +271,8 @@ const DynamicIslandOverlay: React.FC<{
   const style = getTypeStyle();
 
   return (
-    <>
-      {/* Majestic Glow Effect */}
-      {current.majestic && (
+    <>{/* Majestic Glow Effect */}
+      {current?.majestic && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -301,252 +301,254 @@ const DynamicIslandOverlay: React.FC<{
         }}
       >
         <AnimatePresence mode="wait">
-          <motion.div
-            key={current.id}
-            initial={{ y: -100, scale: 0.8, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            exit={{ y: -100, scale: 0.5, opacity: 0 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 400, 
-              damping: 30,
-              mass: 0.8 
-            }}
-            onHoverStart={() => setIsExpanded(true)}
-            onHoverEnd={() => {
-              // Only auto-collapse if not mobile and NOT expanded via click/hover already
-              // This is a bit tricky, but usually, we want it to collapse on hover end
-              // UNLESS the user is actively interacting with it.
-              if (!isMobile) setIsExpanded(false);
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              // Force expansion on click, making it "sticky"
-              setIsExpanded(true);
-            }}
-            ref={islandRef}
-            style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-          >
+          {current && (
             <motion.div
-              animate={controls}
-              style={{
-                width: isExpanded ? (isMobile ? '340px' : '420px') : (isMobile ? (current.shape === 'ball' ? '44px' : '180px') : (current.shape === 'ball' ? '50px' : '240px')),
-                height: isExpanded ? 'auto' : (current.shape === 'ball' ? (isMobile ? '44px' : '50px') : '44px'),
-                borderRadius: isExpanded ? '28px' : (current.shape === 'ball' ? '50%' : '22px'),
-                background: 'rgba(10, 10, 10, 0.9)',
-                backdropFilter: 'blur(32px) saturate(200%)',
-                border: current.majestic ? '1.5px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.12)',
-                boxShadow: current.majestic ? '0 0 30px rgba(0, 240, 255, 0.3)' : '0 12px 48px rgba(0,0,0,0.6)',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+              key={current.id}
+              initial={{ y: -100, scale: 0.8, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ y: -100, scale: 0.5, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 30,
+                mass: 0.8
               }}
+              onHoverStart={() => setIsExpanded(true)}
+              onHoverEnd={() => {
+                // Only auto-collapse if not mobile and NOT expanded via click/hover already
+                // This is a bit tricky, but usually, we want it to collapse on hover end
+                // UNLESS the user is actively interacting with it.
+                if (!isMobile) setIsExpanded(false);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                // Force expansion on click, making it "sticky"
+                setIsExpanded(true);
+              }}
+              ref={islandRef}
+              style={{ pointerEvents: 'auto', cursor: 'pointer' }}
             >
-              {/* Internal Pulsing Dots */}
-              {!isExpanded && current.shape !== 'ball' && (
-                <Box sx={{ 
-                  position: 'absolute', 
-                  right: 16, 
-                  top: '50%', 
-                  transform: 'translateY(-50%)',
+              <motion.div
+                animate={controls}
+                style={{
+                  width: isExpanded ? (isMobile ? '340px' : '420px') : (isMobile ? (current?.shape === 'ball' ? '44px' : '180px') : (current?.shape === 'ball' ? '50px' : '240px')),
+                  height: isExpanded ? 'auto' : (current?.shape === 'ball' ? (isMobile ? '44px' : '50px') : '44px'),
+                  borderRadius: isExpanded ? '28px' : (current?.shape === 'ball' ? '50%' : '22px'),
+                  background: 'rgba(10, 10, 10, 0.9)',
+                  backdropFilter: 'blur(32px) saturate(200%)',
+                  border: current?.majestic ? '1.5px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.12)',
+                  boxShadow: current?.majestic ? '0 0 30px rgba(0, 240, 255, 0.3)' : '0 12px 48px rgba(0,0,0,0.6)',
+                  overflow: 'hidden',
                   display: 'flex',
-                  gap: 0.6
-                }}>
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ 
-                        scale: [1, 1.5, 1],
-                        opacity: [0.3, 1, 0.3] 
-                      }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                      style={{
-                        width: 3,
-                        height: 3,
-                        borderRadius: '50%',
-                        background: style.color
-                      }}
-                    />
-                  ))}
-                </Box>
-              )}
-
-              {/* Compressed Content */}
-              <Box
-                sx={{
-                  height: 44,
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: 2,
-                  gap: 1.5,
-                  opacity: isExpanded ? 0 : 1,
-                  transition: 'opacity 0.2s',
-                  width: '100%',
-                  position: isExpanded ? 'absolute' : 'relative',
-                  justifyContent: current.shape === 'ball' ? 'center' : 'flex-start'
+                  flexDirection: 'column',
+                  position: 'relative',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                <Box sx={{ color: style.color, display: 'flex' }}>
-                  {style.icon}
-                </Box>
-                {current.shape !== 'ball' && (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={current.title}
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: 'white',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          fontFamily: 'var(--font-space-grotesk)',
-                          whiteSpace: 'nowrap'
+                {/* Internal Pulsing Dots */}
+                {!isExpanded && current.shape !== 'ball' && (
+                  <Box sx={{
+                    position: 'absolute',
+                    right: 16,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    gap: 0.6
+                  }}>
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        animate={{
+                          scale: [1, 1.5, 1],
+                          opacity: [0.3, 1, 0.3]
                         }}
-                      >
-                        {current.personal ? `Hey, ${current.title}` : current.title}
-                      </Typography>
-                    </motion.div>
-                  </AnimatePresence>
+                        transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                        style={{
+                          width: 3,
+                          height: 3,
+                          borderRadius: '50%',
+                          background: style.color
+                        }}
+                      />
+                    ))}
+                  </Box>
                 )}
-              </Box>
 
-              {/* Expanded Reality */}
-              <Box
-                sx={{
-                  p: 2.5,
-                  opacity: isExpanded ? 1 : 0,
-                  transition: 'opacity 0.3s 0.1s',
-                  display: isExpanded ? 'block' : 'none'
-                }}
-              >
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <motion.div
-                      animate={current.majestic ? { rotate: [0, 10, -10, 0] } : {}}
-                      transition={{ duration: 4, repeat: Infinity }}
-                    >
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: '12px',
-                          bgcolor: `${style.color}15`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: style.color,
-                          border: `1px solid ${style.color}30`,
-                          boxShadow: current.majestic ? `0 0 15px ${style.color}40` : 'none'
-                        }}
+                {/* Compressed Content */}
+                <Box
+                  sx={{
+                    height: 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    px: 2,
+                    gap: 1.5,
+                    opacity: isExpanded ? 0 : 1,
+                    transition: 'opacity 0.2s',
+                    width: '100%',
+                    position: isExpanded ? 'absolute' : 'relative',
+                    justifyContent: current.shape === 'ball' ? 'center' : 'flex-start'
+                  }}
+                >
+                  <Box sx={{ color: style.color, display: 'flex' }}>
+                    {style.icon}
+                  </Box>
+                  {current.shape !== 'ball' && (
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={current.title}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
                       >
-                        {style.icon}
-                      </Box>
-                    </motion.div>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        sx={{
-                          color: 'white',
-                          fontWeight: 900,
-                          letterSpacing: '-0.02em',
-                          fontFamily: 'var(--font-space-grotesk)',
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        {current.title}
-                      </Typography>
-                      {current.message && (
                         <Typography
-                          variant="body2"
+                          variant="caption"
                           sx={{
-                            color: 'rgba(255,255,255,0.5)',
-                            lineHeight: 1.4,
-                            mt: 0.5,
-                            fontFamily: 'Satoshi, sans-serif'
+                            color: 'white',
+                            fontWeight: 900,
+                            fontSize: '0.8rem',
+                            fontFamily: 'var(--font-space-grotesk)',
+                            whiteSpace: 'nowrap'
                           }}
                         >
-                          {current.message}
+                          {current.personal ? `Hey, ${current.title}` : current.title}
                         </Typography>
-                      )}
-                    </Box>
-                  </Stack>
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </Box>
 
-                  {/* Actions Area */}
-                  <Stack direction="row" spacing={1.5}>
-                    {current.action && (
-                      <Button
+                {/* Expanded Reality */}
+                <Box
+                  sx={{
+                    p: 2.5,
+                    opacity: isExpanded ? 1 : 0,
+                    transition: 'opacity 0.3s 0.1s',
+                    display: isExpanded ? 'block' : 'none'
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <motion.div
+                        animate={current.majestic ? { rotate: [0, 10, -10, 0] } : {}}
+                        transition={{ duration: 4, repeat: Infinity }}
+                      >
+                        <Box
+                          sx={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '12px',
+                            bgcolor: `${style.color}15`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: style.color,
+                            border: `1px solid ${style.color}30`,
+                            boxShadow: current.majestic ? `0 0 15px ${style.color}40` : 'none'
+                          }}
+                        >
+                          {style.icon}
+                        </Box>
+                      </motion.div>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          sx={{
+                            color: 'white',
+                            fontWeight: 900,
+                            letterSpacing: '-0.02em',
+                            fontFamily: 'var(--font-space-grotesk)',
+                            fontSize: '1.1rem'
+                          }}
+                        >
+                          {current.title}
+                        </Typography>
+                        {current.message && (
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'rgba(255,255,255,0.5)',
+                              lineHeight: 1.4,
+                              mt: 0.5,
+                              fontFamily: 'Satoshi, sans-serif'
+                            }}
+                          >
+                            {current.message}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Stack>
+
+                    {/* Actions Area */}
+                    <Stack direction="row" spacing={1.5}>
+                      {current.action && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            current.action?.onClick();
+                            onDismiss(current.id);
+                          }}
+                          variant="contained"
+                          fullWidth
+                          sx={{
+                            borderRadius: '14px',
+                            textTransform: 'none',
+                            background: current.majestic ? `linear-gradient(45deg, ${style.color}, #6366F1)` : 'white',
+                            color: current.majestic ? 'black' : 'black',
+                            fontWeight: 700,
+                            height: 48,
+                            '&:hover': {
+                              background: current.majestic ? `linear-gradient(45deg, ${style.color}, #6366F1)` : 'rgba(255,255,255,0.9)',
+                              opacity: 0.9
+                            }
+                          }}
+                        >
+                          {current.action.label}
+                        </Button>
+                      )}
+
+                      {current.type === 'error' && (
+                        <IconButton
+                          onClick={handleCopy}
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: '14px',
+                            bgcolor: 'rgba(255,255,255,0.05)',
+                            color: copied ? '#00FF00' : 'rgba(255,255,255,0.4)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            '&:hover': {
+                              bgcolor: 'rgba(255,255,255,0.1)'
+                            }
+                          }}
+                        >
+                          <CopyIcon fontSize="small" />
+                        </IconButton>
+                      )}
+
+                      <IconButton
                         onClick={(e) => {
                           e.stopPropagation();
-                          current.action?.onClick();
                           onDismiss(current.id);
                         }}
-                        variant="contained"
-                        fullWidth
-                        sx={{
-                          borderRadius: '14px',
-                          textTransform: 'none',
-                          background: current.majestic ? `linear-gradient(45deg, ${style.color}, #6366F1)` : 'white',
-                          color: current.majestic ? 'black' : 'black',
-                          fontWeight: 700,
-                          height: 48,
-                          '&:hover': {
-                            background: current.majestic ? `linear-gradient(45deg, ${style.color}, #6366F1)` : 'rgba(255,255,255,0.9)',
-                            opacity: 0.9
-                          }
-                        }}
-                      >
-                        {current.action.label}
-                      </Button>
-                    )}
-                    
-                    {current.type === 'error' && (
-                      <IconButton
-                        onClick={handleCopy}
                         sx={{
                           width: 48,
                           height: 48,
                           borderRadius: '14px',
                           bgcolor: 'rgba(255,255,255,0.05)',
-                          color: copied ? '#00FF00' : 'rgba(255,255,255,0.4)',
+                          color: 'rgba(255,255,255,0.4)',
                           border: '1px solid rgba(255,255,255,0.1)',
                           '&:hover': {
                             bgcolor: 'rgba(255,255,255,0.1)'
                           }
                         }}
                       >
-                        <CopyIcon fontSize="small" />
+                        <CloseIcon fontSize="small" />
                       </IconButton>
-                    )}
-
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDismiss(current.id);
-                      }}
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '14px',
-                        bgcolor: 'rgba(255,255,255,0.05)',
-                        color: 'rgba(255,255,255,0.4)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255,255,255,0.1)'
-                        }
-                      }}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
+                    </Stack>
                   </Stack>
-                </Stack>
-              </Box>
+                </Box>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          )}
         </AnimatePresence>
       </Box>
     </>
