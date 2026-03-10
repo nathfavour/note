@@ -87,7 +87,8 @@ export default function SudoModal({
             setLoading(false);
             setPasskeyLoading(false);
         }
-    }, [isOpen, user]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, user?.$id]);
 
     const handlePasswordVerify = async (e?: React.FormEvent) => {
         e?.preventDefault();
