@@ -22,6 +22,7 @@ import {
 import { User, Edit2, Check, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { databases, CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, Query, Permission, Role } from '@/lib/appwrite';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import toast from 'react-hot-toast';
 
 // Constants match connect/lib/appwrite/config.ts
@@ -41,14 +42,28 @@ export const DiscoverabilitySettings = () => {
     const loadProfile = React.useCallback(async () => {
         if (!user?.$id) return;
         try {
-            // Document ID in the users table is mapped to the Appwrite Account ID
-            const p = await databases.getDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id);
-            setProfile(p);
-            setNewUsername(p.username || '');
-        } catch (e: any) {
-            if (e.code !== 404) {
-                console.error("Failed to load profile from Connect", e);
+            try {
+                const p = await databases.getDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id);
+                setProfile(p);
+                setNewUsername(p.username || '');
+            } catch (e: any) {
+                const search = await databases.listDocuments(CONNECT_DB_ID, CONNECT_USERS_TABLE, [
+                    Query.or([
+                        Query.equal('userId', user.$id),
+                        Query.equal('$id', user.$id)
+                    ]),
+                    Query.limit(1)
+                ]);
+                if (search.documents.length > 0) {
+                    const p = search.documents[0];
+                    setProfile(p);
+                    setNewUsername(p.username || '');
+                } else {
+                    setProfile(null);
+                }
             }
+        } catch (e: any) {
+            console.error("Failed to load profile from Connect", e);
         } finally {
             setLoading(false);
         }
@@ -77,7 +92,7 @@ export const DiscoverabilitySettings = () => {
                 ? Array.from(new Set([...currentApps, 'note', 'connect']))
                 : currentApps.filter((a: string) => a !== 'note' && a !== 'connect');
 
-            await databases.updateDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id, {
+            await databases.updateDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, profile.$id, {
                 appsActive,
                 updatedAt: new Date().toISOString()
             });
@@ -107,28 +122,41 @@ export const DiscoverabilitySettings = () => {
                     Query.equal('username', normalized),
                     Query.limit(1)
                 ]);
-                if (existing.total > 0 && existing.documents[0].$id !== user.$id) {
+                if (existing.total > 0 && existing.documents[0].userId !== user.$id && existing.documents[0].$id !== user.$id) {
                     toast.error("Username already taken");
                     setSaving(false);
                     return;
                 }
             }
 
-            const data = {
+            let publicKeyStr: string | undefined;
+            try {
+                if (ecosystemSecurity.status.isUnlocked) {
+                    const pub = await ecosystemSecurity.ensureE2EIdentity(user.$id);
+                    if (pub) publicKeyStr = pub;
+                }
+            } catch (e) {
+                console.warn(e);
+            }
+
+            const data: any = {
                 username: normalized,
                 displayName: profile?.displayName || user.name || normalized,
                 updatedAt: new Date().toISOString(),
                 appsActive: profile?.appsActive || ['note', 'connect'],
-                // Add default info intelligently
                 bio: profile?.bio || "",
             };
+            if (publicKeyStr) {
+                data.publicKey = publicKeyStr;
+            }
 
             if (profile) {
-                await databases.updateDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id, data);
+                await databases.updateDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, profile.$id, data);
                 setProfile({ ...profile, ...data });
                 toast.success("Handle updated");
             } else {
                 await databases.createDocument(CONNECT_DB_ID, CONNECT_USERS_TABLE, user.$id, {
+                    userId: user.$id,
                     ...data,
                     createdAt: new Date().toISOString()
                 }, [
