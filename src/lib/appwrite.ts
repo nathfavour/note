@@ -218,7 +218,7 @@ function filterNoteData(data: Record<string, any>): Record<string, any> {
   const schemaKeys = [
     'id', 'createdAt', 'updatedAt', 'userId', 'isPublic', 'status', 
     'parentNoteId', 'title', 'content', 'tags', 'comments', 
-    'extensions', 'collaborators', 'metadata', 'attachments', 'format'
+    'extensions', 'metadata', 'attachments', 'format'
   ];
   
   const filtered: Record<string, any> = {};
@@ -250,6 +250,25 @@ function filterNoteData(data: Record<string, any>): Record<string, any> {
   }
 
   return filtered;
+}
+
+/**
+ * Helper to extract user IDs from Appwrite document permissions.
+ * Useful for identifying collaborators directly from document metadata.
+ */
+export function extractUserIdsFromPermissions(permissions: string[]): string[] {
+  const userIds = new Set<string>();
+  // Match read("user:ID"), update("user:ID"), etc.
+  const regex = /user:([a-zA-Z0-9_-]+)/;
+  
+  permissions.forEach(p => {
+    const match = p.match(regex);
+    if (match && match[1]) {
+      userIds.add(match[1]);
+    }
+  });
+  
+  return Array.from(userIds);
 }
 
 export async function createUser(data: Partial<Users>) {
@@ -1695,9 +1714,7 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
     const collabPermissions = [
       Permission.read(Role.user(currentUser.$id)),
       Permission.update(Role.user(currentUser.$id)),
-      Permission.delete(Role.user(currentUser.$id)),
-      Permission.read(Role.user(targetUserId)),
-      Permission.update(Role.user(targetUserId))
+      Permission.delete(Role.user(currentUser.$id))
     ];
 
     if (existingShares.documents.length > 0) {
@@ -1705,8 +1722,8 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
         APPWRITE_DATABASE_ID,
         APPWRITE_TABLE_ID_COLLABORATORS,
         existingShares.documents[0].$id,
-        { permission },
-        collabPermissions
+        { permission }
+        // Do not update permissions here to avoid AppwriteException
       );
     } else {
       await databases.createDocument(
@@ -1724,32 +1741,9 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
       );
     }
 
-    // Now, update the Note's Document Level Security (DLS) permissions
-    // so the target user can actually access it.
-    const currentNotePermissions = (note as any).$permissions || [];
-    
-    // Create new permissions array without the target user's old permissions (to rebuild)
-    const basePermissions = currentNotePermissions.filter(
-      (p: string) => !p.includes(`user("${targetUserId}")`)
-    );
-
-    // Add back the correct permissions
-    basePermissions.push(Permission.read(Role.user(targetUserId)));
-    if (permission === 'write' || permission === 'admin') {
-      basePermissions.push(Permission.update(Role.user(targetUserId)));
-    }
-    if (permission === 'admin') {
-      basePermissions.push(Permission.delete(Role.user(targetUserId)));
-    }
-
-    // Update the note document
-    await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_TABLE_ID_NOTES,
-      noteId,
-      {}, // Just updating permissions
-      basePermissions
-    );
+    // NOTE: We used to update Note Document permissions here, but that
+    // causes AppwriteException on client side (cannot grant permissions to other users).
+    // This is now handled by the notify-on-share server function.
 
     return { success: true, message: `Note shared${emailForMessage ? ' with ' + emailForMessage : ''}` };
   } catch (error: any) {
@@ -1868,21 +1862,8 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
       );
     }
 
-    // Update Note permissions to revoke access
-    const currentNotePermissions = (note as any).$permissions || [];
-    
-    // Filter out target user permissions
-    const newPermissions = currentNotePermissions.filter(
-      (p: string) => !p.includes(`user("${targetUserId}")`)
-    );
-
-    await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_TABLE_ID_NOTES,
-      noteId,
-      {},
-      newPermissions
-    );
+    // NOTE: Permission removal is now handled by the notify-on-share 
+    // server function triggered by the collaborator document deletion.
 
     return { success: true };
   } catch (error: any) {
