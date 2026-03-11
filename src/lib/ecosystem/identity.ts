@@ -107,7 +107,6 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                     Query.startsWith('username', cleaned.toLowerCase()),
                     Query.startsWith('displayName', cleaned)
                 ]),
-                Query.contains('appsActive', 'note'),
                 Query.limit(limit)
             ];
 
@@ -135,7 +134,6 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                     CONNECT_COLLECTION_ID_USERS,
                     [
                         Query.startsWith('username', cleaned.toLowerCase()),
-                        Query.contains('appsActive', 'note'),
                         Query.limit(limit)
                     ]
                 );
