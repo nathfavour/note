@@ -93,12 +93,34 @@ export class AppwriteService {
     );
   }
 
-  static async deleteKeychainEntry(id: string): Promise<void> {
-    await databases.deleteDocument(
-      KEEP_DATABASE_ID,
-      KEEP_COLLECTION_ID_KEYCHAIN,
-      id
-    );
+  static async setMasterpassFlag(userId: string, email: string) {
+    try {
+      // Check if user doc exists in NOTE database
+      const res = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_TABLE_ID_USERS,
+        [Query.equal('userId', userId), Query.limit(1)]
+      );
+
+      if (res.total > 0) {
+        await databases.updateDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_TABLE_ID_USERS,
+          res.documents[0].$id,
+          { hasMasterpass: true }
+        );
+      } else {
+        // Create user doc if it doesn't exist
+        await databases.createDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_TABLE_ID_USERS,
+          ID.unique(),
+          { userId, email, hasMasterpass: true }
+        );
+      }
+    } catch (e: any) {
+      console.error('setMasterpassFlag error', e);
+    }
   }
 }
 

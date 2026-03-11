@@ -48,9 +48,60 @@ export default function SudoModal({
     const [passkeyLoading, setPasskeyLoading] = useState(false);
     const [hasPasskey, setHasPasskey] = useState(false);
     const [hasPin, setHasPin] = useState(false);
-    const [mode, setMode] = useState<"passkey" | "password" | "pin" | null>(null);
+    const [hasMasterpass, setHasMasterpass] = useState<boolean | null>(null);
+    const [mode, setMode] = useState<"passkey" | "password" | "pin" | "initialize" | null>(null);
     const [isDetecting, setIsDetecting] = useState(true);
     const [showPasskeyIncentive, setShowPasskeyIncentive] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const handleInitializeMasterPass = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user?.$id || !user?.email) return;
+        if (password !== confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
+        if (password.length < 8) {
+            toast.error("Password must be at least 8 characters");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // 1. Generate new MEK
+            const mek = await ecosystemSecurity.generateRandomMEK();
+            
+            // 2. Wrap it with the password
+            const salt = crypto.getRandomValues(new Uint8Array(32));
+            const wrappedKey = await ecosystemSecurity.wrapMEK(mek, password, salt);
+            
+            // 3. Create Keychain Entry
+            await AppwriteService.createKeychainEntry({
+                userId: user.$id,
+                type: 'password',
+                credentialId: null,
+                wrappedKey: wrappedKey,
+                salt: btoa(String.fromCharCode(...salt)),
+                params: JSON.stringify({ iterations: 600000, hash: "SHA-256" }),
+                isBackup: false
+            });
+
+            // 4. Set Masterpass Flag on User Doc
+            await AppwriteService.setMasterpassFlag(user.$id, user.email);
+            
+            // 5. Unlock MasterPass locally
+            const rawMek = await crypto.subtle.exportKey("raw", mek);
+            await ecosystemSecurity.importMasterKey(rawMek);
+
+            toast.success("MasterPass initialized successfully");
+            onSuccess();
+        } catch (err) {
+            console.error(err);
+            toast.error("Initialization failed");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Check if user has passkey and PIN set up
     useEffect(() => {
@@ -63,12 +114,12 @@ export default function SudoModal({
                 const passkeyPresent = entries.some((e: any) => e.type === 'passkey');
                 const passwordPresent = entries.some((e: any) => e.type === 'password');
                 setHasPasskey(passkeyPresent);
+                setHasMasterpass(passwordPresent);
 
-                // Enforce Master Password first
+                // Enforce Master Password setup if missing
                 if (!passwordPresent && isOpen) {
-                    toast.error("Master password required for security actions");
-                    router.push("/masterpass");
-                    onCancel();
+                    setMode("initialize");
+                    setIsDetecting(false);
                     return;
                 }
 
@@ -89,6 +140,7 @@ export default function SudoModal({
             // Reset state on open
             setPassword("");
             setPin("");
+            setConfirmPassword("");
             setLoading(false);
             setPasskeyLoading(false);
             setIsDetecting(true);
@@ -99,6 +151,12 @@ export default function SudoModal({
     const handlePasswordVerify = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!user?.$id) return;
+
+        if (hasMasterpass === false) {
+            setMode("initialize");
+            return;
+        }
+
         if (!password) return;
 
         setLoading(true);
@@ -108,7 +166,8 @@ export default function SudoModal({
             const passwordEntry = entries.find((e: any) => e.type === 'password');
 
             if (!passwordEntry) {
-                toast.error("Master password not setup");
+                setHasMasterpass(false);
+                setMode("initialize");
                 setLoading(false);
                 return;
             }
@@ -270,6 +329,99 @@ export default function SudoModal({
                                 </Typography>
                             )}
                         </Box>
+                    </Stack>
+                ) : mode === "initialize" ? (
+                    <Stack spacing={3} sx={{ mt: 2 }}>
+                        <form onSubmit={handleInitializeMasterPass}>
+                            <Stack spacing={2.5}>
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, mb: 1, display: 'block' }}>
+                                        SET MASTER PASSWORD
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="password"
+                                        placeholder="Create a strong password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        autoFocus
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <LockIcon sx={{ fontSize: 18, color: "rgba(255, 255, 255, 0.3)" }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '14px',
+                                                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                                                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                                                '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                                            },
+                                            '& .MuiInputBase-input': { color: 'white' }
+                                        }}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, mb: 1, display: 'block' }}>
+                                        CONFIRM PASSWORD
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="password"
+                                        placeholder="Repeat your password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <ShieldIcon sx={{ fontSize: 18, color: "rgba(255, 255, 255, 0.3)" }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '14px',
+                                                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                                                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                                                '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                                            },
+                                            '& .MuiInputBase-input': { color: 'white' }
+                                        }}
+                                    />
+                                </Box>
+
+                                <Button
+                                    fullWidth
+                                    type="submit"
+                                    variant="contained"
+                                    disabled={loading || !password || !confirmPassword}
+                                    sx={{
+                                        py: 1.8,
+                                        borderRadius: '16px',
+                                        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                                        color: '#FFFFFF',
+                                        fontWeight: 800,
+                                        fontFamily: 'var(--font-satoshi)',
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                                            transform: 'translateY(-1px)',
+                                            boxShadow: '0 8px 25px rgba(99, 102, 241, 0.25)'
+                                        }
+                                    }}
+                                >
+                                    {loading ? <CircularProgress size={24} color="inherit" /> : "Initialize Ecosystem Vault"}
+                                </Button>
+                                
+                                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', textAlign: 'center', mt: 1 }}>
+                                    Your MasterPass is the key to all your secure data. <br/> It cannot be recovered if lost.
+                                </Typography>
+                            </Stack>
+                        </form>
                     </Stack>
                 ) : mode === "pin" ? (
                     <Stack spacing={3} sx={{ mt: 2 }}>

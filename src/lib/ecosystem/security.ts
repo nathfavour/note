@@ -61,7 +61,7 @@ export class EcosystemSecurity {
   /**
    * Derive key from password
    */
-  private async deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  public async deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
       "raw",
@@ -82,6 +82,152 @@ export class EcosystemSecurity {
       { name: "AES-GCM", length: EcosystemSecurity.KEY_SIZE } as any,
       true,
       ["encrypt", "decrypt", "wrapKey", "unwrapKey"],
+    );
+  }
+
+  /**
+   * Generate a random Master Encryption Key (MEK)
+   */
+  public async generateRandomMEK(): Promise<CryptoKey> {
+    return await crypto.subtle.generateKey(
+      {
+        name: "AES-GCM",
+        length: 256,
+      },
+      true,
+      ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
+    );
+  }
+
+  /**
+   * Wrap MEK with password and salt
+   */
+  public async wrapMEK(mek: CryptoKey, password: string, salt: Uint8Array): Promise<string> {
+    const authKey = await this.deriveKey(password, salt);
+    const mekBytes = await crypto.subtle.exportKey("raw", mek);
+    const iv = crypto.getRandomValues(new Uint8Array(EcosystemSecurity.IV_SIZE));
+    
+    const encryptedMek = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      authKey,
+      mekBytes
+    );
+
+    const combined = new Uint8Array(iv.length + encryptedMek.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encryptedMek), iv.length);
+
+    return btoa(String.fromCharCode(...combined));
+  }
+
+  /**
+   * Unwrap MEK with password and salt
+   */
+  public async unwrapMEK(wrappedKeyBase64: string, password: string, saltBase64: string): Promise<CryptoKey> {
+    const salt = new Uint8Array(atob(saltBase64).split("").map(c => c.charCodeAt(0)));
+    const authKey = await this.deriveKey(password, salt);
+    
+    const wrappedKeyBytes = new Uint8Array(atob(wrappedKeyBase64).split("").map(c => c.charCodeAt(0)));
+    const iv = wrappedKeyBytes.slice(0, EcosystemSecurity.IV_SIZE);
+    const ciphertext = wrappedKeyBytes.slice(EcosystemSecurity.IV_SIZE);
+
+    const mekBytes = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      authKey,
+      ciphertext
+    );
+
+    return await crypto.subtle.importKey(
+      "raw",
+      mekBytes,
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
+    );
+  }
+
+  private async deriveKey_old(password: string, salt: Uint8Array): Promise<CryptoKey> {
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(password),
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits", "deriveKey"],
+    );
+
+    return crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: salt as any,
+        iterations: EcosystemSecurity.PBKDF2_ITERATIONS,
+        hash: "SHA-256",
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: EcosystemSecurity.KEY_SIZE } as any,
+      true,
+      ["encrypt", "decrypt", "wrapKey", "unwrapKey"],
+    );
+  }
+
+  /**
+   * Generate a random Master Encryption Key (MEK)
+   */
+  public async generateRandomMEK(): Promise<CryptoKey> {
+    return await crypto.subtle.generateKey(
+      {
+        name: "AES-GCM",
+        length: 256,
+      },
+      true,
+      ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
+    );
+  }
+
+  /**
+   * Wrap MEK with password and salt
+   */
+  public async wrapMEK(mek: CryptoKey, password: string, salt: Uint8Array): Promise<string> {
+    const authKey = await this.deriveKey(password, salt);
+    const mekBytes = await crypto.subtle.exportKey("raw", mek);
+    const iv = crypto.getRandomValues(new Uint8Array(EcosystemSecurity.IV_SIZE));
+    
+    const encryptedMek = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      authKey,
+      mekBytes
+    );
+
+    const combined = new Uint8Array(iv.length + encryptedMek.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encryptedMek), iv.length);
+
+    return btoa(String.fromCharCode(...combined));
+  }
+
+  /**
+   * Unwrap MEK with password and salt
+   */
+  public async unwrapMEK(wrappedKeyBase64: string, password: string, saltBase64: string): Promise<CryptoKey> {
+    const salt = new Uint8Array(atob(saltBase64).split("").map(c => c.charCodeAt(0)));
+    const authKey = await this.deriveKey(password, salt);
+    
+    const wrappedKeyBytes = new Uint8Array(atob(wrappedKeyBase64).split("").map(c => c.charCodeAt(0)));
+    const iv = wrappedKeyBytes.slice(0, EcosystemSecurity.IV_SIZE);
+    const ciphertext = wrappedKeyBytes.slice(EcosystemSecurity.IV_SIZE);
+
+    const mekBytes = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      authKey,
+      ciphertext
+    );
+
+    return await crypto.subtle.importKey(
+      "raw",
+      mekBytes,
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
     );
   }
 
