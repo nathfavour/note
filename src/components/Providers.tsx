@@ -19,6 +19,7 @@ import { SudoProvider } from "@/contexts/SudoContext";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { darkTheme } from "@/theme/theme";
+import { EcosystemProvider } from "@/contexts/EcosystemContext";
 
 function MuiThemeWrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -31,35 +32,37 @@ function MuiThemeWrapper({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <AppThemeProvider>
-            <MuiThemeWrapper>
-                <AuthProvider>
-                    <NotificationProvider>
-                        <KernelProvider>
-                            <SudoProvider>
-                                <IslandProvider>
-                                    <ToastProvider>
-                                        <OverlayProvider>
-                                            <LoadingProvider>
-                                                <ContextMenuProvider>
-                                                    <RouteGuard>
-                                                        {children}
-                                                    </RouteGuard>
-                                                    <Overlay />
-                                                    <GlobalContextMenu />
-                                                    <GlobalShortcuts />
-                                                    <EcosystemPortal />
-                                                    <EcosystemEvents />
-                                                </ContextMenuProvider>
-                                            </LoadingProvider>
-                                        </OverlayProvider>
-                                    </ToastProvider>
-                                </IslandProvider>
-                            </SudoProvider>
-                        </KernelProvider>
-                    </NotificationProvider>
-                </AuthProvider>
-            </MuiThemeWrapper>
-        </AppThemeProvider>
+        <EcosystemProvider>
+            <AppThemeProvider>
+                <MuiThemeWrapper>
+                    <AuthProvider>
+                        <NotificationProvider>
+                            <KernelProvider>
+                                <SudoProvider>
+                                    <IslandProvider>
+                                        <ToastProvider>
+                                            <OverlayProvider>
+                                                <LoadingProvider>
+                                                    <ContextMenuProvider>
+                                                        <RouteGuard>
+                                                            {children}
+                                                        </RouteGuard>
+                                                        <Overlay />
+                                                        <GlobalContextMenu />
+                                                        <GlobalShortcuts />
+                                                        <EcosystemPortal />
+                                                        <EcosystemEvents />
+                                                    </ContextMenuProvider>
+                                                </LoadingProvider>
+                                            </OverlayProvider>
+                                        </ToastProvider>
+                                    </IslandProvider>
+                                </SudoProvider>
+                            </KernelProvider>
+                        </NotificationProvider>
+                    </AuthProvider>
+                </MuiThemeWrapper>
+            </AppThemeProvider>
+        </EcosystemProvider>
     );
 }

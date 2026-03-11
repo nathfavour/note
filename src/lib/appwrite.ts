@@ -16,6 +16,7 @@ import type {
 import { TargetType } from '../types/appwrite';
 
 import { APPWRITE_CONFIG } from './appwrite/config';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 export const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
@@ -1702,17 +1703,19 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
       throw new Error("Cannot share a note with yourself");
     }
 
-    // Call our server API to bypass client permission restrictions
-    const response = await fetch(`/api/notes/${noteId}/share`, {
+    // Call our accounts server API to bypass client permission restrictions
+    const jwt = await account.createJWT();
+    const response = await fetch(`${getEcosystemUrl('accounts')}/api/notes/${noteId}/share`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt.jwt}`
       },
       body: JSON.stringify({ targetUserId, permission })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to share note via API');
     }
 
@@ -1804,12 +1807,16 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
     }
 
     // Call our server API to securely remove the user's DLS permissions
-    const response = await fetch(`/api/notes/${noteId}/share?targetUserId=${encodeURIComponent(targetUserId)}`, {
+    const jwt = await account.createJWT();
+    const response = await fetch(`${getEcosystemUrl('accounts')}/api/notes/${noteId}/share?targetUserId=${encodeURIComponent(targetUserId)}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${jwt.jwt}`
+      }
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to remove share via API');
     }
 

@@ -50,7 +50,7 @@ import { TopBarSearch } from '@/components/TopBarSearch';
 import { AICommandModal } from '@/components/ai/AICommandModal';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 import Logo from '@/components/common/Logo';
-import { KYLRIX_AUTH_URI } from '@/constants/ecosystem';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 
 interface AppHeaderProps {
   className?: string;
@@ -519,7 +519,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
             </IconButton>
           ) : (
             <Button
-              href={`${KYLRIX_AUTH_URI}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
+              href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
               variant="contained"
               size="large"
               sx={{
