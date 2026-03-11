@@ -176,7 +176,7 @@ const DynamicIslandOverlay: React.FC<{
       setLastSeenId(current.id);
       setCopied(false);
     }
-  }, [current?.id, current?.defaultExpanded, lastSeenId]);
+  }, [current, current?.id, current?.defaultExpanded, lastSeenId]);
 
   // Handle outside click and ESC key
   useEffect(() => {

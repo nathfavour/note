@@ -31,7 +31,7 @@ import {
   Search as SearchIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { account, shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, updateCollaborator } from '@/lib/appwrite';
+import { account, shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing } from '@/lib/appwrite';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface ShareNoteModalProps {
