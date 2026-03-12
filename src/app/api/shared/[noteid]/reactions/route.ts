@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases, Query } from 'appwrite';
 import { createRateLimiter } from '@/lib/rate-limit-middleware';
 import { TargetType } from '@/types/appwrite';
 import { APPWRITE_CONFIG } from '@/lib/appwrite/config';
@@ -41,10 +41,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ note
       .setEndpoint(APPWRITE_ENDPOINT)
       .setProject(APPWRITE_PROJECT_ID);
     
-    // Optionally use API key if available
-    if (process.env.APPWRITE_API_KEY) {
-      client.setKey(process.env.APPWRITE_API_KEY);
-    }
+    
 
     const databases = new Databases(client);
 
