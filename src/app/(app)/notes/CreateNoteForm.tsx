@@ -21,7 +21,7 @@ import {
   Brush as PencilIcon,
 } from '@mui/icons-material';
 import { Button } from '@/components/ui/Button';
-import { AUTO_TITLE_CONFIG } from '@/constants/noteTitle';
+import { AUTO_TITLE_CONFIG, buildAutoTitleFromContent } from '@/constants/noteTitle';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useToast } from '@/components/ui/Toast';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
@@ -769,52 +769,3 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
   );
 }
 
-function buildAutoTitleFromContent(rawContent: string): string {
-  const normalized = rawContent.trim().replace(/\s+/g, ' ');
-  if (!normalized) return '';
-
-  const words = normalized.split(' ').filter(Boolean);
-  if (!words.length) return '';
-
-  const selectedWords: string[] = [];
-  for (let i = 0; i < words.length && selectedWords.length < AUTO_TITLE_CONFIG.maxWords; i++) {
-    const candidateWords = [...selectedWords, words[i]];
-    const candidateText = candidateWords.join(' ');
-    const limit = computeTitleCharacterLimit(candidateWords);
-
-    if (selectedWords.length === 0 || candidateText.length <= limit) {
-      selectedWords.push(words[i]);
-      continue;
-    }
-    break;
-  }
-
-  let titleCandidate = selectedWords.join(' ');
-  if (
-    titleCandidate.length < AUTO_TITLE_CONFIG.minCharLength &&
-    selectedWords.length < Math.min(words.length, AUTO_TITLE_CONFIG.maxWords)
-  ) {
-    let cursor = selectedWords.length;
-    while (
-      titleCandidate.length < AUTO_TITLE_CONFIG.minCharLength &&
-      cursor < words.length &&
-      selectedWords.length < AUTO_TITLE_CONFIG.maxWords
-    ) {
-      selectedWords.push(words[cursor]);
-      cursor += 1;
-      titleCandidate = selectedWords.join(' ');
-    }
-  }
-
-  return titleCandidate;
-}
-
-function computeTitleCharacterLimit(words: string[]): number {
-  if (!words.length) {
-    return AUTO_TITLE_CONFIG.baseCharLimit;
-  }
-
-  const averageLen = words.reduce((sum, word) => sum + word.length, 0) / words.length;
-  const extra = Math.max(0, Math.round(averageLen - AUTO_TITLE_CONFIG.avgWordThreshold)) * AUTO_TITLE_CONFIG.extraPerLongWord;
-  return AUTO_TITLE_CONFIG.baseCharLimit + Math.min(AUTO_TITLE_CONFIG.maxExtraCharLimit, extra);
-}

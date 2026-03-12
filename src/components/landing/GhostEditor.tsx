@@ -26,7 +26,8 @@ import {
     ExternalLink,
     Clock,
     Shield,
-    Share2
+    Share2,
+    Lock
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
 import toast from 'react-hot-toast';
@@ -37,12 +38,77 @@ import { useToast } from '@/components/ui/Toast';
 
 const GHOST_STORAGE_KEY = 'kylrix_ghost_notes_v2';
 const GHOST_SECRET_KEY = 'kylrix_ghost_secret_v2';
+const GHOST_LIFESPAN_DAYS = 7;
+const GHOST_LIFESPAN_MS = GHOST_LIFESPAN_DAYS * 24 * 60 * 60 * 1000;
 
 interface GhostNoteRef {
     id: string;
     title: string;
     createdAt: string;
 }
+
+/**
+ * A small circular countdown timer for ghost notes.
+ * Uses a dotted stroke to represent the time remaining.
+ */
+const GhostClock = ({ createdAt }: { createdAt: string }) => {
+    const theme = useTheme();
+    const [progress, setProgress] = useState(100);
+    
+    useEffect(() => {
+        const calculateProgress = () => {
+            const created = new Date(createdAt).getTime();
+            const now = Date.now();
+            const elapsed = now - created;
+            const remaining = Math.max(0, GHOST_LIFESPAN_MS - elapsed);
+            setProgress((remaining / GHOST_LIFESPAN_MS) * 100);
+        };
+
+        calculateProgress();
+        const interval = setInterval(calculateProgress, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, [createdAt]);
+
+    const size = 20;
+    const strokeWidth = 2;
+    const center = size / 2;
+    const radius = center - strokeWidth;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (progress / 100) * circumference;
+
+    return (
+        <Tooltip title={`${Math.round(progress)}% life remaining`}>
+            <Box sx={{ position: 'relative', display: 'inline-flex', ml: 1 }}>
+                <svg width={size} height={size}>
+                    <circle
+                        stroke="rgba(255, 255, 255, 0.1)"
+                        strokeWidth={strokeWidth}
+                        fill="transparent"
+                        r={radius}
+                        cx={center}
+                        cy={center}
+                    />
+                    <circle
+                        stroke={theme.palette.primary.main}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={`${circumference} ${circumference}`}
+                        style={{ 
+                            strokeDashoffset: offset,
+                            strokeDasharray: '2, 2', // Dotted effect
+                            transition: 'stroke-dashoffset 0.5s ease'
+                        }}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        r={radius}
+                        cx={center}
+                        cy={center}
+                        transform={`rotate(-90 ${center} ${center})`}
+                    />
+                </svg>
+            </Box>
+        </Tooltip>
+    );
+};
 
 export const GhostEditor = () => {
     const theme = useTheme();
@@ -72,13 +138,11 @@ export const GhostEditor = () => {
         }
     }, []);
 
-    // Seamless auto-title logic mirroring CreateNoteForm.tsx
+    // Seamless auto-title logic
     useEffect(() => {
         if (isTitleManuallyEdited) return;
 
         const generatedTitle = buildAutoTitleFromContent(content);
-        // buildAutoTitleFromContent returns 'Untitled Note' if empty, 
-        // we only want to set it if there's actual content to avoid 'Untitled Note' showing up immediately
         if (content.trim()) {
             if (generatedTitle !== title) {
                 setTitle(generatedTitle);
@@ -89,20 +153,15 @@ export const GhostEditor = () => {
     }, [content, isTitleManuallyEdited, title]);
 
     const handleCreateAndCopyLink = async () => {
-        if (!content.trim()) {
-            toast.error("Type something first!");
+        if (!title.trim() || !content.trim()) {
+            toast.error("Complete your note first!");
             return;
         }
 
         setIsCreating(true);
         try {
             const secret = localStorage.getItem(GHOST_SECRET_KEY) || crypto.randomUUID();
-            
-            // Auto-title logic
-            let finalTitle = title.trim();
-            if (!finalTitle) {
-                finalTitle = buildAutoTitleFromContent(content.trim());
-            }
+            const finalTitle = title.trim();
             
             const note = await AppwriteService.createGhostNote({
                 title: finalTitle,
@@ -115,7 +174,7 @@ export const GhostEditor = () => {
                 await navigator.clipboard.writeText(url);
                 
                 setCopiedId(note.$id);
-                showSuccess('Ghost Spark Shared', 'Live share link copied to your clipboard. It expires in 24 hours.');
+                showSuccess('Ghost Spark Shared', 'Live share link copied. It expires in 7 days.');
 
                 // Update history
                 const newRef = { id: note.$id, title: finalTitle, createdAt: new Date().toISOString() };
@@ -126,6 +185,7 @@ export const GhostEditor = () => {
                 // Clear editor
                 setTitle('');
                 setContent('');
+                setIsTitleManuallyEdited(false);
 
                 setTimeout(() => setCopiedId(null), 3000);
             }
@@ -163,9 +223,14 @@ export const GhostEditor = () => {
                 }}
             >
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={1}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        Ghost Mode active. These notes expire in 24 hours.
-                    </Typography>
+                    <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            Ghost Mode active. Notes last 7 days.
+                        </Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8, display: 'block' }}>
+                            Login to Edit, Delete, or Secure your sparks permanently.
+                        </Typography>
+                    </Box>
                     <Button 
                         size="sm" 
                         variant="ghost"
@@ -244,7 +309,7 @@ export const GhostEditor = () => {
                                         fontWeight: 900, 
                                         fontFamily: 'var(--font-clash)',
                                         color: 'white',
-                                        pr: 12, // Avoid overlapping with buttons
+                                        pr: 12, 
                                         '&::placeholder': { opacity: 0.2 }
                                     }
                                 }}
@@ -288,32 +353,37 @@ export const GhostEditor = () => {
                                 </Box>
                             </Stack>
 
-                            <Button
-                                onClick={handleCreateAndCopyLink}
-                                disabled={isCreating || !title.trim() || !content.trim()}
-                                sx={{ 
-                                    borderRadius: '100px',
-                                    px: 4,
-                                    py: 1.5,
-                                    fontWeight: 900,
-                                    background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-                                    color: 'white',
-                                    boxShadow: '0 10px 30px rgba(99, 102, 241, 0.3)',
-                                    '&:hover': {
-                                        transform: 'translateY(-2px)',
-                                        boxShadow: '0 15px 40px rgba(99, 102, 241, 0.5)',
-                                    }
-                                }}
-                            >
-                                {isCreating ? (
-                                    <CircularProgress size={20} color="inherit" />
-                                ) : (
-                                    <>
-                                        {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
-                                        <Box component="span" sx={{ ml: 1 }}>SHARE LIVE LINK</Box>
-                                    </>
-                                )}
-                            </Button>
+                            <Box sx={{ textAlign: 'right' }}>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 1, opacity: 0.4, fontWeight: 700 }}>
+                                    ONCE SHARED, THIS NOTE IS LOCKED.
+                                </Typography>
+                                <Button
+                                    onClick={handleCreateAndCopyLink}
+                                    disabled={isCreating || !title.trim() || !content.trim()}
+                                    sx={{ 
+                                        borderRadius: '100px',
+                                        px: 4,
+                                        py: 1.5,
+                                        fontWeight: 900,
+                                        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                                        color: 'white',
+                                        boxShadow: '0 10px 30px rgba(99, 102, 241, 0.3)',
+                                        '&:hover': {
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 15px 40px rgba(99, 102, 241, 0.5)',
+                                        }
+                                    }}
+                                >
+                                    {isCreating ? (
+                                        <CircularProgress size={20} color="inherit" />
+                                    ) : (
+                                        <>
+                                            {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
+                                            <Box component="span" sx={{ ml: 1 }}>SHARE LIVE LINK</Box>
+                                        </>
+                                    )}
+                                </Button>
+                            </Box>
                         </Box>
                     </Paper>
 
@@ -368,6 +438,7 @@ export const GhostEditor = () => {
                                         borderRadius: '20px',
                                         border: '1px solid rgba(255, 255, 255, 0.05)',
                                         transition: 'all 0.2s',
+                                        position: 'relative',
                                         '&:hover': {
                                             transform: 'translateX(4px)',
                                             bgcolor: 'rgba(255, 255, 255, 0.05)',
@@ -375,9 +446,12 @@ export const GhostEditor = () => {
                                         }
                                     }}>
                                         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5 }}>
-                                                {note.title}
-                                            </Typography>
+                                            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                                                <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5, flex: 1, pr: 1 }}>
+                                                    {note.title}
+                                                </Typography>
+                                                <GhostClock createdAt={note.createdAt} />
+                                            </Stack>
                                             <Stack direction="row" justifyContent="space-between" alignItems="center">
                                                 <Typography variant="caption" sx={{ opacity: 0.4 }}>
                                                     {new Date(note.createdAt).toLocaleDateString()}
@@ -398,10 +472,10 @@ export const GhostEditor = () => {
                             {/* Chronic User CTA */}
                             <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: '#6366F1' }}>
-                                    You're a frequent writer!
+                                    Don't Lose Your Spark!
                                 </Typography>
                                 <Typography variant="caption" sx={{ display: 'block', mb: 2, opacity: 0.8 }}>
-                                    Don't let your genius expire. Secure these notes permanently in the Kylrix Mesh.
+                                    These notes are currently floating in the mesh. Secure them permanently to edit or delete.
                                 </Typography>
                                 <Button 
                                     fullWidth

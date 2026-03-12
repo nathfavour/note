@@ -182,7 +182,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           if (meta.isGhost && meta.expiresAt) {
             const expiryDate = new Date(meta.expiresAt);
             if (expiryDate < new Date()) {
-              throw new Error('This temporary note has expired and is no longer available.');
+              throw new Error('This temporary note has expired after 7 days and is no longer available.');
             }
           }
         } catch (e: any) {
