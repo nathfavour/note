@@ -250,7 +250,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     
     console.log('Subscribing to realtime notes:', channel);
 
-    const unsubscribe = realtime.subscribe(channel, (response) => {
+    const sub = realtime.subscribe(channel, (response) => {
       const payload = response.payload as Notes;
       
       // Only handle notes belonging to the current user (or public notes)
@@ -279,8 +279,10 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     });
     
     return () => {
-      if (unsubscribe) {
-        (unsubscribe as any)();
+      if (typeof sub === 'function') {
+        sub();
+      } else if (sub && typeof (sub as any).unsubscribe === 'function') {
+        (sub as any).unsubscribe();
       }
     };
   }, [isAuthenticated, user?.$id]);

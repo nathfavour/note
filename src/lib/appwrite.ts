@@ -94,6 +94,43 @@ export class AppwriteService {
     );
   }
 
+  /**
+   * Create a Ghost Note (Anonymous)
+   */
+  static async createGhostNote(data: { title: string; content: string; format?: string; ghostSecret: string }): Promise<any> {
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const metadata = JSON.stringify({
+      isGhost: true,
+      ghostSecret: data.ghostSecret,
+      expiresAt: expiresAt,
+      version: 'v2'
+    });
+
+    const noteData = {
+      title: data.title,
+      content: data.content,
+      format: data.format || 'markdown',
+      isPublic: true,
+      userId: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'published',
+      metadata: metadata,
+      tags: [],
+      comments: [],
+      extensions: [],
+      collaborators: [],
+      attachments: null
+    };
+
+    return await databases.createDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_TABLE_ID_NOTES,
+      ID.unique(),
+      noteData
+    );
+  }
+
   static async deleteKeychainEntry(id: string): Promise<boolean> {
     try {
       await databases.deleteDocument(

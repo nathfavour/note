@@ -174,6 +174,23 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         throw new Error(payload.error || 'Failed to load shared note');
       }
       const note = await res.json();
+      
+      // Handle Ghost Note Expiry Check
+      if (note.metadata) {
+        try {
+          const meta = JSON.parse(note.metadata);
+          if (meta.isGhost && meta.expiresAt) {
+            const expiryDate = new Date(meta.expiresAt);
+            if (expiryDate < new Date()) {
+              throw new Error('This temporary note has expired and is no longer available.');
+            }
+          }
+        } catch (e: any) {
+          if (e.message.includes('expired')) throw e;
+          // Ignore parse errors if not expiry related
+        }
+      }
+
       setVerifiedNote(note);
     } catch (err: any) {
       const message = err?.message || 'An error occurred';
