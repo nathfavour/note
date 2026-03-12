@@ -3,6 +3,7 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useOverlay } from "@/components/ui/OverlayContext";
+import { useNotes } from "@/contexts/NotesContext";
 
 // Lazy load heavy components
 const KeyboardShortcuts = lazy(() => import("@/components/KeyboardShortcuts"));
@@ -21,6 +22,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
 export default function GlobalShortcuts() {
   const router = useRouter();
   const { openOverlay } = useOverlay();
+  const { upsertNote } = useNotes();
   const [openShortcuts, setOpenShortcuts] = useState(false);
   const [openEcosystem, setOpenEcosystem] = useState(false);
 
@@ -68,7 +70,7 @@ export default function GlobalShortcuts() {
         if (window.location.pathname.startsWith("/notes")) {
           // Dynamically import CreateNoteForm when needed
           import("@/app/(app)/notes/CreateNoteForm").then(({ default: CreateNoteForm }) => {
-            openOverlay(<CreateNoteForm onNoteCreated={() => {}} />);
+            openOverlay(<CreateNoteForm onNoteCreated={(n) => upsertNote(n)} />);
           });
         } else {
           try {

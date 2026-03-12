@@ -198,10 +198,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       // This makes reloads "instant"
       if (notes.length > 0 && !hasInitiallyFetched.current) {
         hasInitiallyFetched.current = true;
-        // We could do a background refresh here if we wanted to be extra sure,
-        // but the requirement says "instant" and rely on CRUD tracking.
-        console.log('Instant reload: Using cached notes');
+        // background refresh: 
+        // We still perform a background refresh to stay in sync with remote changes
+        // while the app was closed.
+        console.log('Instant reload: Using cached notes with background refresh');
         setIsLoading(false);
+        fetchBatch(true);
         return;
       }
 

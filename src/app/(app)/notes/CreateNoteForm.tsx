@@ -48,7 +48,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
   const [isLoading, setIsLoading] = useState(false);
   const [showDoodleEditor, setShowDoodleEditor] = useState(false);
   const { closeOverlay } = useOverlay();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(Boolean(initialContent?.title));
@@ -124,6 +124,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
       closeOverlay();
     } catch (error: any) {
       console.error('Failed to create note:', error);
+      showError('Manifestation Failure', error.message || 'The cloud was unable to crystallize your thought. Please try again.');
     } finally {
       setIsLoading(false);
     }

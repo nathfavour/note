@@ -14,6 +14,7 @@ import {
   Brush as PencilIcon 
 } from '@mui/icons-material';
 import { useOverlay } from '@/components/ui/OverlayContext';
+import { useNotes } from '@/contexts/NotesContext';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 
@@ -23,6 +24,7 @@ interface MobileFABProps {
 
 export const MobileFAB: React.FC<MobileFABProps> = ({ className: _className = '' }) => {
   const { openOverlay, closeOverlay: _closeOverlay } = useOverlay();
+  const { upsertNote } = useNotes();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleCreateNoteClick = () => {
@@ -32,6 +34,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className: _className = ''
       <CreateNoteForm 
         initialFormat="text"
         onNoteCreated={(newNote) => {
+          upsertNote(newNote);
           console.log('Note created:', newNote);
         }} 
       />
@@ -44,6 +47,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className: _className = ''
       <CreateNoteForm 
         initialFormat="doodle"
         onNoteCreated={(newNote) => {
+          upsertNote(newNote);
           console.log('Doodle created:', newNote);
         }} 
       />
