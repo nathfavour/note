@@ -236,18 +236,21 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     setTotalCount(data.length);
   }, [data]);
   
-  // Initialize data
+  // Sync data to backendData when no search is active
+  const dataVersion = JSON.stringify(data.map(i => i.$id));
   useEffect(() => {
     if (!searchQuery) {
       if (useLocalSearch) {
         setBackendData(data);
         setTotalCount(data.length);
       } else {
-        executeSearch('', 1);
+        // If not using local search and no query, we should ideally re-fetch or trust parent
+        // But for notes context, 'data' is our source of truth for the first page
+        setBackendData(data);
+        setTotalCount(data.length);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, useLocalSearch, searchQuery, executeSearch, ...dependencies]);
+  }, [dataVersion, searchQuery, useLocalSearch, ...dependencies]);
   
   return {
     // Data state

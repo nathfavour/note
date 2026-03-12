@@ -245,47 +245,45 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated || !user?.$id) return;
 
+    // Listen to the entire collection to catch all relevant changes
     const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_TABLE_ID_NOTES}.documents`;
     
-    let unsub: () => void;
-    try {
-      const sub = realtime.subscribe(channel, (response) => {
-        const payload = response.payload as Notes;
-        
-        // Only handle notes belonging to the current user (or public notes)
-        if (payload.userId !== user.$id && !payload.isPublic) return;
+    console.log('Subscribing to realtime notes:', channel);
 
-        const isCreate = response.events.some(e => e.includes('.create'));
-        const isUpdate = response.events.some(e => e.includes('.update'));
-        const isDelete = response.events.some(e => e.includes('.delete'));
-
-        if (isCreate) {
-          setNotes(prev => {
-            if (prev.some(n => n.$id === payload.$id)) return prev;
-            return [payload, ...prev];
-          });
-          setTotalNotes(prev => prev + 1);
-        } else if (isUpdate) {
-          setNotes(prev => prev.map(n => n.$id === payload.$id ? payload : n));
-        } else if (isDelete) {
-          removeNote(payload.$id);
-        }
-      });
+    const unsubscribe = realtime.subscribe(channel, (response) => {
+      const payload = response.payload as Notes;
       
-      if (typeof sub === 'function') {
-        unsub = sub;
-      } else {
-        // Handle cases where it might return an object with unsubscribe
-        unsub = () => (sub as any).unsubscribe?.();
-      }
-    } catch (e: any) {
-      console.error('Realtime subscription failed', e);
-    }
+      // Only handle notes belonging to the current user (or public notes)
+      // Check both userId and owner_id as fallback if schema changed
+      const isOwner = payload.userId === user.$id || (payload as any).owner_id === user.$id;
+      if (!isOwner && !payload.isPublic) return;
 
+      const isCreate = response.events.some(e => e.endsWith('.create'));
+      const isUpdate = response.events.some(e => e.endsWith('.update'));
+      const isDelete = response.events.some(e => e.endsWith('.delete'));
+
+      if (isCreate) {
+        setNotes(prev => {
+          // Avoid duplicates if we already added it via optimistic UI or manual call
+          if (prev.some(n => n.$id === payload.$id)) return prev;
+          return [payload, ...prev];
+        });
+        setTotalNotes(prev => prev + 1);
+      } else if (isUpdate) {
+        setNotes(prev => prev.map(n => n.$id === payload.$id ? payload : n));
+      } else if (isDelete) {
+        setNotes(prev => prev.filter(n => n.$id !== payload.$id));
+        setTotalNotes(prev => Math.max(0, prev - 1));
+        setPinnedIds(prev => prev.filter(id => id !== payload.$id));
+      }
+    });
+    
     return () => {
-      if (unsub) unsub();
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
     };
-  }, [isAuthenticated, user?.$id, upsertNote, removeNote]);
+  }, [isAuthenticated, user?.$id]);
 
   const pinNote = useCallback(async (noteId: string) => {
     try {
