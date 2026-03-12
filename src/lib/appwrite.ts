@@ -219,7 +219,7 @@ function filterNoteData(data: Record<string, any>): Record<string, any> {
   const schemaKeys = [
     'id', 'createdAt', 'updatedAt', 'userId', 'isPublic', 'status', 
     'parentNoteId', 'title', 'content', 'tags', 'comments', 
-    'extensions', 'metadata', 'attachments', 'format'
+    'extensions', 'collaborators', 'metadata', 'attachments', 'format'
   ];
   
   const filtered: Record<string, any> = {};
