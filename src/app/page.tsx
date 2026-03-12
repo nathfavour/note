@@ -87,23 +87,7 @@ export default function Home() {
         </Toolbar>
       </AppBar>
 
-      <Box component="main" sx={{ flex: 1, py: 8 }}>
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Typography variant="h2" sx={{ 
-                fontWeight: 900, 
-                fontFamily: 'var(--font-clash)', 
-                mb: 1,
-                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.5) 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-            }}>
-                Capture Your Spark.
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.5, maxWidth: 600, mx: 'auto' }}>
-                Type it, copy the link, and share. No accounts, no friction. Just ideas.
-            </Typography>
-        </Box>
-        
+      <Box component="main" sx={{ flex: 1, py: 4 }}>
         <GhostEditor />
       </Box>
 

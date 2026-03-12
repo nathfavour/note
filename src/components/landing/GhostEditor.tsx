@@ -19,19 +19,21 @@ import {
     CardContent
 } from '@mui/material';
 import { 
-    Link as LinkIcon, 
     Copy as CopyIcon, 
     Check as CheckIcon,
     History as HistoryIcon,
     Zap,
     ExternalLink,
     Clock,
-    Shield
+    Shield,
+    Share2
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/components/ui/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { buildAutoTitleFromContent } from '@/constants/noteTitle';
+import { useToast } from '@/components/ui/Toast';
 
 const GHOST_STORAGE_KEY = 'kylrix_ghost_notes_v2';
 const GHOST_SECRET_KEY = 'kylrix_ghost_secret_v2';
@@ -45,12 +47,13 @@ interface GhostNoteRef {
 export const GhostEditor = () => {
     const theme = useTheme();
     const { openIDMWindow } = useAuth();
+    const { showSuccess } = useToast();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [prevNotes, setPrevNotes] = useState<GhostNoteRef[]>([]);
-    const [showHistory, setShowHistory] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [isContentCopied, setIsContentCopied] = useState(false);
 
     // Load history and secret
     useEffect(() => {
@@ -68,7 +71,7 @@ export const GhostEditor = () => {
         }
     }, []);
 
-    const handleCreateAndCopy = async () => {
+    const handleCreateAndCopyLink = async () => {
         if (!content.trim()) {
             toast.error("Type something first!");
             return;
@@ -77,7 +80,12 @@ export const GhostEditor = () => {
         setIsCreating(true);
         try {
             const secret = localStorage.getItem(GHOST_SECRET_KEY) || crypto.randomUUID();
-            const finalTitle = title.trim() || 'Untitled Ghost Note';
+            
+            // Auto-title logic
+            let finalTitle = title.trim();
+            if (!finalTitle) {
+                finalTitle = buildAutoTitleFromContent(content.trim());
+            }
             
             const note = await AppwriteService.createGhostNote({
                 title: finalTitle,
@@ -90,7 +98,7 @@ export const GhostEditor = () => {
                 await navigator.clipboard.writeText(url);
                 
                 setCopiedId(note.$id);
-                toast.success("Link copied! Note created.");
+                showSuccess('Ghost Spark Shared', 'Live share link copied to your clipboard. It expires in 24 hours.');
 
                 // Update history
                 const newRef = { id: note.$id, title: finalTitle, createdAt: new Date().toISOString() };
@@ -112,16 +120,24 @@ export const GhostEditor = () => {
         }
     };
 
+    const handleCopyContent = async () => {
+        if (!content.trim()) return;
+        await navigator.clipboard.writeText(content);
+        setIsContentCopied(true);
+        toast.success("Content copied");
+        setTimeout(() => setIsContentCopied(false), 2000);
+    };
+
     const hasHistory = prevNotes.length > 0;
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4, position: 'relative' }}>
+        <Container maxWidth="lg" sx={{ py: 2, position: 'relative' }}>
             {/* Top CTA */}
             <Alert 
                 severity="info" 
                 icon={<Clock size={20} />}
                 sx={{ 
-                    mb: 4, 
+                    mb: 3, 
                     borderRadius: '16px', 
                     bgcolor: alpha(theme.palette.info.main, 0.05),
                     color: theme.palette.info.main,
@@ -129,7 +145,7 @@ export const GhostEditor = () => {
                     '& .MuiAlert-message': { width: '100%' }
                 }}
             >
-                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={1}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                         Ghost Mode active. These notes expire in 24 hours.
                     </Typography>
@@ -153,12 +169,51 @@ export const GhostEditor = () => {
                         overflow: 'hidden',
                         bgcolor: 'rgba(255, 255, 255, 0.02)',
                         border: '1px solid rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(20px)'
+                        backdropFilter: 'blur(20px)',
+                        position: 'relative'
                     }}>
+                        {/* Action Buttons in Header Area */}
+                        <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 24, right: 24, zIndex: 10 }}>
+                            <Tooltip title="Copy Content" placement="top">
+                                <IconButton
+                                    onClick={handleCopyContent}
+                                    disabled={!content.trim()}
+                                    sx={{ 
+                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                        color: isContentCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+                                    }}
+                                >
+                                    {isContentCopied ? <CheckIcon size={20} /> : <CopyIcon size={20} />}
+                                </IconButton>
+                            </Tooltip>
+
+                            <Tooltip title="Create & Share Live Link" placement="top">
+                                <IconButton
+                                    onClick={handleCreateAndCopyLink}
+                                    disabled={isCreating || !title.trim() || !content.trim()}
+                                    sx={{ 
+                                        bgcolor: copiedId ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                                        color: copiedId ? '#6366F1' : 'white',
+                                        border: '1px solid',
+                                        borderColor: copiedId ? '#6366F1' : 'rgba(255, 255, 255, 0.1)',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(99, 102, 241, 0.1)',
+                                            borderColor: '#6366F1'
+                                        },
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {isCreating ? <CircularProgress size={20} color="inherit" /> : (copiedId ? <CheckIcon size={20} /> : <Share2 size={20} />)}
+                                </IconButton>
+                            </Tooltip>
+                        </Stack>
+
                         <Box sx={{ p: 4, pb: 2 }}>
                             <TextField
                                 fullWidth
-                                placeholder="Note Title (Optional)"
+                                placeholder="Note Title"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 variant="standard"
@@ -169,6 +224,7 @@ export const GhostEditor = () => {
                                         fontWeight: 900, 
                                         fontFamily: 'var(--font-clash)',
                                         color: 'white',
+                                        pr: 12, // Avoid overlapping with buttons
                                         '&::placeholder': { opacity: 0.2 }
                                     }
                                 }}
@@ -207,14 +263,14 @@ export const GhostEditor = () => {
                                 <Box sx={{ display: 'flex', color: 'rgba(255, 255, 255, 0.3)' }}>
                                     <Shield size={16} />
                                     <Typography variant="caption" sx={{ ml: 1, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        Public by Default
+                                        Public & Anonymous
                                     </Typography>
                                 </Box>
                             </Stack>
 
                             <Button
-                                onClick={handleCreateAndCopy}
-                                disabled={isCreating || !content.trim()}
+                                onClick={handleCreateAndCopyLink}
+                                disabled={isCreating || !title.trim() || !content.trim()}
                                 sx={{ 
                                     borderRadius: '100px',
                                     px: 4,
@@ -233,8 +289,8 @@ export const GhostEditor = () => {
                                     <CircularProgress size={20} color="inherit" />
                                 ) : (
                                     <>
-                                        {copiedId ? <CheckIcon size={18} /> : <LinkIcon size={18} />}
-                                        <Box component="span" sx={{ ml: 1 }}>CREATE & COPY LINK</Box>
+                                        {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
+                                        <Box component="span" sx={{ ml: 1 }}>SHARE LIVE LINK</Box>
                                     </>
                                 )}
                             </Button>
