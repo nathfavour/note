@@ -5,10 +5,14 @@
  */
 
 import { MeshProtocol } from './mesh';
+import { databases } from '../appwrite';
+import { APPWRITE_CONFIG } from '../appwrite/config';
+import { Query, ID } from 'appwrite';
 
 export class EcosystemSecurity {
   private static instance: EcosystemSecurity;
   private masterKey: CryptoKey | null = null;
+  private identityKeyPair: CryptoKeyPair | null = null;
   private isUnlocked = false;
   private nodeId: string = 'note';
   // SECURITY: Tab-specific secret (RAM-only) to protect against XSS (CVE-KYL-2026-005)
@@ -150,9 +154,121 @@ export class EcosystemSecurity {
    * Ensure E2E Identity is initialized for a user
    */
   public async ensureE2EIdentity(userId: string): Promise<string> {
-    // Placeholder for E2E identity logic
-    // Usually would involve checking/generating a public key for messaging
-    return "id_public_key_" + userId;
+    if (!this.masterKey) throw new Error("Security vault locked");
+
+    const PW_DB = "passwordManagerDb";
+    const IDENTITIES_TABLE = "identities";
+    const CHAT_DB = "chat";
+    const CHAT_USERS_TABLE = "users";
+
+    try {
+      // 1. Check if identity exists
+      const identities = await databases.listDocuments(
+        PW_DB,
+        IDENTITIES_TABLE,
+        [Query.equal("userId", userId), Query.equal("name", "e2e_connect")]
+      );
+
+      let publicKeyBase64 = "";
+
+      if (identities.total > 0) {
+        // 2. Unwrap private key
+        const identity = identities.documents[0];
+        const wrappedPrivateKey = identity.wrappedKey;
+        const privateKeyRaw = await this.decrypt(wrappedPrivateKey);
+
+        const privateKey = await crypto.subtle.importKey(
+          "pkcs8",
+          new Uint8Array(
+            atob(privateKeyRaw)
+              .split("")
+              .map((c) => c.charCodeAt(0))
+          ),
+          { name: "X25519" },
+          true,
+          ["deriveKey", "deriveBits"]
+        );
+
+        const publicKey = await crypto.subtle.importKey(
+          "spki",
+          new Uint8Array(
+            atob(identity.publicKey)
+              .split("")
+              .map((c) => c.charCodeAt(0))
+          ),
+          { name: "X25519" },
+          true,
+          []
+        );
+
+        this.identityKeyPair = { publicKey, privateKey };
+        publicKeyBase64 = identity.publicKey;
+      } else {
+        // 3. Generate new X25519 pair
+        const keyPair = (await crypto.subtle.generateKey(
+          { name: "X25519" },
+          true,
+          ["deriveKey", "deriveBits"]
+        )) as CryptoKeyPair;
+
+        const privateKeyRaw = await crypto.subtle.exportKey(
+          "pkcs8",
+          keyPair.privateKey
+        );
+        const publicKeyRaw = await crypto.subtle.exportKey(
+          "spki",
+          keyPair.publicKey
+        );
+
+        const privateKeyBase64 = btoa(
+          String.fromCharCode(...new Uint8Array(privateKeyRaw))
+        );
+        publicKeyBase64 = btoa(
+          String.fromCharCode(...new Uint8Array(publicKeyRaw))
+        );
+
+        const wrappedPrivateKey = await this.encrypt(privateKeyBase64);
+
+        // 4. Store in identities
+        await databases.createDocument(PW_DB, IDENTITIES_TABLE, ID.unique(), {
+          userId,
+          name: "e2e_connect",
+          publicKey: publicKeyBase64,
+          wrappedKey: wrappedPrivateKey,
+          algorithm: "X25519",
+        });
+
+        this.identityKeyPair = keyPair;
+      }
+
+      // 5. Update chat.users with public key
+      const chatUsers = await databases.listDocuments(
+        CHAT_DB,
+        CHAT_USERS_TABLE,
+        [Query.equal("userId", userId)]
+      );
+
+      if (chatUsers.total > 0) {
+        await databases.updateDocument(
+          CHAT_DB,
+          CHAT_USERS_TABLE,
+          chatUsers.documents[0].$id,
+          { publicKey: publicKeyBase64 }
+        );
+      } else {
+        await databases.createDocument(CHAT_DB, CHAT_USERS_TABLE, ID.unique(), {
+          userId,
+          publicKey: publicKeyBase64,
+          isOnline: false,
+          lastSeen: new Date().toISOString(),
+        });
+      }
+
+      return publicKeyBase64;
+    } catch (error) {
+      console.error("[Security] ensureE2EIdentity failed", error);
+      throw error;
+    }
   }
 
   // Import a raw key and set it as the master key
@@ -285,16 +401,24 @@ export class EcosystemSecurity {
     }
   }
 
-  async encrypt(data: string): Promise<string> {
+  public async encrypt(data: string): Promise<string> {
     if (!this.masterKey) throw new Error("Security vault locked");
-    
+    return this.encryptWithKey(data, this.masterKey);
+  }
+
+  public async decrypt(encryptedData: string): Promise<string> {
+    if (!this.masterKey) throw new Error("Security vault locked");
+    return this.decryptWithKey(encryptedData, this.masterKey);
+  }
+
+  public async encryptWithKey(data: string, key: CryptoKey): Promise<string> {
     const encoder = new TextEncoder();
-    const plaintext = encoder.encode(JSON.stringify(data));
+    const plaintext = encoder.encode(data);
     const iv = crypto.getRandomValues(new Uint8Array(EcosystemSecurity.IV_SIZE));
 
     const encrypted = await crypto.subtle.encrypt(
       { name: "AES-GCM", iv: iv },
-      this.masterKey,
+      key,
       plaintext,
     );
 
@@ -305,9 +429,7 @@ export class EcosystemSecurity {
     return btoa(String.fromCharCode(...combined));
   }
 
-  async decrypt(encryptedData: string): Promise<string> {
-    if (!this.masterKey) throw new Error("Security vault locked");
-
+  public async decryptWithKey(encryptedData: string, key: CryptoKey): Promise<string> {
     const combined = new Uint8Array(
       atob(encryptedData).split("").map((char) => char.charCodeAt(0)),
     );
@@ -317,12 +439,12 @@ export class EcosystemSecurity {
 
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv },
-      this.masterKey,
+      key,
       encrypted,
     );
 
     const decoder = new TextDecoder();
-    return JSON.parse(decoder.decode(decrypted));
+    return decoder.decode(decrypted);
   }
 
   /**
@@ -502,7 +624,8 @@ export class EcosystemSecurity {
   get status() {
     return {
       isUnlocked: this.isUnlocked,
-      hasKey: !!this.masterKey
+      hasKey: !!this.masterKey,
+      hasIdentity: !!this.identityKeyPair
     };
   }
 }
