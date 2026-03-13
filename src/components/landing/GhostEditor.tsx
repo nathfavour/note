@@ -39,6 +39,7 @@ const GHOST_STORAGE_KEY = 'kylrix_ghost_notes_v2';
 const GHOST_SECRET_KEY = 'kylrix_ghost_secret_v2';
 const GHOST_LIFESPAN_DAYS = 7;
 const GHOST_LIFESPAN_MS = GHOST_LIFESPAN_DAYS * 24 * 60 * 60 * 1000;
+const MAX_CONTENT_LENGTH = 65000;
 
 interface GhostNoteRef {
     id: string;
@@ -292,32 +293,48 @@ export const GhostEditor = () => {
                         </Stack>
 
                         <Box sx={{ p: 4, pb: 2 }}>
-                            <TextField
-                                fullWidth
-                                placeholder="Note Title"
-                                value={title}
-                                onChange={(e) => {
-                                    setTitle(e.target.value);
-                                    setIsTitleManuallyEdited(true);
-                                }}
-                                variant="standard"
-                                InputProps={{
-                                    disableUnderline: true,
-                                    sx: { 
-                                        fontSize: '2rem', 
-                                        fontWeight: 900, 
-                                        fontFamily: 'var(--font-clash)',
-                                        color: 'white',
-                                        pr: 12, 
-                                        '&::placeholder': { opacity: 0.2 }
-                                    }
-                                }}
-                                sx={{ mb: 2 }}
-                            />
+                            <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    placeholder="Note Title"
+                                    value={title}
+                                    onChange={(e) => {
+                                        setTitle(e.target.value);
+                                        setIsTitleManuallyEdited(true);
+                                    }}
+                                    variant="standard"
+                                    InputProps={{
+                                        disableUnderline: true,
+                                        sx: { 
+                                            fontSize: '2rem', 
+                                            fontWeight: 900, 
+                                            fontFamily: 'var(--font-clash)',
+                                            color: 'white',
+                                            pr: 12, 
+                                            '&::placeholder': { opacity: 0.2 }
+                                        }
+                                    }}
+                                    sx={{ flex: 1 }}
+                                />
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: content.length >= MAX_CONTENT_LENGTH ? theme.palette.error.main : 'rgba(255, 255, 255, 0.3)',
+                                        fontWeight: 700,
+                                        fontFamily: 'var(--font-jetbrains-mono)',
+                                        mb: 1.5,
+                                        ml: 2,
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {content.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
+                                </Typography>
+                            </Stack>
                             <TextField
                                 fullWidth
                                 multiline
                                 minRows={12}
+                                maxRows={20}
                                 placeholder="Start typing your brilliance..."
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
@@ -331,6 +348,9 @@ export const GhostEditor = () => {
                                         fontFamily: 'var(--font-satoshi)',
                                         '&::placeholder': { opacity: 0.1 }
                                     }
+                                }}
+                                inputProps={{
+                                    maxLength: MAX_CONTENT_LENGTH
                                 }}
                             />
                         </Box>
