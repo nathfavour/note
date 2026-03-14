@@ -169,6 +169,52 @@ export const GhostEditor = () => {
     useEffect(() => {
         const loadHistory = () => {
             try {
+                // Migration logic from v1 to v2
+                const oldHistory = localStorage.getItem('kylrix_ghost_notes');
+                
+                if (oldHistory) {
+                    const oldSecret = localStorage.getItem('kylrix_ghost_secret');
+                    const currentHistory = localStorage.getItem(GHOST_STORAGE_KEY);
+                    
+                    try {
+                        const parsedOld = JSON.parse(oldHistory);
+                        const parsedCurrent = currentHistory ? JSON.parse(currentHistory) : [];
+                        
+                        if (Array.isArray(parsedOld)) {
+                            const sevenDaysAgo = Date.now() - MAX_LIFESPAN_MS;
+                            
+                            // Map old notes to v2 schema
+                            const migrated = parsedOld
+                                .filter((n: any) => new Date(n.createdAt).getTime() > sevenDaysAgo)
+                                .map((n: any) => ({
+                                    id: n.id,
+                                    title: n.title,
+                                    createdAt: n.createdAt,
+                                    expiresAt: n.expiresAt || new Date(new Date(n.createdAt).getTime() + MAX_LIFESPAN_MS).toISOString()
+                                }));
+                            
+                            // Merge and deduplicate by ID (preserving v2 order where possible)
+                            const mergedMap = new Map();
+                            [...parsedCurrent, ...migrated].forEach(note => mergedMap.set(note.id, note));
+                            const finalHistory = Array.from(mergedMap.values())
+                                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+                            localStorage.setItem(GHOST_STORAGE_KEY, JSON.stringify(finalHistory));
+                            
+                            // Priority: Keep the old secret if it exists to ensure "Claim" works for old notes
+                            if (oldSecret) {
+                                localStorage.setItem(GHOST_SECRET_KEY, oldSecret);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Migration failed', e);
+                    } finally {
+                        // Clean up v1 keys immediately so this block never runs again
+                        localStorage.removeItem('kylrix_ghost_notes');
+                        localStorage.removeItem('kylrix_ghost_secret');
+                    }
+                }
+
                 const history = localStorage.getItem(GHOST_STORAGE_KEY);
                 if (history) {
                     const parsed = JSON.parse(history);

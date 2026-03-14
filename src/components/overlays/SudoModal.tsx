@@ -62,29 +62,31 @@ export default function SudoModal({
                 // Sudo Hook: Ensure E2E Identity is created and published upon successful MasterPass unlock
                 console.log("[Note] Synchronizing Identity...");
                 await ecosystemSecurity.ensureE2EIdentity(user.$id);
+
+                // Passkey Incentive
+                const entries = await AppwriteService.listKeychainEntries(user.$id);
+                const hasPasskey = entries.some((e: any) => e.type === 'passkey');
+
+                if (intent === "reset") {
+                    window.open("https://vault.kylrix.space/masterpass/reset", "_blank");
+                    onClose();
+                    return;
+                }
+
+                if (!hasPasskey) {
+                    const skipTimestamp = localStorage.getItem(`passkey_skip_${user.$id}`);
+                    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                    if (!skipTimestamp || (Date.now() - parseInt(skipTimestamp)) > sevenDays) {
+                        setShowPasskeyIncentive(true);
+                        return;
+                    }
+                }
             } catch (e) {
                 console.error("[Note] Failed to sync identity on unlock", e);
             }
         }
-
-        if (intent === "reset") {
-            setResetStep(2);
-            return;
-        }
-
-        const skipTimestamp = localStorage.getItem(`passkey_skip_${user?.$id}`);
-        const sevenDays = 7 * 24 * 60 * 60 * 1000;
-        const shouldShowIncentive =
-            !hasPasskey &&
-            (!skipTimestamp ||
-                Date.now() - parseInt(skipTimestamp) > sevenDays);
-
-        if (shouldShowIncentive) {
-            setShowPasskeyIncentive(true);
-        } else {
-            onSuccess();
-        }
-    }, [user, hasPasskey, onSuccess, intent]);
+        onSuccess();
+    }, [user, onSuccess, intent, onClose]);
 
     const handleInitializeMasterPass = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -352,12 +354,12 @@ export default function SudoModal({
             TransitionComponent={Fade}
             PaperProps={{
                 sx: {
-                    borderRadius: '28px',
-                    bgcolor: 'rgba(10, 10, 10, 0.95)',
+                    borderRadius: '32px',
+                    bgcolor: 'rgba(5, 5, 5, 0.03)',
                     backdropFilter: 'blur(25px) saturate(180%)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     backgroundImage: 'none',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
                     overflow: 'hidden'
                 }
             }}
@@ -373,13 +375,13 @@ export default function SudoModal({
                     100% { transform: scale(1); opacity: 1; }
                 }
             `}</style>
-            <DialogTitle sx={{ textAlign: 'center', pt: 4, pb: 1, position: 'relative' }}>
+            <DialogTitle sx={{ textAlign: 'center', pt: 5, pb: 1, position: 'relative' }}>
                 <IconButton
                     onClick={onClose}
                     sx={{
                         position: 'absolute',
-                        right: 16,
-                        top: 16,
+                        right: 20,
+                        top: 20,
                         color: 'rgba(255, 255, 255, 0.3)',
                         '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' }
                     }}
@@ -387,7 +389,7 @@ export default function SudoModal({
                     <CloseIcon sx={{ fontSize: 20 }} />
                 </IconButton>
 
-                <Box sx={{ position: 'relative', mb: 2, display: 'inline-flex' }}>
+                <Box sx={{ position: 'relative', mb: 3, display: 'inline-flex' }}>
                     <Box 
                         component="img" 
                         src="/logo.jpg" 
@@ -414,21 +416,21 @@ export default function SudoModal({
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
-                        border: '3px solid rgba(10, 10, 10, 1)',
+                        border: '3px solid rgba(5, 5, 5, 1)',
                         zIndex: 1
                     }}>
-                        <LockIcon sx={{ fontSize: 16 }} />
+                        <ShieldIcon sx={{ fontSize: 16 }} />
                     </Box>
                 </Box>
                 <Typography variant="h5" sx={{
                     fontWeight: 900,
-                    letterSpacing: '-0.03em',
-                    fontFamily: 'var(--font-space-grotesk)',
+                    letterSpacing: '-0.04em',
+                    fontFamily: 'var(--font-clash)',
                     color: 'white'
                 }}>
                     {user?.name || "User"}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 1 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', mt: 1, fontFamily: 'var(--font-satoshi)' }}>
                     Security verification required
                 </Typography>
             </DialogTitle>
