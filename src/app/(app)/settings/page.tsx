@@ -440,6 +440,7 @@ export default function SettingsPage() {
                     setPendingAction(null);
                 }}
                 onSuccess={() => {
+                    setUnlockModalOpen(false);
                     setIsUnlocked(true);
                     if (pendingAction === 'setup') {
                         executePinSetup();
