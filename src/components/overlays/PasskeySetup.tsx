@@ -18,6 +18,7 @@ import {
 import { startRegistration } from "@simplewebauthn/browser";
 import { AppwriteService } from "@/lib/appwrite";
 import { ecosystemSecurity } from "@/lib/ecosystem/security";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -48,6 +49,7 @@ export function PasskeySetup({
   onSuccess,
   trustUnlocked = false,
 }: PasskeySetupProps) {
+  const router = useRouter();
   const muiTheme = useTheme();
   const [step, setStep] = useState(trustUnlocked && ecosystemSecurity.status.isUnlocked ? 2 : 1);
   const [loading, setLoading] = useState(false);
@@ -57,6 +59,15 @@ export function PasskeySetup({
   const [verifyingPassword, setVerifyingPassword] = useState(false);
 
   const verifyMasterPassword = async () => {
+    // Enforcement: Check if master password exists before allowing verification/passkey setup
+    const masterpassSet = await AppwriteService.hasMasterpass(userId);
+    if (!masterpassSet) {
+      toast.error("You must set a master password before adding a passkey.");
+      router.push("/masterpass");
+      onClose();
+      return false;
+    }
+
     if (!masterPassword.trim()) {
       toast.error("Please enter your master password.");
       return false;

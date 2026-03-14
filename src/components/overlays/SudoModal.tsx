@@ -56,13 +56,25 @@ export default function SudoModal({
         if (user?.$id) {
             try {
                 // Sudo Hook: Ensure E2E Identity is created and published upon successful MasterPass unlock
-                console.log("Synchronizing Identity...");
+                console.log("[Note] Synchronizing Identity...");
                 await ecosystemSecurity.ensureE2EIdentity(user.$id);
             } catch (e) {
-                console.error("Failed to sync identity on unlock", e);
+                console.error("[Note] Failed to sync identity on unlock", e);
             }
         }
-        onSuccess();
+
+        const skipTimestamp = localStorage.getItem(`passkey_skip_${user?.$id}`);
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        const shouldShowIncentive =
+            !hasPasskey &&
+            (!skipTimestamp ||
+                Date.now() - parseInt(skipTimestamp) > sevenDays);
+
+        if (shouldShowIncentive) {
+            setShowPasskeyIncentive(true);
+        } else {
+            onSuccess();
+        }
     };
 
     const handleInitializeMasterPass = async (e: React.FormEvent) => {

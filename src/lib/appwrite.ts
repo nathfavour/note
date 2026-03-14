@@ -71,6 +71,24 @@ export const APPWRITE_BUCKET_TEMP_UPLOADS = APPWRITE_CONFIG.BUCKETS.TEMP_UPLOADS
 export { client, account, databases, storage, functions, ID, Query, Permission, Role, OAuthProvider, realtime };
 
 export class AppwriteService {
+  static async hasMasterpass(userId: string): Promise<boolean> {
+    try {
+      const res = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_TABLE_ID_USERS,
+        [Query.equal('userId', userId), Query.limit(1)]
+      );
+      if (res.total > 0 && res.documents[0].hasMasterpass) {
+        return true;
+      }
+      const entries = await this.listKeychainEntries(userId);
+      return entries.some(e => e.type === 'password');
+    } catch (e: any) {
+      console.error('hasMasterpass error', e);
+      return false;
+    }
+  }
+
   static async listKeychainEntries(userId: string): Promise<any[]> {
     try {
       const response = await databases.listDocuments(
