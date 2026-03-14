@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -56,7 +56,7 @@ export default function SudoModal({
     const [isResetting, setIsResetting] = useState(false);
     const [resetStep, setResetStep] = useState(1);
 
-    const handleSuccessWithSync = async () => {
+    const handleSuccessWithSync = useCallback(async () => {
         if (user?.$id) {
             try {
                 // Sudo Hook: Ensure E2E Identity is created and published upon successful MasterPass unlock
@@ -84,7 +84,7 @@ export default function SudoModal({
         } else {
             onSuccess();
         }
-    };
+    }, [user, hasPasskey, onSuccess, intent]);
 
     const handleInitializeMasterPass = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -134,6 +134,22 @@ export default function SudoModal({
             setLoading(false);
         }
     };
+
+    const handlePasskeyVerify = useCallback(async () => {
+        if (!user?.$id || !open) return;
+        setPasskeyLoading(true);
+        try {
+            const success = await unlockWithPasskey(user.$id);
+            if (success && open) {
+                toast.success("Verified via Passkey");
+                handleSuccessWithSync();
+            }
+        } catch (error: unknown) {
+            console.error("Passkey verification failed or cancelled", error);
+        } finally {
+            setPasskeyLoading(false);
+        }
+    }, [user?.$id, open, handleSuccessWithSync]);
 
     // Check if user has passkey and PIN set up
     useEffect(() => {
@@ -196,8 +212,7 @@ export default function SudoModal({
             setPasskeyLoading(false);
             setIsDetecting(true);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, user?.$id]);
+    }, [open, user?.$id, handlePasskeyVerify, intent]);
 
     const handlePasswordVerify = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -225,12 +240,8 @@ export default function SudoModal({
 
             const isValid = await ecosystemSecurity.unlock(password, passwordEntry);
             if (isValid) {
-                if (!hasPasskey) {
-                    setShowPasskeyIncentive(true);
-                } else {
-                    toast.success("Verified");
-                    handleSuccessWithSync();
-                }
+                toast.success("Verified");
+                handleSuccessWithSync();
             } else {
                 toast.error("Incorrect master password");
             }
@@ -249,12 +260,8 @@ export default function SudoModal({
         try {
             const success = await ecosystemSecurity.unlockWithPin(pinValue);
             if (success) {
-                if (!hasPasskey) {
-                    setShowPasskeyIncentive(true);
-                } else {
-                    toast.success("Verified via PIN");
-                    handleSuccessWithSync();
-                }
+                toast.success("Verified via PIN");
+                handleSuccessWithSync();
             } else {
                 toast.error("Incorrect PIN");
                 setPin("");
@@ -272,23 +279,6 @@ export default function SudoModal({
         setPin(val);
         if (val.length === 4) {
             handlePinVerify(val);
-        }
-    };
-
-
-    const handlePasskeyVerify = async () => {
-        if (!user?.$id || !open) return;
-        setPasskeyLoading(true);
-        try {
-            const success = await unlockWithPasskey(user.$id);
-            if (success && open) {
-                toast.success("Verified via Passkey");
-                handleSuccessWithSync();
-            }
-        } catch (error: unknown) {
-            console.error("Passkey verification failed or cancelled", error);
-        } finally {
-            setPasskeyLoading(false);
         }
     };
 
@@ -488,6 +478,17 @@ export default function SudoModal({
                                 </Typography>
                             )}
                         </Box>
+                        {passkeyLoading && (
+                            <Button
+                                fullWidth
+                                variant="text"
+                                size="small"
+                                onClick={() => setMode("password")}
+                                sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: 'white' } }}
+                            >
+                                Use Master Password
+                            </Button>
+                        )}
                     </Stack>
                 ) : mode === "initialize" ? (
                     <Stack spacing={3} sx={{ mt: 2 }}>
@@ -665,6 +666,11 @@ export default function SudoModal({
                                 '&:hover': {
                                     borderColor: '#6366F1',
                                     bgcolor: alpha('#6366F1', 0.05)
+                                },
+                                '@keyframes pulse': {
+                                    '0%': { boxShadow: '0 0 0 0 rgba(168, 85, 247, 0.4)' },
+                                    '70%': { boxShadow: '0 0 0 15px rgba(168, 85, 247, 0)' },
+                                    '100%': { boxShadow: '0 0 0 0 rgba(168, 85, 247, 0)' }
                                 }
                             }}
                         >
@@ -810,19 +816,22 @@ export default function SudoModal({
                             </Box>
                         )}
 
-                        {hasPasskey && (
+                        {hasPasskey && mode !== "passkey" && (
                             <Button
                                 fullWidth
                                 variant="text"
                                 startIcon={<FingerprintIcon sx={{ fontSize: 18 }} />}
-                                onClick={() => setMode("passkey")}
+                                onClick={() => {
+                                    setMode("passkey");
+                                    handlePasskeyVerify();
+                                }}
                                 sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: 'white' } }}
                             >
                                 Use Passkey
                             </Button>
                         )}
 
-                        {hasPin && (
+                        {hasPin && mode !== "pin" && (
                             <Button
                                 fullWidth
                                 variant="text"
@@ -833,6 +842,16 @@ export default function SudoModal({
                                 Use PIN
                             </Button>
                         )}
+
+                        <Button
+                            fullWidth
+                            variant="text"
+                            size="small"
+                            onClick={() => window.open("https://vault.kylrix.space/masterpass/reset", "_blank")}
+                            sx={{ color: 'error.main', '&:hover': { bgcolor: alpha('#ef4444', 0.1) }, mt: 2 }}
+                        >
+                            Reset Master Password
+                        </Button>
                     </Stack>
                 )}
             </DialogContent>
