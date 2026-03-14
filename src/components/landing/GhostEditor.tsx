@@ -125,7 +125,7 @@ export const GhostEditor = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [prevNotes, setPrevNotes] = useState<GhostNoteRef[]>([]);
     const [copiedId, setCopiedId] = useState<string | null>(null);
-    const [isContentCopied, setIsContentCopied] = useState(false);
+    const [isLinkCopied, setIsLinkCopied] = useState(false);
     const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(false);
 
     // Context Menu State
@@ -188,6 +188,31 @@ export const GhostEditor = () => {
         }
     }, [content, isTitleManuallyEdited, title]);
 
+    const copyToClipboard = async (text: string) => {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } else {
+                // Fallback for Safari/Non-secure contexts
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                textArea.style.top = "0";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return successful;
+            }
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+            return false;
+        }
+    };
+
     const handleCreateAndCopyLink = async () => {
         if (!title.trim() || !content.trim()) {
             toast.error("Complete your note first!");
@@ -207,10 +232,14 @@ export const GhostEditor = () => {
 
             if (note) {
                 const url = `${window.location.origin}/shared/${note.$id}`;
-                await navigator.clipboard.writeText(url);
+                const copied = await copyToClipboard(url);
                 
-                setCopiedId(note.$id);
-                showSuccess('Ghost Spark Shared', 'Live share link copied. It expires in 7 days.');
+                if (copied) {
+                    setCopiedId(note.$id);
+                    showSuccess('Link Copied', 'Live share link copied to clipboard.');
+                } else {
+                    toast.error("Note created, but failed to copy link. Check your history.");
+                }
 
                 // Update history
                 const newRef = { id: note.$id, title: finalTitle, createdAt: new Date().toISOString() };
@@ -234,10 +263,12 @@ export const GhostEditor = () => {
 
     const handleCopyContent = async () => {
         if (!content.trim()) return;
-        await navigator.clipboard.writeText(content);
-        setIsContentCopied(true);
-        toast.success("Content copied");
-        setTimeout(() => setIsContentCopied(false), 2000);
+        const copied = await copyToClipboard(content);
+        if (copied) {
+            setIsLinkCopied(true);
+            toast.success("Content copied");
+            setTimeout(() => setIsLinkCopied(false), 2000);
+        }
     };
 
     const handleContextMenu = (event: React.MouseEvent, noteId: string) => {
@@ -336,16 +367,16 @@ export const GhostEditor = () => {
                                     disabled={!content.trim()}
                                     sx={{ 
                                         bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                        color: isContentCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
+                                        color: isLinkCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
                                         border: '1px solid rgba(255, 255, 255, 0.1)',
                                         '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
                                     }}
                                 >
-                                    {isContentCopied ? <CheckIcon size={20} /> : <CopyIcon size={20} />}
+                                    {isLinkCopied ? <CheckIcon size={20} /> : <CopyIcon size={20} />}
                                 </IconButton>
                             </Tooltip>
 
-                            <Tooltip title="Create & Share Live Link" placement="top">
+                            <Tooltip title="Copy Link" placement="top">
                                 <IconButton
                                     onClick={handleCreateAndCopyLink}
                                     disabled={isCreating || !title.trim() || !content.trim()}
@@ -472,7 +503,7 @@ export const GhostEditor = () => {
                                     ) : (
                                         <>
                                             {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
-                                            <Box component="span" sx={{ ml: 1 }}>SHARE LIVE LINK</Box>
+                                            <Box component="span" sx={{ ml: 1 }}>{copiedId ? 'LINK COPIED' : 'COPY LINK'}</Box>
                                         </>
                                     )}
                                 </Button>
