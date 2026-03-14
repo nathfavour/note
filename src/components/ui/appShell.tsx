@@ -76,18 +76,18 @@ export default function AppShell({ children }: AppShellProps) {
           backdropFilter: 'blur(25px) saturate(180%)',
         }}
       >
-        <CircularProgress size={48} thickness={4} sx={{ color: '#6366F1' }} />
+        <CircularProgress size={48} thickness={4} sx={{ color: 'var(--color-primary)' }} />
         <Typography 
           variant="body1" 
           sx={{ 
             color: 'rgba(255, 255, 255, 0.6)',
-            fontFamily: '"Space Grotesk", sans-serif',
+            fontFamily: 'var(--font-clash)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.1em'
           }}
         >
-          Initializing WhisperNote...
+          Initializing Note...
         </Typography>
       </Box>
     );
@@ -168,8 +168,8 @@ export default function AppShell({ children }: AppShellProps) {
               sx={{ 
                 mb: 2, 
                 fontWeight: 900, 
-                fontFamily: '"Space Grotesk", sans-serif',
-                color: '#6366F1',
+                fontFamily: 'var(--font-clash)',
+                color: 'var(--color-primary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}

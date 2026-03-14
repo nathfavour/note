@@ -78,12 +78,12 @@ export const MobileBottomNav: React.FC = () => {
             href={href}
             sx={{
               color: isActive(href) ? '#000' : 'rgba(255, 255, 255, 0.6)',
-              bgcolor: isActive(href) ? '#6366F1' : 'transparent',
+              bgcolor: isActive(href) ? 'var(--color-primary)' : 'transparent',
               borderRadius: '16px',
               p: 1.5,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                bgcolor: isActive(href) ? '#00D1DA' : 'rgba(255, 255, 255, 0.05)',
+                bgcolor: isActive(href) ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.05)',
                 transform: 'translateY(-2px)'
               },
               ...(isActive(href) && {
@@ -208,13 +208,13 @@ export const DesktopSidebar: React.FC = () => {
                   py: 1.75,
                   transition: 'all 0.2s ease',
                   bgcolor: active ? alpha('#6366F1', 0.1) : 'transparent',
-                  color: active ? '#6366F1' : 'rgba(255, 255, 255, 0.6)',
+                  color: active ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.6)',
                   border: '1px solid',
                   borderColor: active ? alpha('#6366F1', 0.2) : 'transparent',
                   '&:hover': {
                     bgcolor: active ? alpha('#6366F1', 0.15) : 'rgba(255, 255, 255, 0.05)',
                     transform: 'translateX(4px)',
-                    color: active ? '#6366F1' : 'white'
+                    color: active ? 'var(--color-primary)' : 'white'
                   },
                   justifyContent: isCollapsed ? 'center' : 'flex-start'
                 }}
@@ -232,12 +232,13 @@ export const DesktopSidebar: React.FC = () => {
                     primaryTypographyProps={{ 
                       variant: 'body2', 
                       fontWeight: 800,
-                      letterSpacing: '-0.01em'
+                      letterSpacing: '-0.01em',
+                      fontFamily: 'var(--font-satoshi)'
                     }} 
                   />
                 )}
                 {active && !isCollapsed && (
-                  <Box sx={{ width: 4, height: 20, bgcolor: '#6366F1', borderRadius: '2px', ml: 'auto', boxShadow: '0 0 10px #6366F1' }} />
+                  <Box sx={{ width: 4, height: 20, bgcolor: 'var(--color-electric)', borderRadius: '2px', ml: 'auto', boxShadow: '0 0 10px var(--color-electric)' }} />
                 )}
               </ListItemButton>
             </Tooltip>
@@ -263,7 +264,7 @@ export const DesktopSidebar: React.FC = () => {
               sx={{ 
                 width: 36, 
                 height: 36, 
-                bgcolor: '#6366F1',
+                bgcolor: 'var(--color-primary)',
                 color: '#000',
                 fontSize: '0.875rem',
                 fontWeight: 800,
