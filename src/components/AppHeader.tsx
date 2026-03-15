@@ -38,6 +38,7 @@ import {
   Layers,
   Zap
 } from 'lucide-react';
+import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useIsland } from '@/components/ui/DynamicIsland';
@@ -572,6 +573,9 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', mt: 0.5, fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
               {user?.email}
             </Typography>
+            <Box sx={{ mt: 2 }}>
+              <SubscriptionBadge showFree />
+            </Box>
           </Box>
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
           <Box sx={{ py: 0.5 }}>
