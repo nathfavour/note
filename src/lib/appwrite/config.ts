@@ -1,4 +1,4 @@
-import { PROJECT_ID, ENDPOINT } from '../../appwrite/constants';
+import { PROJECT_ID, ENDPOINT } from '../../generated/appwrite/constants';
 
 export const APPWRITE_CONFIG = {
     ENDPOINT,

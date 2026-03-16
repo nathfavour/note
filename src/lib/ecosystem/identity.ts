@@ -29,7 +29,7 @@ export async function ensureGlobalIdentity(user: any, force = false) {
         username = String(username).toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_]/g, '').slice(0, 50);
         if (!username) username = `user_${user.$id.slice(0, 8)}`;
 
-        const picId = user.avatar || user.profilePicId || user.avatarFileId || user.avatarUrl || prefs?.profilePicId || null;
+        const picId = user.avatar || user.profilePicId || user.avatarUrl || prefs?.profilePicId || null;
         const profileData: any = {
             username,
             displayName: user.name || username,
