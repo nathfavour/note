@@ -50,7 +50,7 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
     return (
       <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
         {Array.from({length:3}).map((_,i)=>(
-          <Skeleton key={i} variant="rounded" width={80} height={24} sx={{ borderRadius: 12, bgcolor: 'rgba(255, 255, 255, 0.05)' }} />
+          <Skeleton key={i} variant="rounded" width={80} height={24} sx={{ borderRadius: 12, bgcolor: '#1C1A18' }} />
         ))}
       </Stack>
     );
@@ -67,12 +67,13 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
           clickable
           size="small"
           sx={{
-            bgcolor: alpha('#6366F1', 0.1),
-            color: '#6366F1',
-            border: `1px solid ${alpha('#6366F1', 0.2)}`,
+            bgcolor: alpha('#EC4899', 0.1),
+            color: '#EC4899',
+            border: `1px solid ${alpha('#EC4899', 0.2)}`,
             fontSize: '11px',
             fontWeight: 700,
-            '&:hover': { bgcolor: alpha('#6366F1', 0.2) }
+            fontFamily: 'Satoshi, sans-serif',
+            '&:hover': { bgcolor: alpha('#EC4899', 0.2) }
           }}
           title={`${a.name} • ${formatFileSize(a.size)}${a.mime? ' • '+a.mime:''}`}
         />
@@ -161,14 +162,14 @@ export default function NoteEditor({
 
   return (
     <Paper
+      elevation={0}
       sx={{
         p: { xs: 2, md: 4 },
-        bgcolor: 'rgba(15, 13, 12, 0.95)',
-        backdropFilter: 'blur(25px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        bgcolor: '#161412',
+        border: '1px solid #1C1A18',
         borderRadius: '32px',
         backgroundImage: 'none',
-        boxShadow: '0 24px 48px rgba(0,0,0,0.4)'
+        boxShadow: '0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)'
       }}
     >
       <Stack spacing={4}>
@@ -185,6 +186,7 @@ export default function NoteEditor({
               fontSize: { xs: '1.5rem', md: '2rem' }, 
               fontWeight: 900, 
               color: 'white',
+              fontFamily: 'Clash Display, sans-serif',
               letterSpacing: '-0.03em',
               '& input::placeholder': {
                 color: 'rgba(255, 255, 255, 0.2)',
@@ -205,9 +207,10 @@ export default function NoteEditor({
         {effectiveNoteId && (
           <Box sx={{ 
             p: 3, 
-            bgcolor: 'rgba(255, 255, 255, 0.02)', 
+            bgcolor: '#0A0908', 
             borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
+            border: '1px solid #1C1A18',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)'
           }}>
             <AttachmentsManager noteId={effectiveNoteId} />
             <AttachmentChips noteId={effectiveNoteId} />
@@ -217,21 +220,21 @@ export default function NoteEditor({
         {!effectiveNoteId && (
           <Box sx={{ 
             p: 2, 
-            bgcolor: alpha('#6366F1', 0.05), 
+            bgcolor: alpha('#EC4899', 0.05), 
             borderRadius: '16px',
             border: '1px solid',
-            borderColor: alpha('#6366F1', 0.1),
+            borderColor: alpha('#EC4899', 0.1),
             textAlign: 'center'
           }}>
-            <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <Typography variant="caption" sx={{ color: '#EC4899', fontWeight: 700, fontFamily: 'Satoshi, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Save the note to enable attachments.
             </Typography>
           </Box>
         )}
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(255, 255, 255, 0.03)', px: 2, py: 1, borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#0A0908', px: 2, py: 1, borderRadius: '14px', border: '1px solid #1C1A18', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', fontFamily: 'Satoshi, sans-serif' }}>
               Visibility:
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -243,10 +246,12 @@ export default function NoteEditor({
                   borderRadius: '10px',
                   fontSize: '0.7rem',
                   fontWeight: 900,
+                  fontFamily: 'Satoshi, sans-serif',
                   py: 0.5,
-                  bgcolor: !isPublic ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  bgcolor: !isPublic ? '#1C1A18' : 'transparent',
                   color: !isPublic ? 'white' : 'rgba(255, 255, 255, 0.3)',
-                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' }
+                  border: !isPublic ? '1px solid #2C2A28' : '1px solid transparent',
+                  '&:hover': { bgcolor: '#2C2A28' }
                 }}
               >
                 Private
@@ -259,10 +264,12 @@ export default function NoteEditor({
                   borderRadius: '10px',
                   fontSize: '0.7rem',
                   fontWeight: 900,
+                  fontFamily: 'Satoshi, sans-serif',
                   py: 0.5,
-                  bgcolor: isPublic ? alpha('#6366F1', 0.2) : 'transparent',
-                  color: isPublic ? '#6366F1' : 'rgba(255, 255, 255, 0.3)',
-                  '&:hover': { bgcolor: alpha('#6366F1', 0.3) }
+                  bgcolor: isPublic ? alpha('#EC4899', 0.2) : 'transparent',
+                  color: isPublic ? '#EC4899' : 'rgba(255, 255, 255, 0.3)',
+                  border: isPublic ? `1px solid ${alpha('#EC4899', 0.3)}` : '1px solid transparent',
+                  '&:hover': { bgcolor: alpha('#EC4899', 0.3) }
                 }}
               >
                 Public
@@ -276,22 +283,25 @@ export default function NoteEditor({
             disabled={isSaving || !title.trim()}
             startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : (effectiveNoteId ? <UpdateIcon /> : <SaveIcon />)}
             sx={{
-              bgcolor: '#6366F1',
+              bgcolor: '#EC4899',
               color: '#000',
               fontWeight: 900,
+              fontFamily: 'Satoshi, sans-serif',
               px: 4,
               py: 1.5,
               borderRadius: '14px',
               textTransform: 'none',
               fontSize: '1rem',
+              boxShadow: `0 8px 24px ${alpha('#EC4899', 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
               '&:hover': {
-                bgcolor: alpha('#6366F1', 0.8),
+                bgcolor: '#F062AD',
                 transform: 'translateY(-2px)',
-                boxShadow: `0 8px 24px ${alpha('#6366F1', 0.4)}`
+                boxShadow: `0 12px 32px ${alpha('#EC4899', 0.4)}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`
               },
               '&.Mui-disabled': {
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
-                color: 'rgba(255, 255, 255, 0.2)'
+                bgcolor: '#1C1A18',
+                color: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid #2C2A28'
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}

@@ -174,24 +174,23 @@ export default function SettingsPage() {
                 <DiscoverabilitySettings />
                 {/* Security Section */}
                 <Box>
-                    <Typography variant="overline" sx={{ fontWeight: 900, color: 'primary.main', mb: 2, display: 'block', letterSpacing: '0.1em' }}>
+                    <Typography variant="overline" sx={{ fontWeight: 900, color: '#EC4899', mb: 2, display: 'block', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
                         SECURITY & PRIVACY
                     </Typography>
 
                     <Paper sx={{
                         p: 4,
                         borderRadius: '32px',
-                        bgcolor: 'rgba(255, 255, 255, 0.01)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        backdropFilter: 'blur(25px)',
+                        bgcolor: '#161412',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
                         backgroundImage: 'none',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0,0,0,0.4)'
                     }}>
                         <Stack spacing={4}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                                 <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em' }}>Vault Session</Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.5, fontFamily: 'var(--font-satoshi)' }}>Your current encryption status for protected notes</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em', color: 'white' }}>Vault Session</Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)' }}>Your current encryption status for protected notes</Typography>
                                 </Box>
                                 <Button
                                     variant={isUnlocked ? "text" : "contained"}
@@ -207,15 +206,16 @@ export default function SettingsPage() {
                                         textTransform: 'none',
                                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                                         ...(isUnlocked ? {
-                                            bgcolor: 'rgba(255, 255, 255, 0.03)',
-                                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                                            bgcolor: '#1C1A18',
+                                            border: '1px solid rgba(255, 255, 255, 0.05)',
                                             color: 'rgba(255, 255, 255, 0.6)',
-                                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.15)', color: 'white' }
+                                            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                                            '&:hover': { bgcolor: '#0A0908', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white' }
                                         } : {
-                                            background: 'linear-gradient(135deg, #6366F1 0%, #00D1DA 100%)',
-                                            color: 'black',
-                                            boxShadow: '0 8px 20px rgba(99, 102, 241, 0.15)',
-                                            '&:hover': { background: 'linear-gradient(135deg, #00E5FF 0%, #00C1CA 100%)', transform: 'translateY(-1px)' }
+                                            background: 'linear-gradient(135deg, #EC4899 0%, #A855F7 100%)',
+                                            color: 'white',
+                                            boxShadow: '0 8px 20px rgba(236, 72, 153, 0.2)',
+                                            '&:hover': { background: 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)', transform: 'translateY(-1px)' }
                                         })
                                     }}
                                 >
@@ -227,15 +227,16 @@ export default function SettingsPage() {
 
                             {/* Passkey Section */}
                             <Box sx={{
-                                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                                bgcolor: '#0A0908',
                                 p: 3.5,
                                 borderRadius: '24px',
-                                border: '1px solid rgba(255, 255, 255, 0.05)'
+                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)'
                             }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
                                     <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em' }}>Passkeys</Typography>
-                                        <Typography variant="body2" sx={{ opacity: 0.5, fontFamily: 'var(--font-satoshi)', mt: 0.5 }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em', color: 'white' }}>Passkeys</Typography>
+                                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)', mt: 0.5 }}>
                                             Use biometrics to securely unlock your notes.
                                         </Typography>
                                     </Box>
@@ -248,21 +249,21 @@ export default function SettingsPage() {
                                             borderRadius: '12px',
                                             textTransform: 'none',
                                             fontWeight: 800,
-                                            bgcolor: 'rgba(99, 102, 241, 0.05)',
-                                            color: '#6366F1',
+                                            bgcolor: 'rgba(236, 72, 153, 0.05)',
+                                            color: '#EC4899',
                                             px: 2,
-                                            border: '1px solid rgba(99, 102, 241, 0.1)',
-                                            '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)' }
+                                            border: '1px solid rgba(236, 72, 153, 0.1)',
+                                            '&:hover': { bgcolor: 'rgba(236, 72, 153, 0.1)', border: '1px solid rgba(236, 72, 153, 0.2)' }
                                         }}
                                     >
                                         Register
                                     </Button>
                                 </Box>
 
-                                <List sx={{ bgcolor: 'rgba(255, 255, 255, 0.01)', borderRadius: '20px', p: 1, border: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                                <List sx={{ bgcolor: '#161412', borderRadius: '20px', p: 1, border: '1px solid rgba(255, 255, 255, 0.03)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)' }}>
                                     {passkeyEntries.length === 0 ? (
                                         <Box sx={{ py: 3, textAlign: 'center', opacity: 0.3 }}>
-                                            <Typography variant="caption" sx={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>ZERO PASSKEYS DETECTED</Typography>
+                                            <Typography variant="caption" sx={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', color: 'white' }}>ZERO PASSKEYS DETECTED</Typography>
                                         </Box>
                                     ) : (
                                         passkeyEntries.map((pk, idx) => (
@@ -272,7 +273,7 @@ export default function SettingsPage() {
                                                         borderRadius: '14px',
                                                         mb: idx < passkeyEntries.length - 1 ? 1 : 0,
                                                         transition: 'all 0.2s ease',
-                                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.02)' }
+                                                        '&:hover': { bgcolor: '#1C1A18', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' }
                                                     }}
                                                     secondaryAction={
                                                         <IconButton edge="end" onClick={() => handleRemovePasskey(pk.$id)} sx={{ color: 'rgba(255, 77, 77, 0.4)', '&:hover': { color: '#FF4D4D', bgcolor: 'rgba(255, 77, 77, 0.1)' } }}>
@@ -281,15 +282,15 @@ export default function SettingsPage() {
                                                     }
                                                 >
                                                     <ListItemIcon sx={{ minWidth: 44 }}>
-                                                        <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(99, 102, 241, 0.05)', display: 'flex', border: '1px solid rgba(99, 102, 241, 0.1)' }}>
-                                                            <Fingerprint size={18} color="#6366F1" strokeWidth={1.5} />
+                                                        <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(236, 72, 153, 0.05)', display: 'flex', border: '1px solid rgba(236, 72, 153, 0.1)' }}>
+                                                            <Fingerprint size={18} color="#EC4899" strokeWidth={1.5} />
                                                         </Box>
                                                     </ListItemIcon>
                                                     <ListItemText
                                                         primary={pk.params?.name || `Passkey ${idx + 1}`}
                                                         secondary="Secure Hardware Key"
-                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-satoshi)' }}
-                                                        secondaryTypographyProps={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', sx: { opacity: 0.4 } }}
+                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-satoshi)', color: 'white' }}
+                                                        secondaryTypographyProps={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', sx: { color: 'rgba(255, 255, 255, 0.3)' } }}
                                                     />
                                                 </ListItem>
                                             </React.Fragment>
@@ -301,13 +302,14 @@ export default function SettingsPage() {
                             <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
                             <Box sx={{
-                                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                                bgcolor: '#0A0908',
                                 p: 3.5,
                                 borderRadius: '24px',
-                                border: '1px solid rgba(255, 255, 255, 0.05)'
+                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)'
                             }}>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em', mb: 0.5 }}>Quick Unlock (PIN)</Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.5, mb: 3.5, maxWidth: 600, fontFamily: 'var(--font-satoshi)' }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em', mb: 0.5, color: 'white' }}>Quick Unlock (PIN)</Typography>
+                                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', mb: 3.5, maxWidth: 600, fontFamily: 'var(--font-satoshi)' }}>
                                     {isPinSet
                                         ? "Your PIN is active. Use the form below to update it."
                                         : "Set a 4-digit PIN for instant access to your private notes between sessions."
@@ -315,7 +317,7 @@ export default function SettingsPage() {
                                 </Typography>
 
                                 {message && (
-                                    <Alert severity={message.type} sx={{ mb: 3, borderRadius: '14px', bgcolor: alpha(theme.palette[message.type].main, 0.05), color: theme.palette[message.type].main, border: `1px solid ${alpha(theme.palette[message.type].main, 0.1)}`, fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>
+                                    <Alert severity={message.type} sx={{ mb: 3, borderRadius: '14px', bgcolor: '#161412', color: theme.palette[message.type].main, border: `1px solid ${alpha(theme.palette[message.type].main, 0.1)}`, fontFamily: 'var(--font-satoshi)', fontWeight: 600, boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)' }}>
                                         {message.text}
                                     </Alert>
                                 )}
@@ -330,8 +332,8 @@ export default function SettingsPage() {
                                                 value={oldPin}
                                                 onChange={(e) => setOldPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)', color: 'white' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: '#161412', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.2)' } }}
                                             />
                                         )}
                                         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -342,8 +344,8 @@ export default function SettingsPage() {
                                                 value={pin}
                                                 onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)', color: 'white' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: '#161412', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.2)' } }}
                                             />
                                             <TextField
                                                 fullWidth
@@ -352,8 +354,8 @@ export default function SettingsPage() {
                                                 value={confirmPin}
                                                 onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                                 variant="filled"
-                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)' } }}
-                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56 } }}
+                                                inputProps={{ maxLength: 4, inputMode: 'numeric', style: { textAlign: 'center', fontWeight: 900, letterSpacing: '0.6em', fontFamily: 'var(--font-mono)', color: 'white' } }}
+                                                InputProps={{ disableUnderline: true, sx: { borderRadius: '16px', bgcolor: '#161412', border: '1px solid rgba(255, 255, 255, 0.05)', height: 56, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.2)' } }}
                                             />
                                         </Box>
                                         <Button
@@ -366,10 +368,11 @@ export default function SettingsPage() {
                                                 py: 1.8,
                                                 fontWeight: 800,
                                                 fontFamily: 'var(--font-satoshi)',
-                                                bgcolor: isPinSet ? 'rgba(255, 255, 255, 0.03)' : 'primary.main',
-                                                color: isPinSet ? 'white' : 'black',
+                                                bgcolor: isPinSet ? '#1C1A18' : '#EC4899',
+                                                color: isPinSet ? 'white' : 'white',
                                                 border: isPinSet ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
-                                                '&:hover': { bgcolor: isPinSet ? 'rgba(255, 255, 255, 0.06)' : alpha('#6366F1', 0.8) },
+                                                boxShadow: isPinSet ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : '0 8px 20px rgba(236, 72, 153, 0.2)',
+                                                '&:hover': { bgcolor: isPinSet ? '#0A0908' : '#F472B6' },
                                                 textTransform: 'none'
                                             }}
                                         >
@@ -397,38 +400,48 @@ export default function SettingsPage() {
 
                 {/* Editor Section */}
                 <Box>
-                    <Typography variant="overline" sx={{ fontWeight: 900, color: 'primary.main', mb: 2, display: 'block', letterSpacing: '0.1em' }}>
+                    <Typography variant="overline" sx={{ fontWeight: 900, color: '#EC4899', mb: 2, display: 'block', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
                         EDITOR PREFERENCES
                     </Typography>
                     <Paper sx={{
                         p: 4,
                         borderRadius: '32px',
-                        bgcolor: 'rgba(255, 255, 255, 0.02)',
+                        bgcolor: '#161412',
                         border: '1px solid rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(20px)',
-                        backgroundImage: 'none'
+                        backgroundImage: 'none',
+                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0,0,0,0.4)'
                     }}>
                         <Stack spacing={1}>
                             <FormControlLabel
-                                control={<Switch defaultChecked color="primary" />}
+                                control={<Switch defaultChecked sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#EC4899' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#EC4899' } }} />}
                                 label={
-                                    <Box sx={{ ml: 1 }}>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, fontFamily: 'var(--font-space-grotesk)' }}>Auto-save</Typography>
-                                        <Typography variant="caption" sx={{ opacity: 0.6, display: 'block' }}>Automatically save notes while typing</Typography>
+                                    <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(236, 72, 153, 0.05)', display: 'flex', border: '1px solid rgba(236, 72, 153, 0.1)' }}>
+                                            <Save size={18} color="#EC4899" strokeWidth={1.5} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 800, fontFamily: 'var(--font-clash)', color: 'white' }}>Auto-save</Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontFamily: 'var(--font-satoshi)' }}>Automatically save notes while typing</Typography>
+                                        </Box>
                                     </Box>
                                 }
-                                sx={{ justifyContent: 'space-between', width: '100%', ml: 0, flexDirection: 'row-reverse', py: 1 }}
+                                sx={{ justifyContent: 'space-between', width: '100%', ml: 0, flexDirection: 'row-reverse', py: 2 }}
                             />
-                            <Divider sx={{ opacity: 0.05 }} />
+                            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
                             <FormControlLabel
-                                control={<Switch color="primary" />}
+                                control={<Switch sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#EC4899' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#EC4899' } }} />}
                                 label={
-                                    <Box sx={{ ml: 1 }}>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, fontFamily: 'var(--font-space-grotesk)' }}>Markdown Preview</Typography>
-                                        <Typography variant="caption" sx={{ opacity: 0.6, display: 'block' }}>Show side-by-side markdown preview</Typography>
+                                    <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(236, 72, 153, 0.05)', display: 'flex', border: '1px solid rgba(236, 72, 153, 0.1)' }}>
+                                            <Eye size={18} color="#EC4899" strokeWidth={1.5} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 800, fontFamily: 'var(--font-clash)', color: 'white' }}>Markdown Preview</Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontFamily: 'var(--font-satoshi)' }}>Show side-by-side markdown preview</Typography>
+                                        </Box>
                                     </Box>
                                 }
-                                sx={{ justifyContent: 'space-between', width: '100%', ml: 0, flexDirection: 'row-reverse', py: 1 }}
+                                sx={{ justifyContent: 'space-between', width: '100%', ml: 0, flexDirection: 'row-reverse', py: 2 }}
                             />
                         </Stack>
                     </Paper>

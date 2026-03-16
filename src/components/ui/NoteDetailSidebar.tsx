@@ -581,16 +581,16 @@ export function NoteDetailSidebar({
         ref={titleContainerRef}
         sx={{
           borderRadius: '32px',
-          border: `1px solid ${theme.palette.divider}`,
-          bgcolor: 'rgba(22, 20, 18, 0.95)',
+          border: '1px solid #1C1A18',
+          bgcolor: '#161412',
           p: 4,
           transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)',
           '&:focus-within': {
-            borderColor: theme.palette.secondary.main,
-            bgcolor: alpha(theme.palette.secondary.main, 0.05),
+            borderColor: '#EC4899',
+            bgcolor: alpha('#EC4899', 0.05),
             transform: 'translateZ(20px) translateY(-4px)',
-            boxShadow: `0 32px 64px ${alpha(theme.palette.secondary.main, 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
+            boxShadow: `0 32px 64px ${alpha('#EC4899', 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)`,
           }
         }}
       >
@@ -660,16 +660,16 @@ export function NoteDetailSidebar({
         ref={contentContainerRef}
         sx={{
           borderRadius: '32px',
-          border: `1px solid ${theme.palette.divider}`,
-          bgcolor: 'rgba(22, 20, 18, 0.95)',
+          border: '1px solid #1C1A18',
+          bgcolor: '#161412',
           p: 4,
           transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)',
           '&:focus-within': {
-            borderColor: theme.palette.primary.main,
-            bgcolor: alpha(theme.palette.primary.main, 0.05),
+            borderColor: '#EC4899',
+            bgcolor: alpha('#EC4899', 0.05),
             transform: 'translateZ(20px) translateY(-4px)',
-            boxShadow: `0 32px 64px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
+            boxShadow: `0 32px 64px ${alpha('#EC4899', 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)`,
           }
         }}
       >
@@ -1215,14 +1215,14 @@ export function NoteDetailSidebar({
       <Dialog
         open={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        PaperProps={{
+          PaperProps={{
           sx: {
             borderRadius: '32px',
-            bgcolor: 'rgba(22, 20, 18, 0.98)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            bgcolor: '#161412',
+            border: '1px solid #1C1A18',
             backgroundImage: 'none',
             p: 2,
-            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)'
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
           }
         }}
       >

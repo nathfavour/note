@@ -210,39 +210,39 @@ export const DiscoverabilitySettings = () => {
 
     return (
         <Box>
-            <Typography variant="overline" sx={{ fontWeight: 900, color: 'primary.main', mb: 2, display: 'block', letterSpacing: '0.1em' }}>
+            <Typography variant="overline" sx={{ fontWeight: 900, color: '#EC4899', mb: 2, display: 'block', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
                 ECOSYSTEM DISCOVERABILITY
             </Typography>
             <Paper sx={{
                 p: 4,
                 borderRadius: '32px',
-                bgcolor: 'rgba(255, 255, 255, 0.01)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(25px)',
+                bgcolor: '#161412',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 backgroundImage: 'none',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0,0,0,0.4)'
             }}>
                 <Stack spacing={4}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em' }}>Global Discovery</Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.5, fontFamily: 'var(--font-satoshi)' }}>Allow others to find you by your universal handle</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em', color: 'white' }}>Global Discovery</Typography>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)' }}>Allow others to find you by your universal handle</Typography>
                         </Box>
                         <Switch
                             checked={!!isDiscoverable}
                             onChange={(e) => handleToggleDiscoverability(e.target.checked)}
                             disabled={saving}
-                            color="primary"
+                            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#EC4899' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#EC4899' } }}
                         />
                     </Box>
 
                     <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
                     <Box sx={{
-                        bgcolor: 'rgba(255, 255, 255, 0.02)',
+                        bgcolor: '#0A0908',
                         p: 3,
                         borderRadius: '24px',
                         border: '1px solid rgba(255, 255, 255, 0.05)',
+                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 2
@@ -250,12 +250,12 @@ export const DiscoverabilitySettings = () => {
                         <Box sx={{
                             p: 1.5,
                             borderRadius: '12px',
-                            bgcolor: isDiscoverable ? alpha('#6366F1', 0.1) : 'rgba(255, 255, 255, 0.03)',
+                            bgcolor: isDiscoverable ? alpha('#EC4899', 0.1) : '#161412',
                             border: '1px solid',
-                            borderColor: isDiscoverable ? alpha('#6366F1', 0.2) : 'rgba(255, 255, 255, 0.05)',
+                            borderColor: isDiscoverable ? alpha('#EC4899', 0.2) : 'rgba(255, 255, 255, 0.05)',
                             display: 'flex'
                         }}>
-                            <User size={24} color={isDiscoverable ? "#6366F1" : "rgba(255, 255, 255, 0.2)"} />
+                            <User size={24} color={isDiscoverable ? "#EC4899" : "rgba(255, 255, 255, 0.2)"} />
                         </Box>
                         <Box sx={{ flex: 1 }}>
                             {isEditing ? (
@@ -270,12 +270,12 @@ export const DiscoverabilitySettings = () => {
                                         autoFocus
                                         InputProps={{
                                             disableUnderline: true,
-                                            startAdornment: <Typography sx={{ color: 'primary.main', fontWeight: 800, mr: 0.5 }}>@</Typography>,
+                                            startAdornment: <Typography sx={{ color: '#EC4899', fontWeight: 800, mr: 0.5 }}>@</Typography>,
                                             endAdornment: (
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    {checkingAvailability && <CircularProgress size={14} sx={{ color: 'primary.main' }} />}
-                                                    {!checkingAvailability && isAvailable === true && <Check size={14} color="#6366F1" />}
-                                                    {!checkingAvailability && isAvailable === false && <X size={14} color="#FF5252" />}
+                                                    {checkingAvailability && <CircularProgress size={14} sx={{ color: '#EC4899' }} />}
+                                                    {!checkingAvailability && isAvailable === true && <Check size={14} color="#EC4899" />}
+                                                    {!checkingAvailability && isAvailable === false && <X size={14} color="#FF4D4D" />}
                                                 </Box>
                                             ),
                                             sx: {
