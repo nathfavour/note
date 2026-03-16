@@ -170,10 +170,10 @@ export default function TagsPage() {
 
   if (!isAuthenticated) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack spacing={2} alignItems="center">
           <CircularProgress sx={{ color: '#6366F1' }} />
-          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Please log in to manage your tags</Typography>
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>Please log in to manage your tags</Typography>
         </Stack>
       </Box>
     );
@@ -181,10 +181,10 @@ export default function TagsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack spacing={2} alignItems="center">
           <CircularProgress sx={{ color: '#6366F1' }} />
-          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Loading tags...</Typography>
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>Loading tags...</Typography>
         </Stack>
       </Box>
     );
@@ -192,18 +192,18 @@ export default function TagsPage() {
 
   if (selectedTag) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908' }}>
         <Grid container sx={{ height: '100vh' }}>
-          <Grid size={{ xs: 12, lg: 6 }} sx={{ display: { xs: 'none', lg: 'block' }, borderRight: '1px solid rgba(255, 255, 255, 0.1)', p: 4, overflowY: 'auto' }}>
+          <Grid size={{ xs: 12, lg: 6 }} sx={{ display: { xs: 'none', lg: 'block' }, borderRight: '1px solid rgba(255, 255, 255, 0.05)', p: 4, overflowY: 'auto' }}>
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h3" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', color: 'white', mb: 1 }}>
+              <Typography variant="h3" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white', mb: 1, letterSpacing: '-0.02em' }}>
                 Tags Management
               </Typography>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>Organize your notes with custom tags and colors</Typography>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)', fontWeight: 500 }}>Organize your notes with custom tags and colors</Typography>
             </Box>
 
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {tags.length} tag{tags.length !== 1 ? 's' : ''} total
               </Typography>
               <Button
@@ -215,7 +215,8 @@ export default function TagsPage() {
                   color: 'black',
                   fontWeight: 900,
                   borderRadius: '12px',
-                  '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+                  boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)',
+                  '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' }
                 }}
               >
                 Create New Tag
@@ -228,25 +229,27 @@ export default function TagsPage() {
                   key={tag.$id}
                   onClick={() => setSelectedTag(tag)}
                   sx={{
-                    bgcolor: selectedTag?.$id === tag.$id ? alpha('#6366F1', 0.05) : 'rgba(255, 255, 255, 0.02)',
+                    bgcolor: selectedTag?.$id === tag.$id ? '#1C1A18' : '#161412',
                     border: '1px solid',
-                    borderColor: selectedTag?.$id === tag.$id ? '#6366F1' : 'rgba(255, 255, 255, 0.1)',
+                    borderColor: selectedTag?.$id === tag.$id ? alpha('#6366F1', 0.4) : 'rgba(255, 255, 255, 0.05)',
                     borderRadius: '20px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': { borderColor: '#6366F1', bgcolor: alpha('#6366F1', 0.05) }
+                    backgroundImage: 'none',
+                    boxShadow: selectedTag?.$id === tag.$id ? '0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)' : 'none',
+                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                    '&:hover': { borderColor: alpha('#6366F1', 0.4), bgcolor: '#1C1A18', transform: 'translateX(4px)' }
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Stack direction="row" spacing={2} alignItems="center">
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: tag.color || '#6366F1' }} />
-                        <Typography sx={{ fontWeight: 800, color: 'white' }}>{tag.name}</Typography>
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: tag.color || '#6366F1', boxShadow: `0 0 10px ${alpha(tag.color || '#6366F1', 0.4)}` }} />
+                        <Typography sx={{ fontWeight: 800, color: 'white', fontFamily: 'var(--font-satoshi)' }}>{tag.name}</Typography>
                       </Stack>
                       <Chip 
                         label={`${tag.usageCount || 0} notes`} 
                         size="small" 
-                        sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, fontSize: '0.7rem' }} 
+                        sx={{ bgcolor: 'rgba(255, 255, 255, 0.03)', color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, fontSize: '0.65rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }} 
                       />
                     </Stack>
                   </CardContent>
@@ -277,37 +280,39 @@ export default function TagsPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', color: 'white', p: { xs: 2, md: 6 } }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', color: 'white', p: { xs: 2, md: 6 } }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 6 }}>
           <Typography 
-            variant="h3" 
+            variant="h1" 
             sx={{ 
               fontWeight: 900, 
-              fontFamily: 'var(--font-space-grotesk)',
-              background: 'linear-gradient(90deg, #fff, #6366F1)',
+              fontFamily: 'var(--font-clash)',
+              background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              fontSize: { xs: '2.5rem', md: '4rem' },
+              letterSpacing: '-0.02em',
               mb: 1
             }}
           >
             Tags Management
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.6, fontWeight: 400 }}>
+          <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 500, fontFamily: 'var(--font-satoshi)' }}>
             Organize your notes with custom tags and colors
           </Typography>
         </Box>
 
         {error && (
-          <Box sx={{ mb: 4, p: 2, bgcolor: alpha('#ff4444', 0.1), border: '1px solid #ff4444', borderRadius: '12px' }}>
-            <Typography color="#ff4444">{error}</Typography>
+          <Box sx={{ mb: 4, p: 2, bgcolor: alpha('#ff4444', 0.05), border: '1px solid rgba(255, 68, 68, 0.2)', borderRadius: '12px' }}>
+            <Typography color="#ff4444" sx={{ fontWeight: 600, fontFamily: 'var(--font-satoshi)' }}>{error}</Typography>
           </Box>
         )}
 
         {/* Action Bar */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {tags.length} tag{tags.length !== 1 ? 's' : ''} total
           </Typography>
           <Button
@@ -321,7 +326,8 @@ export default function TagsPage() {
               px: 4,
               py: 1.5,
               borderRadius: '12px',
-              '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+              boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)',
+              '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' }
             }}
           >
             Create New Tag
@@ -333,22 +339,24 @@ export default function TagsPage() {
           <Box sx={{ textAlign: 'center', py: 12 }}>
             <Box 
               sx={{ 
-                width: 120, 
-                height: 120, 
-                bgcolor: alpha('#6366F1', 0.05), 
-                borderRadius: '40px', 
+                width: 140, 
+                height: 140, 
+                bgcolor: '#161412', 
+                borderRadius: '48px', 
                 mx: 'auto', 
                 mb: 4, 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '4rem'
+                fontSize: '4rem',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
               }}
             >
               🏷️
             </Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-space-grotesk)' }}>No tags yet</Typography>
-            <Typography sx={{ opacity: 0.6, mb: 4 }}>Create your first tag to start organizing your notes</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-clash)', letterSpacing: '-0.01em' }}>No tags yet</Typography>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', mb: 4, fontFamily: 'var(--font-satoshi)', fontWeight: 500 }}>Create your first tag to start organizing your notes</Typography>
             <Button
               variant="contained"
               onClick={() => setShowCreateForm(true)}
@@ -356,32 +364,34 @@ export default function TagsPage() {
                 bgcolor: '#6366F1',
                 color: 'black',
                 fontWeight: 900,
-                px: 4,
-                py: 1.5,
-                borderRadius: '12px',
-                '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+                px: 6,
+                py: 2,
+                borderRadius: '16px',
+                boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+                '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' }
               }}
             >
               Create First Tag
             </Button>
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {tags.map((tag) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={tag.$id}>
                 <Card
                   onClick={() => setSelectedTag(tag)}
                   sx={{
-                    bgcolor: 'rgba(15, 13, 12, 0.95)',
-                    backdropFilter: 'blur(25px) saturate(180%)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '24px',
+                    bgcolor: '#161412',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '32px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
+                    backgroundImage: 'none',
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
+                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                     '&:hover': { 
-                      transform: 'translateY(-4px)', 
-                      borderColor: alpha(tag.color || '#6366F1', 0.5),
-                      boxShadow: `0 8px 32px ${alpha(tag.color || '#6366F1', 0.1)}`
+                      transform: 'translateY(-8px) scale(1.01)', 
+                      borderColor: alpha(tag.color || '#6366F1', 0.4),
+                      boxShadow: `0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px ${alpha(tag.color || '#6366F1', 0.15)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.1)}`
                     }
                   }}
                 >
@@ -390,23 +400,24 @@ export default function TagsPage() {
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Box 
                           sx={{ 
-                            width: 40, 
-                            height: 40, 
-                            borderRadius: '12px', 
+                            width: 48, 
+                            height: 48, 
+                            borderRadius: '16px', 
                             bgcolor: alpha(tag.color || '#6366F1', 0.1),
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: tag.color || '#6366F1'
+                            color: tag.color || '#6366F1',
+                            border: `1px solid ${alpha(tag.color || '#6366F1', 0.2)}`
                           }}
                         >
                           <LabelIcon />
                         </Box>
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '0.01em' }}>
                             {tag.name}
                           </Typography>
-                          <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
                             {tag.usageCount || 0} notes
                           </Typography>
                         </Box>
@@ -417,9 +428,11 @@ export default function TagsPage() {
                       <Typography 
                         variant="body2" 
                         sx={{ 
-                          opacity: 0.7, 
+                          color: 'rgba(255, 255, 255, 0.5)', 
+                          fontFamily: 'var(--font-satoshi)',
+                          lineHeight: 1.6,
                           mb: 3, 
-                          minHeight: 40,
+                          minHeight: 44,
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
@@ -430,9 +443,9 @@ export default function TagsPage() {
                       </Typography>
                     )}
 
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, opacity: 0.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, color: 'rgba(255, 255, 255, 0.2)' }}>
                       <AccessTimeIcon sx={{ fontSize: 14 }} />
-                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>
                         Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </Typography>
                     </Stack>
@@ -447,11 +460,12 @@ export default function TagsPage() {
                           handleEdit(tag);
                         }}
                         sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          bgcolor: '#1C1A18',
                           color: 'white',
                           fontWeight: 800,
-                          borderRadius: '10px',
-                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          '&:hover': { bgcolor: '#252220', borderColor: 'rgba(255, 255, 255, 0.1)' }
                         }}
                       >
                         Edit
@@ -465,11 +479,12 @@ export default function TagsPage() {
                           handleDelete(tag);
                         }}
                         sx={{
-                          bgcolor: alpha('#ff4444', 0.1),
+                          bgcolor: alpha('#ff4444', 0.05),
                           color: '#ff4444',
                           fontWeight: 800,
-                          borderRadius: '10px',
-                          '&:hover': { bgcolor: alpha('#ff4444', 0.2) }
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255, 68, 68, 0.1)',
+                          '&:hover': { bgcolor: alpha('#ff4444', 0.1), borderColor: alpha('#ff4444', 0.3) }
                         }}
                       >
                         Delete
@@ -490,21 +505,23 @@ export default function TagsPage() {
           maxWidth="sm"
           PaperProps={{
             sx: {
-              bgcolor: 'rgba(15, 13, 12, 0.95)',
-              backdropFilter: 'blur(25px) saturate(180%)',
+              bgcolor: '#161412',
+              backgroundImage: 'none',
               border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '24px',
-              color: 'white'
+              boxShadow: '0 40px 80px -20px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.05)',
+              borderRadius: '32px',
+              color: 'white',
+              p: 1
             }
           }}
         >
-          <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', fontSize: '1.5rem' }}>
+          <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', fontSize: '1.75rem', letterSpacing: '-0.02em', pt: 3 }}>
             {editingTag ? 'Edit Tag' : 'Create New Tag'}
           </DialogTitle>
-          <DialogContent>
-            <Stack spacing={4} sx={{ mt: 1 }}>
+          <DialogContent sx={{ pb: 0 }}>
+            <Stack spacing={4} sx={{ mt: 2 }}>
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
                   Tag Name *
                 </Typography>
                 <TextField
@@ -513,21 +530,26 @@ export default function TagsPage() {
                   value={formData.name}
                   onChange={ (e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Enter tag name..."
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: '12px',
+                  variant="standard"
+                  InputProps={{
+                    disableUnderline: true,
+                    sx: {
+                      bgcolor: '#1C1A18',
+                      borderRadius: '16px',
                       color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                      '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                      p: 2,
+                      fontFamily: 'var(--font-satoshi)',
+                      fontWeight: 600,
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                      '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                     }
                   }}
                 />
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
                   Description
                 </Typography>
                 <TextField
@@ -537,68 +559,76 @@ export default function TagsPage() {
                   value={formData.description}
                   onChange={ (e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe this tag..."
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: '12px',
+                  variant="standard"
+                  InputProps={{
+                    disableUnderline: true,
+                    sx: {
+                      bgcolor: '#1C1A18',
+                      borderRadius: '16px',
                       color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                      '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                      p: 2,
+                      fontFamily: 'var(--font-satoshi)',
+                      fontWeight: 500,
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                      '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                     }
                   }}
                 />
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 2, display: 'block', textTransform: 'uppercase' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 2, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
                   Tag Color
                 </Typography>
-                <Grid container spacing={1.5} sx={{ mb: 3 }}>
+                <Grid container spacing={1.5} sx={{ mb: 2 }}>
                   {predefinedColors.map((color) => (
                     <Grid size="auto" key={color}>
                       <Tooltip title={color} arrow>
                         <Box
                           onClick={() => setFormData({ ...formData, color })}
                           sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '10px',
+                            width: 38,
+                            height: 38,
+                            borderRadius: '12px',
                             bgcolor: color,
                             cursor: 'pointer',
-                            border: '2px solid',
+                            border: '3px solid',
                             borderColor: formData.color === color ? 'white' : 'transparent',
-                            transition: 'all 0.2s ease',
-                            '&:hover': { transform: 'scale(1.1)' }
+                            boxShadow: formData.color === color ? `0 0 15px ${alpha(color, 0.5)}` : 'none',
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                            '&:hover': { transform: 'scale(1.15)', boxShadow: `0 0 10px ${alpha(color, 0.3)}` }
                           }}
                         />
                       </Tooltip>
                     </Grid>
                   ))}
                 </Grid>
-                <TextField
-                  type="color"
-                  fullWidth
-                  value={formData.color}
-                  onChange={ (e) => setFormData({ ...formData, color: e.target.value })}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      height: 48,
-                      p: 0.5,
-                      bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: '12px',
-                      '& input': { p: 0, height: '100%', cursor: 'pointer' },
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' }
-                    }
-                  }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2, p: 1, bgcolor: '#0A0908', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                   <input 
+                    type="color"
+                    value={formData.color}
+                    onChange={ (e) => setFormData({ ...formData, color: e.target.value })}
+                    style={{ 
+                      width: 40, 
+                      height: 40, 
+                      border: 'none', 
+                      borderRadius: '8px', 
+                      background: 'none', 
+                      cursor: 'pointer' 
+                    }}
+                   />
+                   <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>
+                     {formData.color.toUpperCase()}
+                   </Typography>
+                </Box>
               </Box>
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ p: 3, pt: 0 }}>
+          <DialogActions sx={{ p: 4, pt: 2 }}>
             <Button 
               onClick={resetForm} 
-              sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}
+              sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', mr: 2 }}
             >
               Cancel
             </Button>
@@ -610,13 +640,15 @@ export default function TagsPage() {
                 bgcolor: '#6366F1',
                 color: 'black',
                 fontWeight: 900,
-                px: 3,
-                borderRadius: '10px',
-                '&:hover': { bgcolor: alpha('#6366F1', 0.8) },
-                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.3)' }
+                px: 5,
+                py: 1.5,
+                borderRadius: '14px',
+                boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+                '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' },
+                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.2)' }
               }}
             >
-              {isCreating ? 'Saving...' : editingTag ? 'Update' : 'Create'}
+              {isCreating ? 'Saving...' : editingTag ? 'Update Tag' : 'Create Tag'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -624,3 +656,4 @@ export default function TagsPage() {
     </Box>
   );
 }
+

@@ -379,22 +379,22 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       elevation={0}
       sx={{ 
         borderRadius: '32px', 
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
         bgcolor: '#161412',
         overflow: 'hidden',
         color: 'white',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
+        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)'
       }}
     >
-      <Box sx={{ p: { xs: 4, md: 6 }, borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      <Box sx={{ p: { xs: 4, md: 6 }, borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
         <Stack spacing={3}>
           <Typography 
             variant="h3" 
             sx={{ 
               fontWeight: 900, 
               fontFamily: 'var(--font-clash)', 
-              lineHeight: 1.2,
-              background: 'linear-gradient(90deg, #fff, #6366F1)',
+              lineHeight: 1.1,
+              background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}
@@ -403,15 +403,15 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255, 255, 255, 0.5)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255, 255, 255, 0.4)' }}>
               <ClockIcon sx={{ fontSize: 16 }} />
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>
                 Created {formatNoteCreatedDate(verifiedNote, { month: 'long', day: 'numeric', year: 'numeric' })}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255, 255, 255, 0.5)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255, 255, 255, 0.4)' }}>
               <EyeIcon sx={{ fontSize: 16 }} />
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>Public Note</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>Public Note</Typography>
             </Box>
             {authorProfile && (
               <Link 
@@ -422,14 +422,14 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                   alignItems: 'center', 
                   gap: 1.5, 
                   textDecoration: 'none',
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  bgcolor: '#1C1A18',
                   py: 0.5,
                   px: 1.5,
                   borderRadius: '12px',
                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.06)',
+                    bgcolor: '#252220',
                     borderColor: 'rgba(99, 102, 241, 0.3)',
                     transform: 'translateY(-1px)'
                   }
@@ -437,11 +437,11 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               >
                 <Avatar 
                   src={authorProfile.avatar} 
-                  sx={{ width: 20, height: 20, fontSize: '0.65rem', fontWeight: 800, bgcolor: '#6366F1', color: '#000' }}
+                  sx={{ width: 20, height: 20, fontSize: '0.65rem', fontWeight: 900, bgcolor: '#6366F1', color: '#000' }}
                 >
                   {getEffectiveDisplayName(authorProfile)[0].toUpperCase()}
                 </Avatar>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#6366F1' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: '#6366F1', fontFamily: 'var(--font-satoshi)' }}>
                   {authorProfile.username ? `@${authorProfile.username}` : getEffectiveDisplayName(authorProfile)}
                 </Typography>
               </Link>
@@ -450,7 +450,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
           {verifiedNote.tags && verifiedNote.tags.length > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <TagIcon sx={{ fontSize: 16, color: 'rgba(99, 102, 241, 0.4)' }} />
+              <TagIcon sx={{ fontSize: 16, color: 'rgba(99, 102, 241, 0.3)' }} />
               {verifiedNote.tags.map((tag: string, i: number) => (
                 <Chip 
                   key={i} 
@@ -461,7 +461,8 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                     color: '#6366F1',
                     borderRadius: '8px',
                     fontSize: '0.7rem',
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-satoshi)',
                     border: '1px solid rgba(99, 102, 241, 0.1)'
                   }} 
                 />
@@ -471,19 +472,20 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         </Stack>
       </Box>
 
-      <Box sx={{ position: 'relative', p: { xs: 4, md: 6 }, bgcolor: 'rgba(0, 0, 0, 0.2)' }}>
+      <Box sx={{ position: 'relative', p: { xs: 4, md: 6 }, bgcolor: 'rgba(0, 0, 0, 0.1)' }}>
         <IconButton
           onClick={handleCopyContent}
           sx={{
             position: 'absolute',
             top: 24,
             right: 24,
-            bgcolor: isCopied ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+            bgcolor: isCopied ? alpha('#6366F1', 0.1) : '#1C1A18',
             border: '1px solid',
-            borderColor: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.1)',
+            borderColor: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.05)',
             borderRadius: '12px',
-            color: isCopied ? '#6366F1' : 'white',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            color: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
+            transition: 'all 0.2s',
+            '&:hover': { bgcolor: '#252220', color: 'white' }
           }}
           title={isCopied ? 'Copied!' : 'Copy content'}
         >
@@ -492,16 +494,16 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         <NoteContentRenderer
           content={verifiedNote.content || ''}
           format={(verifiedNote.format as 'text' | 'doodle') || 'text'}
-          emptyFallback={<Typography sx={{ color: 'rgba(255, 255, 255, 0.3)', fontStyle: 'italic' }}>This note is empty.</Typography>}
+          emptyFallback={<Typography sx={{ color: 'rgba(255, 255, 255, 0.2)', fontStyle: 'italic', fontFamily: 'var(--font-satoshi)' }}>This note is empty.</Typography>}
         />
       </Box>
 
-      <Box sx={{ p: 3, bgcolor: 'rgba(0, 0, 0, 0.4)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      <Box sx={{ p: 3, bgcolor: '#161412', borderTop: '1px solid rgba(255, 255, 255, 0.03)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-            Last updated {formatNoteUpdatedDate(verifiedNote, { month: 'short', day: 'numeric', year: 'numeric' })}
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700 }}>
+            UPDATED {formatNoteUpdatedDate(verifiedNote, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-clash)' }}>
             Shared via Kylrix Note
           </Typography>
         </Box>

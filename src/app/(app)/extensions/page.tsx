@@ -224,7 +224,7 @@ export default function ExtensionsPage() {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', color: 'white', p: { xs: 2, md: 6 } }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', color: 'white', p: { xs: 2, md: 6 } }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Stack 
@@ -236,19 +236,21 @@ export default function ExtensionsPage() {
         >
           <Box>
             <Typography 
-              variant="h3" 
+              variant="h1" 
               sx={{ 
                 fontWeight: 900, 
-                fontFamily: 'var(--font-space-grotesk)',
-                background: 'linear-gradient(90deg, #fff, #6366F1)',
+                fontFamily: 'var(--font-clash)',
+                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                fontSize: { xs: '2.5rem', md: '4rem' },
+                letterSpacing: '-0.02em',
                 mb: 1
               }}
             >
-              Extensions Marketplace
+              Extensions
             </Typography>
-            <Typography variant="h6" sx={{ opacity: 0.6, fontWeight: 400 }}>
+            <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 500, fontFamily: 'var(--font-satoshi)' }}>
               Extend Kylrix Note with powerful plugins and automations
             </Typography>
           </Box>
@@ -263,7 +265,8 @@ export default function ExtensionsPage() {
               px: 4,
               py: 1.5,
               borderRadius: '12px',
-              '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+              boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+              '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' }
             }}
           >
             Create Extension
@@ -276,12 +279,15 @@ export default function ExtensionsPage() {
             value={activeTab} 
             onChange={(_, v) => setActiveTab(v)}
             sx={{
-              '& .MuiTabs-indicator': { bgcolor: '#6366F1' },
+              '& .MuiTabs-indicator': { bgcolor: '#6366F1', height: 3, borderRadius: '3px 3px 0 0' },
               '& .MuiTab-root': { 
-                color: 'rgba(255, 255, 255, 0.5)',
-                fontWeight: 700,
-                fontSize: '1rem',
-                '&.Mui-selected': { color: '#6366F1' }
+                color: 'rgba(255, 255, 255, 0.3)',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                '&.Mui-selected': { color: 'white' }
               }
             }}
           >
@@ -295,15 +301,20 @@ export default function ExtensionsPage() {
             placeholder="Search extensions..."
             value={searchQuery}
             onChange={ (e) => setSearchQuery(e.target.value)}
+            variant="standard"
             InputProps={{
-              startAdornment: <SearchIcon sx={{ mr: 1, opacity: 0.5 }} />,
+              disableUnderline: true,
+              startAdornment: <SearchIcon sx={{ mr: 2, opacity: 0.3 }} />,
               sx: {
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                bgcolor: '#161412',
                 borderRadius: '16px',
                 color: 'white',
-                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                p: 2,
+                fontFamily: 'var(--font-satoshi)',
+                fontWeight: 600,
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
               }
             }}
             sx={{ maxWidth: 500 }}
@@ -316,7 +327,7 @@ export default function ExtensionsPage() {
             <CircularProgress sx={{ color: '#6366F1' }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {activeTab === 0 && filteredExtensions.map((extension) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={extension.$id}>
                 <ExtensionCard
@@ -363,13 +374,26 @@ export default function ExtensionsPage() {
           (activeTab === 2 && extensionTemplates.length === 0)
         ) && (
           <Box sx={{ textAlign: 'center', py: 12 }}>
-            <Typography variant="h1" sx={{ mb: 2 }}>📦</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+            <Box sx={{ 
+              width: 140, 
+              height: 140, 
+              bgcolor: '#161412', 
+              borderRadius: '48px', 
+              mx: 'auto', 
+              mb: 4, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '4rem',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+            }}>📦</Box>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, fontFamily: 'var(--font-clash)' }}>
               {activeTab === 0 && 'No extensions found'}
               {activeTab === 1 && 'No extensions installed'}
               {activeTab === 2 && 'No templates available'}
             </Typography>
-            <Typography sx={{ opacity: 0.6 }}>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', mb: 4, fontFamily: 'var(--font-satoshi)', fontWeight: 500 }}>
               {activeTab === 0 && 'Try adjusting your search or create a new extension'}
               {activeTab === 1 && 'Browse the marketplace to install extensions'}
               {activeTab === 2 && 'Check back later for new templates'}
@@ -397,19 +421,21 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   onToggle: (extension: Extensions) => void;
   isOwner: boolean;
 }) {
+  const theme = useTheme();
   return (
     <Card 
       sx={{ 
-        bgcolor: 'rgba(15, 13, 12, 0.95)', 
-        backdropFilter: 'blur(25px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '24px',
+        bgcolor: '#161412', 
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        borderRadius: '32px',
         height: '100%',
-        transition: 'all 0.3s ease',
+        backgroundImage: 'none',
+        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         '&:hover': { 
-          transform: 'translateY(-4px)', 
-          borderColor: alpha('#6366F1', 0.3),
-          boxShadow: `0 8px 32px ${alpha('#6366F1', 0.1)}`
+          transform: 'translateY(-8px) scale(1.01)', 
+          borderColor: alpha('#6366F1', 0.4),
+          boxShadow: `0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px ${alpha('#6366F1', 0.15)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.1)}`
         }
       }}
     >
@@ -418,23 +444,24 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
           <Stack direction="row" spacing={2} alignItems="center">
             <Box 
               sx={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: '12px', 
+                width: 54, 
+                height: 54, 
+                borderRadius: '16px', 
                 bgcolor: alpha('#6366F1', 0.1),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#6366F1'
+                color: '#6366F1',
+                border: '1px solid rgba(99, 102, 241, 0.2)'
               }}
             >
-              <ExtensionIcon />
+              <ExtensionIcon size={24} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '0.01em' }}>
                 {extension.name}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
                 v{extension.version}
               </Typography>
             </Box>
@@ -444,10 +471,13 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
               label="Owner" 
               size="small" 
               sx={{ 
-                bgcolor: alpha('#6366F1', 0.1), 
+                bgcolor: '#1C1A18', 
                 color: '#6366F1', 
-                fontWeight: 800,
-                fontSize: '0.65rem'
+                fontWeight: 900,
+                fontSize: '0.65rem',
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+                border: '1px solid rgba(99, 102, 241, 0.1)'
               }} 
             />
           )}
@@ -456,7 +486,9 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
         <Typography 
           variant="body2" 
           sx={{ 
-            opacity: 0.7, 
+            color: 'rgba(255, 255, 255, 0.5)', 
+            fontFamily: 'var(--font-satoshi)',
+            lineHeight: 1.6,
             mb: 4, 
             minHeight: 60,
             display: '-webkit-box',
@@ -469,21 +501,25 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
         </Typography>
 
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ opacity: 0.5 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ color: 'rgba(255, 255, 255, 0.2)' }}>
             <PersonIcon sx={{ fontSize: 16 }} />
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>Author</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>Author</Typography>
           </Stack>
           <Button
             onClick={() => onToggle(extension)}
             variant="contained"
             size="small"
             sx={{
-              bgcolor: extension.enabled ? alpha('#ff4444', 0.1) : alpha('#6366F1', 0.1),
-              color: extension.enabled ? '#ff4444' : '#6366F1',
+              bgcolor: extension.enabled ? alpha('#ff4444', 0.05) : '#1C1A18',
+              color: extension.enabled ? '#ff4444' : 'white',
               fontWeight: 900,
-              borderRadius: '8px',
+              borderRadius: '12px',
+              border: '1px solid',
+              borderColor: extension.enabled ? alpha('#ff4444', 0.1) : 'rgba(255, 255, 255, 0.05)',
+              px: 3,
               '&:hover': { 
-                bgcolor: extension.enabled ? alpha('#ff4444', 0.2) : alpha('#6366F1', 0.2) 
+                bgcolor: extension.enabled ? alpha('#ff4444', 0.1) : '#252220',
+                borderColor: extension.enabled ? alpha('#ff4444', 0.3) : 'rgba(255, 255, 255, 0.1)'
               }
             }}
           >
@@ -502,16 +538,17 @@ function TemplateCard({ template, onUse }: {
   return (
     <Card 
       sx={{ 
-        bgcolor: 'rgba(15, 13, 12, 0.95)', 
-        backdropFilter: 'blur(25px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '24px',
+        bgcolor: '#161412', 
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        borderRadius: '32px',
         height: '100%',
-        transition: 'all 0.3s ease',
+        backgroundImage: 'none',
+        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         '&:hover': { 
-          transform: 'translateY(-4px)', 
-          borderColor: alpha('#A855F7', 0.3),
-          boxShadow: `0 8px 32px ${alpha('#A855F7', 0.1)}`
+          transform: 'translateY(-8px) scale(1.01)', 
+          borderColor: alpha('#A855F7', 0.4),
+          boxShadow: `0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px ${alpha('#A855F7', 0.15)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.1)}`
         }
       }}
     >
@@ -520,23 +557,24 @@ function TemplateCard({ template, onUse }: {
           <Stack direction="row" spacing={2} alignItems="center">
             <Box 
               sx={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: '12px', 
+                width: 54, 
+                height: 54, 
+                borderRadius: '16px', 
                 bgcolor: alpha('#A855F7', 0.1),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.5rem'
+                fontSize: '1.5rem',
+                border: '1px solid rgba(168, 85, 247, 0.2)'
               }}
             >
               {template.icon}
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)' }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '0.01em' }}>
                 {template.name}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.5, fontWeight: 700 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 800, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
                 {template.category}
               </Typography>
             </Box>
@@ -545,10 +583,13 @@ function TemplateCard({ template, onUse }: {
             label="Template" 
             size="small" 
             sx={{ 
-              bgcolor: alpha('#4ade80', 0.1), 
+              bgcolor: '#1C1A18', 
               color: '#4ade80', 
-              fontWeight: 800,
-              fontSize: '0.65rem'
+              fontWeight: 900,
+              fontSize: '0.65rem',
+              fontFamily: 'var(--font-mono)',
+              textTransform: 'uppercase',
+              border: '1px solid rgba(74, 222, 128, 0.1)'
             }} 
           />
         </Stack>
@@ -556,7 +597,9 @@ function TemplateCard({ template, onUse }: {
         <Typography 
           variant="body2" 
           sx={{ 
-            opacity: 0.7, 
+            color: 'rgba(255, 255, 255, 0.5)', 
+            fontFamily: 'var(--font-satoshi)',
+            lineHeight: 1.6,
             mb: 3, 
             minHeight: 60,
             display: '-webkit-box',
@@ -575,10 +618,13 @@ function TemplateCard({ template, onUse }: {
               label={hook} 
               size="small" 
               sx={{ 
-                bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                bgcolor: 'rgba(255, 255, 255, 0.03)', 
                 color: 'white', 
                 fontSize: '0.65rem',
-                fontWeight: 600
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
               }} 
             />
           ))}
@@ -590,10 +636,12 @@ function TemplateCard({ template, onUse }: {
           variant="outlined"
           startIcon={<DownloadIcon />}
           sx={{
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.05)',
+            bgcolor: '#1C1A18',
             color: 'white',
-            fontWeight: 800,
-            borderRadius: '12px',
+            fontWeight: 900,
+            borderRadius: '14px',
+            py: 1.5,
             '&:hover': { 
               borderColor: '#6366F1',
               bgcolor: alpha('#6366F1', 0.05)
@@ -654,21 +702,23 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
       maxWidth="sm"
       PaperProps={{
         sx: {
-          bgcolor: 'rgba(15, 13, 12, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
+          bgcolor: '#161412',
+          backgroundImage: 'none',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '24px',
-          color: 'white'
+          boxShadow: '0 40px 80px -20px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.05)',
+          borderRadius: '32px',
+          color: 'white',
+          p: 1
         }
       }}
     >
-      <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', fontSize: '1.5rem' }}>
+      <DialogTitle sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', fontSize: '1.75rem', letterSpacing: '-0.02em', pt: 3 }}>
         Create Extension
       </DialogTitle>
-      <DialogContent>
-        <Stack spacing={3} sx={{ mt: 1 }}>
+      <DialogContent sx={{ pb: 0 }}>
+        <Stack spacing={4} sx={{ mt: 2 }}>
           <Box>
-            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
               Extension Name
             </Typography>
             <TextField
@@ -677,22 +727,26 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
               value={formData.name}
               onChange={ (e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="My Awesome Extension"
-              variant="outlined"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  bgcolor: '#1C1A18',
+                  borderRadius: '16px',
                   color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                  p: 2,
+                  fontFamily: 'var(--font-satoshi)',
+                  fontWeight: 600,
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                 }
               }}
             />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
               Description
             </Typography>
             <TextField
@@ -703,21 +757,26 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
               value={formData.description}
               onChange={ (e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe what your extension does..."
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  bgcolor: '#1C1A18',
+                  borderRadius: '16px',
                   color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                  p: 2,
+                  fontFamily: 'var(--font-satoshi)',
+                  fontWeight: 500,
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                 }
               }}
             />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
               Version
             </Typography>
             <TextField
@@ -726,21 +785,26 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
               value={formData.version}
               onChange={ (e) => setFormData({ ...formData, version: e.target.value })}
               placeholder="1.0.0"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  bgcolor: '#1C1A18',
+                  borderRadius: '16px',
                   color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                  p: 2,
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 600,
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                 }
               }}
             />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.5, mb: 1, display: 'block', textTransform: 'uppercase' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>
               Settings (JSON)
             </Typography>
             <TextField
@@ -750,26 +814,29 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
               value={formData.settings}
               onChange={ (e) => setFormData({ ...formData, settings: e.target.value })}
               placeholder='{"setting1": "value1"}'
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  bgcolor: '#1C1A18',
+                  borderRadius: '16px',
                   color: 'white',
-                  fontFamily: 'monospace',
+                  p: 2,
+                  fontFamily: 'var(--font-mono)',
                   fontSize: '0.85rem',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  '&:hover': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&.Mui-focused': { borderColor: '#6366F1', boxShadow: '0 0 10px rgba(99, 102, 241, 0.1)' }
                 }
               }}
             />
           </Box>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ p: 3, pt: 0 }}>
+      <DialogActions sx={{ p: 4, pt: 2 }}>
         <Button 
           onClick={onClose} 
-          sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}
+          sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', mr: 2 }}
         >
           Cancel
         </Button>
@@ -780,9 +847,11 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
             bgcolor: '#6366F1',
             color: 'black',
             fontWeight: 900,
-            px: 3,
-            borderRadius: '10px',
-            '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+            px: 5,
+            py: 1.5,
+            borderRadius: '14px',
+            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+            '&:hover': { bgcolor: alpha('#6366F1', 0.8), transform: 'translateY(-2px)' }
           }}
         >
           Create Extension
