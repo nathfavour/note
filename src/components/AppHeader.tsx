@@ -160,10 +160,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
           variant="full"
           sx={{ 
             cursor: 'pointer', 
-            '&:hover': { opacity: 0.8 },
-            fontFamily: 'var(--font-clash)',
-            fontWeight: 900,
-            letterSpacing: '-0.04em'
+            '&:hover': { opacity: 0.8 }
           }}
           component="a"
           href="/"
