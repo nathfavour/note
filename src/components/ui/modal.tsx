@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Typography, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton, Typography, Box, alpha } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 
 export interface ModalProps {

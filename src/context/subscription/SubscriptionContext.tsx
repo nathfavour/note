@@ -1,3 +1,3 @@
 'use client'; 
-export * from '@kylrix/subscription';
-export { SubscriptionProvider, SubscriptionBadge } from '@kylrix/subscription';
+export * from '@/lib/subscription/context/SubscriptionContext';
+export { SubscriptionBadge } from '@/lib/subscription/components/SubscriptionBadge';
