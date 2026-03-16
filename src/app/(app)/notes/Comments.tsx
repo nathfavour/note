@@ -345,7 +345,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
         let users: Users[] = [];
         try {
           users = await getUsersByIds(uniqueUserIds);
-        } catch (sdkError) {
+        } catch (_sdkError) {
           console.warn('Comments fetch: SDK profile resolution failed, trying shared API fallback');
           const profilesRes = await fetch('/api/shared/profiles', {
             method: 'POST',
@@ -385,7 +385,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
         let users: Users[] = [];
         try {
           users = await getUsersByIds(uniqueUserIds);
-        } catch (sdkError) {
+        } catch (_sdkError) {
           console.warn('Comments fetch (fallback): SDK profile resolution failed, trying shared API');
           const profilesRes = await fetch('/api/shared/profiles', {
             method: 'POST',

@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
-import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -76,7 +75,7 @@ function SharedNoteHeader() {
         } else {
           if (mounted) setSmallProfileUrl(null);
         }
-      } catch (err: any) {
+      } catch (_err) {
         if (mounted) setSmallProfileUrl(null);
       }
     };

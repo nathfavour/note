@@ -421,7 +421,6 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   onToggle: (extension: Extensions) => void;
   isOwner: boolean;
 }) {
-  const theme = useTheme();
   return (
     <Card 
       sx={{ 
