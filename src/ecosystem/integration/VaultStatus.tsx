@@ -11,9 +11,9 @@ import {
 import {
     Lock,
     LockKeyholeOpen,
-    Shield
 } from 'lucide-react';
 
+import Logo from '@/components/common/Logo';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { AppwriteService } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -63,15 +63,11 @@ export const VaultStatus = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Box sx={{
-                            p: 1,
-                            borderRadius: '10px',
-                            bgcolor: alpha('#F59E0B', 0.1),
-                            color: '#F59E0B',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                            <Shield size={20} strokeWidth={1.5} />
+                            <Logo app="vault" variant="icon" size={24} />
                         </Box>
                         <Typography sx={{ fontWeight: 800, fontSize: '0.875rem', color: 'white' }}>
                             {isInitialized === false ? 'Setup Vault' : (isLocked ? 'Vault Locked' : 'Vault Active')}
@@ -99,7 +95,7 @@ export const VaultStatus = () => {
                 <Button
                     fullWidth
                     variant="outlined"
-                    startIcon={isInitialized === false ? <Shield size={16} /> : (isLocked ? <LockKeyholeOpen size={16} strokeWidth={1.5} /> : <Lock size={16} strokeWidth={1.5} />)}
+                    startIcon={isInitialized === false ? <Lock size={16} /> : (isLocked ? <LockKeyholeOpen size={16} strokeWidth={1.5} /> : <Lock size={16} strokeWidth={1.5} />)}
                     sx={{
                         borderRadius: '12px',
                         color: isInitialized === false ? '#F59E0B' : (isLocked ? '#10b981' : '#F2F2F2'),
@@ -108,7 +104,8 @@ export const VaultStatus = () => {
                         fontSize: '0.75rem',
                         textTransform: 'none',
                         py: 1,
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        '& .MuiButton-startIcon': { mr: 1 }
                     }}
                 >
                     {isInitialized === false ? 'Initialize Vault' : (isLocked ? 'Unlock Keep' : 'Vault Verified')}

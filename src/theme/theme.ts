@@ -103,11 +103,11 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           borderRadius: 28,
           background: mode === 'dark' 
-            ? `linear-gradient(165deg, #1C1A18 0%, #12100E 100%)`
+            ? `linear-gradient(165deg, #161412 0%, #0A0908 100%)`
             : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
-          border: `1px solid ${mode === 'dark' ? alpha('#FFFFFF', 0.08) : theme.palette.divider}`,
+          border: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : theme.palette.divider}`,
           boxShadow: mode === 'dark'
-            ? `0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px ${alpha('#FFFFFF', 0.05)}, inset 0 -1px 0 rgba(0,0,0,0.5)`
+            ? `0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0,0,0,0.5)`
             : `0 10px 30px -10px ${alpha(theme.palette.text.primary, 0.1)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.8)}`,
           transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
           '&:hover': {
@@ -124,9 +124,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundImage: 'none',
-          backgroundColor: mode === 'dark' ? 'rgba(22, 20, 18, 0.98)' : alpha(theme.palette.background.paper, 0.8),
-          border: `1px solid ${mode === 'dark' ? alpha('#FFFFFF', 0.05) : theme.palette.divider}`,
-          boxShadow: mode === 'dark' ? '0 10px 30px rgba(0,0,0,0.5)' : 'none',
+          backgroundColor: mode === 'dark' ? '#161412' : alpha(theme.palette.background.paper, 0.8),
+          border: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : theme.palette.divider}`,
+          boxShadow: mode === 'dark' ? '0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)' : 'none',
         }),
       },
     },
