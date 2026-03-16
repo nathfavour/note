@@ -342,7 +342,22 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       // Fetch user profiles for all unique userIds
       const uniqueUserIds = Array.from(new Set(docs.map(c => c.userId)));
       if (uniqueUserIds.length > 0) {
-        const users = await getUsersByIds(uniqueUserIds);
+        let users: Users[] = [];
+        try {
+          users = await getUsersByIds(uniqueUserIds);
+        } catch (sdkError) {
+          console.warn('Comments fetch: SDK profile resolution failed, trying shared API fallback');
+          const profilesRes = await fetch('/api/shared/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds: uniqueUserIds }),
+          });
+          if (profilesRes.ok) {
+            const profilesPayload = await profilesRes.json();
+            users = profilesPayload.documents || [];
+          }
+        }
+        
         const map: Record<string, Users> = {};
         users.forEach(u => {
           if (u.$id) map[u.$id] = u;
@@ -367,7 +382,22 @@ export default function CommentsSection({ noteId }: CommentsProps) {
 
       const uniqueUserIds = Array.from(new Set(docs.map(c => c.userId)));
       if (uniqueUserIds.length > 0) {
-        const users = await getUsersByIds(uniqueUserIds);
+        let users: Users[] = [];
+        try {
+          users = await getUsersByIds(uniqueUserIds);
+        } catch (sdkError) {
+          console.warn('Comments fetch (fallback): SDK profile resolution failed, trying shared API');
+          const profilesRes = await fetch('/api/shared/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds: uniqueUserIds }),
+          });
+          if (profilesRes.ok) {
+            const profilesPayload = await profilesRes.json();
+            users = profilesPayload.documents || [];
+          }
+        }
+
         const map: Record<string, Users> = {};
         users.forEach(u => {
           if (u.$id) map[u.$id] = u;

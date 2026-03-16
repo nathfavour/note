@@ -292,8 +292,7 @@ export default function GlobalSearch({
         variant="outlined"
         sx={{
           '& .MuiOutlinedInput-root': {
-            backgroundColor: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(22, 20, 18, 0.98)',
             borderRadius: '16px',
             '& fieldset': {
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -409,8 +408,7 @@ export default function GlobalSearch({
             zIndex: 1000,
             maxHeight: 400,
             overflow: 'auto',
-            bgcolor: 'rgba(10, 10, 10, 0.95)',
-            backdropFilter: 'blur(25px) saturate(180%)',
+            bgcolor: 'rgba(22, 20, 18, 0.99)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
             backgroundImage: 'none',
@@ -540,8 +538,7 @@ export default function GlobalSearch({
             sx: {
               borderRadius: '16px',
               minWidth: 200,
-              bgcolor: 'rgba(10, 10, 10, 0.95)',
-              backdropFilter: 'blur(25px) saturate(180%)',
+              bgcolor: 'rgba(22, 20, 18, 0.99)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               backgroundImage: 'none',
               boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',

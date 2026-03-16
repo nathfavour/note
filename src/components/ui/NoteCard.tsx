@@ -341,49 +341,55 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
           cursor: 'pointer',
           position: 'relative',
           overflow: 'hidden',
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.8)',
-          border: '1.5px solid',
-          borderColor: 'divider',
-          borderRadius: '24px',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          // Hybrid 3D design: App Secondary (Pink) Internal Glow + Ecosystem Primary (Indigo) Hover State
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(28, 26, 24, 0.98)' : 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid',
+          borderColor: (theme) => theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.08) : 'divider',
+          borderRadius: '28px',
+          // Hybrid 3D design: Deep stage shadows + rim lighting
           boxShadow: (theme) => theme.palette.mode === 'dark' 
-            ? `0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(236, 72, 153, 0.1)`
+            ? `0 12px 24px -10px rgba(0, 0, 0, 0.8), 
+               0 2px 4px rgba(0,0,0,0.5), 
+               inset 0 1px 0 rgba(255, 255, 255, 0.05),
+               inset 0 -1px 0 rgba(0, 0, 0, 0.4)`
             : `0 10px 30px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9)`,
-          transform: 'perspective(1200px) rotateX(0deg)',
-          transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          // Brand gradient overlay (Pink to Indigo)
+          transform: 'perspective(1200px) translateY(0px)',
+          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          // Brand gradient overlay (Pink to Indigo) - Subtle base depth
           '&::before': {
             content: '""',
             position: 'absolute',
             inset: 0,
             background: (theme) => theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%)'
+              ? 'linear-gradient(165deg, rgba(236, 72, 153, 0.03) 0%, rgba(99, 102, 241, 0.03) 100%)'
               : 'linear-gradient(135deg, rgba(236, 72, 153, 0.02) 0%, rgba(99, 102, 241, 0.02) 100%)',
             opacity: 1,
             zIndex: 0,
           },
           '&:hover': {
-            transform: 'perspective(1200px) rotateX(4deg) translateY(-8px)',
-            borderColor: 'secondary.main', 
-            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 1)',
+            transform: 'perspective(1200px) translateY(-12px) scale(1.02)',
+            borderColor: (theme) => alpha(theme.palette.secondary.main, 0.5), 
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 1)',
             boxShadow: (theme) => theme.palette.mode === 'dark'
-              ? `0 30px 60px -15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.2), inset 0 1px 1px rgba(236, 72, 153, 0.2)`
+              ? `0 40px 80px -20px rgba(0, 0, 0, 0.9), 
+                 0 0 20px ${alpha(theme.palette.primary.main, 0.1)}, 
+                 inset 0 1px 0 rgba(255, 255, 255, 0.1)`
               : `0 30px 60px -15px rgba(15, 23, 42, 0.15), 0 0 25px rgba(99, 102, 241, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1)`,
             '&::after': {
               opacity: 1,
+              transform: 'scaleX(1)',
             }
           },
           '&::after': {
             content: '""',
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #6366F1, transparent)',
+            bottom: 0,
+            left: '10%',
+            right: '10%',
+            height: '1px',
+            background: (theme) => `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
             opacity: 0,
-            transition: 'opacity 0.4s ease',
+            transform: 'scaleX(0.5)',
+            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             zIndex: 1,
           }
         }}

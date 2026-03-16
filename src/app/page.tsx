@@ -29,7 +29,7 @@ export default function Home() {
 
   if (!mounted || isLoading) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#0A0A0A' }}>
+      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#0F0D0C' }}>
         <CircularProgress color="primary" />
       </Box>
     );
@@ -43,14 +43,14 @@ export default function Home() {
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh', 
-      bgcolor: '#0A0A0A', 
+      bgcolor: '#0F0D0C', 
       color: 'rgba(255, 255, 255, 0.9)',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)'
     }}>
       <AppBar 
         position="sticky" 
         sx={{ 
-          bgcolor: 'rgba(10, 10, 10, 0.8)', 
+          bgcolor: 'rgba(15, 13, 12, 0.8)', 
           backdropFilter: 'blur(25px) saturate(180%)', 
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: 'none',

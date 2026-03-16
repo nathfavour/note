@@ -400,7 +400,7 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   return (
     <Card 
       sx={{ 
-        bgcolor: 'rgba(10, 10, 10, 0.95)', 
+        bgcolor: 'rgba(15, 13, 12, 0.95)', 
         backdropFilter: 'blur(25px) saturate(180%)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
@@ -502,7 +502,7 @@ function TemplateCard({ template, onUse }: {
   return (
     <Card 
       sx={{ 
-        bgcolor: 'rgba(10, 10, 10, 0.95)', 
+        bgcolor: 'rgba(15, 13, 12, 0.95)', 
         backdropFilter: 'blur(25px) saturate(180%)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
@@ -654,7 +654,7 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
       maxWidth="sm"
       PaperProps={{
         sx: {
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          bgcolor: 'rgba(15, 13, 12, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '24px',

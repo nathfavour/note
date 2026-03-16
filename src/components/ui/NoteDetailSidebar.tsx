@@ -23,7 +23,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Delete as TrashIcon,
@@ -80,6 +82,7 @@ export function NoteDetailSidebar({
   showHeaderDeleteButton = true,
 }: NoteDetailSidebarProps) {
 
+  const theme = useTheme();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingContent, setIsEditingContent] = useState(false);
   const isEditing = isEditingTitle || isEditingContent;
@@ -577,34 +580,35 @@ export function NoteDetailSidebar({
       <Box
         ref={titleContainerRef}
         sx={{
-          borderRadius: '24px',
+          borderRadius: '32px',
           border: `1px solid ${theme.palette.divider}`,
-          bgcolor: alpha(theme.palette.background.paper, 0.4),
-          backdropFilter: 'blur(10px)',
-          p: 3,
-          transition: 'all 0.3s ease',
+          bgcolor: 'rgba(22, 20, 18, 0.95)',
+          p: 4,
+          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
           '&:focus-within': {
             borderColor: theme.palette.secondary.main,
             bgcolor: alpha(theme.palette.secondary.main, 0.05),
-            boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.1)}`,
+            transform: 'translateZ(20px) translateY(-4px)',
+            boxShadow: `0 32px 64px ${alpha(theme.palette.secondary.main, 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography
             variant="caption"
             sx={{
               color: theme.palette.secondary.main,
               fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontFamily: 'var(--font-clash)'
+              letterSpacing: '0.15em',
+              fontFamily: 'var(--font-clash-display)'
             }}
           >
             Title
           </Typography>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
-            Tap to edit
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontFamily: 'var(--font-satoshi)', opacity: 0.6 }}>
+            Click to Edit
           </Typography>
         </Box>
         {isEditingTitle ? (
@@ -620,10 +624,12 @@ export function NoteDetailSidebar({
             InputProps={{
               disableUnderline: true,
               sx: {
-                fontSize: '1.75rem',
+                fontSize: '2rem',
                 fontWeight: 900,
                 color: theme.palette.text.primary,
-                fontFamily: 'var(--font-clash)'
+                fontFamily: 'var(--font-clash-display)',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.2
               }
             }}
           />
@@ -635,9 +641,14 @@ export function NoteDetailSidebar({
               fontWeight: 900,
               cursor: 'text',
               color: theme.palette.text.primary,
-              fontFamily: 'var(--font-clash)',
-              fontSize: '1.75rem',
-              lineHeight: 1.2
+              fontFamily: 'var(--font-clash-display)',
+              fontSize: '2rem',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+              transition: 'color 0.2s ease',
+              '&:hover': {
+                color: theme.palette.secondary.main
+              }
             }}
           >
             {displayTitle}
@@ -648,34 +659,35 @@ export function NoteDetailSidebar({
       <Box
         ref={contentContainerRef}
         sx={{
-          borderRadius: '24px',
+          borderRadius: '32px',
           border: `1px solid ${theme.palette.divider}`,
-          bgcolor: alpha(theme.palette.background.paper, 0.4),
-          backdropFilter: 'blur(10px)',
-          p: 3,
-          transition: 'all 0.3s ease',
+          bgcolor: 'rgba(22, 20, 18, 0.95)',
+          p: 4,
+          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
           '&:focus-within': {
             borderColor: theme.palette.primary.main,
             bgcolor: alpha(theme.palette.primary.main, 0.05),
-            boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.1)}`,
+            transform: 'translateZ(20px) translateY(-4px)',
+            boxShadow: `0 32px 64px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
           <Typography
             variant="caption"
             sx={{
               color: theme.palette.primary.main,
               fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontFamily: 'var(--font-clash)'
+              letterSpacing: '0.15em',
+              fontFamily: 'var(--font-clash-display)'
             }}
           >
             Content
           </Typography>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
-            Click inside to edit
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontFamily: 'var(--font-satoshi)', opacity: 0.6 }}>
+            Rich Content Environment
           </Typography>
         </Box>
 
@@ -1206,8 +1218,7 @@ export function NoteDetailSidebar({
         PaperProps={{
           sx: {
             borderRadius: '32px',
-            bgcolor: 'rgba(10, 10, 10, 0.95)',
-            backdropFilter: 'blur(25px) saturate(180%)',
+            bgcolor: 'rgba(22, 20, 18, 0.98)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             backgroundImage: 'none',
             p: 2,

@@ -71,7 +71,7 @@ export default function LandingPage() {
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh', 
-      bgcolor: '#0A0A0A', 
+      bgcolor: '#0F0D0C', 
       color: 'rgba(255, 255, 255, 0.9)',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)'
     }}>
@@ -256,7 +256,7 @@ export default function LandingPage() {
                     display: 'flex', 
                     flexDirection: 'column', 
                     gap: 3,
-                    bgcolor: 'rgba(10, 10, 10, 0.95)',
+                    bgcolor: 'rgba(15, 13, 12, 0.95)',
                     backdropFilter: 'blur(25px) saturate(180%)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '32px',
@@ -313,7 +313,7 @@ export default function LandingPage() {
         </Box>
       </Box>
 
-      <Box component="footer" sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', py: 10, bgcolor: '#0A0A0A' }}>
+      <Box component="footer" sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', py: 10, bgcolor: '#0F0D0C' }}>
         <Container>
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={6}>
             <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">

@@ -11,36 +11,78 @@ import {
   Check as CheckIcon,
   ContentCopy as CopyIcon
 } from '@mui/icons-material';
+import { 
+  LayoutGrid, 
+  LogOut, 
+  Settings 
+} from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
 import Image from 'next/image';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Stack from '@mui/material/Stack';
-import { alpha } from '@mui/material/styles';
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  Paper,
+  Avatar,
+  IconButton,
+  Menu,
+  MenuItem,
+  Divider,
+  Chip,
+  CircularProgress,
+  AppBar,
+  Toolbar,
+  Stack,
+  Tooltip,
+  ListItemIcon,
+  ListItemText,
+  alpha
+} from '@mui/material';
 import Link from 'next/link';
 import CommentsSection from '@/app/(app)/notes/Comments';
 import NoteReactions from '@/app/(app)/notes/NoteReactions';
+
+import Logo from '@/components/common/Logo';
+import { getEcosystemUrl } from '@/constants/ecosystem';
+import { getEffectiveDisplayName, getUserProfilePicId } from '@/lib/utils';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
+import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 
 interface SharedNoteClientProps {
    noteId: string;
 }
 
 function SharedNoteHeader() {
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
+  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+  const profilePicId = getUserProfilePicId(user);
+
+  useEffect(() => {
+    let mounted = true;
+    const cached = getCachedProfilePreview(profilePicId || undefined);
+    if (cached !== undefined) {
+      setSmallProfileUrl(cached ?? null);
+    }
+
+    const fetchPreview = async () => {
+      try {
+        if (profilePicId) {
+          const url = await fetchProfilePreview(profilePicId, 64, 64);
+          if (mounted) setSmallProfileUrl(url as unknown as string);
+        } else {
+          if (mounted) setSmallProfileUrl(null);
+        }
+      } catch (err: any) {
+        if (mounted) setSmallProfileUrl(null);
+      }
+    };
+    fetchPreview();
+    return () => { mounted = false; };
+  }, [profilePicId]);
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -58,107 +100,167 @@ function SharedNoteHeader() {
   return (
     <AppBar 
       position="fixed" 
+      elevation={0}
       sx={{ 
-        bgcolor: 'rgba(10, 10, 10, 0.8)', 
-        backdropFilter: 'blur(25px) saturate(180%)', 
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: 'none'
+        zIndex: 1201,
+        bgcolor: '#161412',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        backgroundImage: 'none'
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
-        <Box component={Link} href="/" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none' }}>
-          <Box 
-            component="img"
-            src="/logo/kylrixnote.png" 
-            alt="Kylrix Note Logo" 
-            sx={{ width: 32, height: 32, borderRadius: 1, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)' }}
-          />
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              display: { xs: 'none', sm: 'block' },
-              fontWeight: 900,
-              fontFamily: 'var(--font-space-grotesk)',
-              background: 'linear-gradient(90deg, #6366F1 0%, #00A3FF 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            Kylrix Note
-          </Typography>
-        </Box>
+      <Toolbar sx={{ 
+        justifyContent: 'space-between', 
+        px: { xs: 2, md: 4 }, 
+        minHeight: '88px' 
+      }}>
+        <Logo 
+          app="note" 
+          size={40} 
+          variant="full"
+          sx={{ 
+            cursor: 'pointer', 
+            '&:hover': { opacity: 0.8 },
+            fontFamily: 'var(--font-clash)',
+            fontWeight: 900,
+            letterSpacing: '-0.04em'
+          }}
+          component={Link}
+          href="/"
+        />
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          
+          <Tooltip title="Kylrix Portal">
+            <IconButton 
+              onClick={() => setIsEcosystemPortalOpen(true)}
+              sx={{ 
+                color: '#6366F1',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid',
+                borderColor: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                width: 44,
+                height: 44,
+                '&:hover': { 
+                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                  borderColor: '#6366F1',
+                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)' 
+                }
+              }}
+            >
+              <LayoutGrid size={22} />
+            </IconButton>
+          </Tooltip>
 
-          <Button
-            onClick={handleOpenMenu}
-            variant="outlined"
-            sx={{
-              borderRadius: '12px',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              bgcolor: 'rgba(255, 255, 255, 0.05)',
-              color: 'white',
-              textTransform: 'none',
-              px: 1.5,
-              py: 0.75,
-              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)', borderColor: '#6366F1' }
-            }}
-            startIcon={
-              <Avatar 
+          {isAuthenticated ? (
+            <>
+              <IconButton 
+                onClick={handleOpenMenu}
                 sx={{ 
-                  width: 24, 
-                  height: 24, 
-                  bgcolor: '#6366F1', 
-                  color: '#000',
-                  fontSize: '0.75rem',
-                  fontWeight: 700
+                  p: 0.5,
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '14px',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  '&:hover': { borderColor: 'rgba(99, 102, 241, 0.3)', bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                  transition: 'all 0.2s'
                 }}
               >
-                {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
-              </Avatar>
-            }
-          >
-            <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'inline' }, fontWeight: 600 }}>
-              {user?.name || user?.email || 'Account'}
-            </Typography>
-          </Button>
+                <Avatar 
+                  src={smallProfileUrl || undefined}
+                  sx={{ 
+                    width: 34, 
+                    height: 34, 
+                    bgcolor: '#050505',
+                    fontSize: '0.875rem',
+                    fontWeight: 800,
+                    color: '#6366F1',
+                    borderRadius: '10px',
+                    fontFamily: 'var(--font-mono)'
+                  }}
+                >
+                  {user?.name ? user.name[0].toUpperCase() : 'U'}
+                </Avatar>
+              </IconButton>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleCloseMenu}
-            PaperProps={{
-              sx: {
-                mt: 1.5,
-                minWidth: 180,
-                bgcolor: 'rgba(10, 10, 10, 0.95)',
-                backdropFilter: 'blur(25px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '16px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                color: 'white'
-              }
-            }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <MenuItem component={Link} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.5, '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Settings</Typography>
-            </MenuItem>
-            <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
-            <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: '#ff4d4d', '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.05)' } }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Logout</Typography>
-            </MenuItem>
-          </Menu>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseMenu}
+                PaperProps={{
+                  sx: {
+                    mt: 2,
+                    width: 280,
+                    bgcolor: '#161412',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '28px',
+                    backgroundImage: 'none',
+                    boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
+                    p: 1,
+                    color: 'white'
+                  }
+                }}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <Box sx={{ px: 2.5, py: 2.5, bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '20px', mb: 1 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
+                    Identity
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', mt: 1, fontFamily: 'var(--font-satoshi)' }}>
+                    {user?.name || user?.email}
+                  </Typography>
+                </Box>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
+                <Box sx={{ py: 0.5 }}>
+                  <MenuItem component={Link} href="/notes" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
+                    <ListItemIcon sx={{ minWidth: 40 }}><LayoutGrid size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
+                    <ListItemText primary="My Dashboard" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
+                  </MenuItem>
+                  <MenuItem component={Link} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
+                    <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
+                    <ListItemText primary="Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
+                  </MenuItem>
+                </Box>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
+                <MenuItem onClick={handleLogout} sx={{ py: 2, px: 2.5, borderRadius: '16px', color: '#FF4D4D', '&:hover': { bgcolor: alpha('#FF4D4D', 0.05) } }}>
+                  <ListItemIcon sx={{ minWidth: 40 }}><LogOut size={18} color="#FF4D4D" /></ListItemIcon>
+                  <ListItemText primary="Disconnect Session" primaryTypographyProps={{ variant: 'body2', fontWeight: 800, fontFamily: 'var(--font-satoshi)' }} />
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
+              variant="contained"
+              size="large"
+              sx={{
+                ml: 1,
+                background: 'linear-gradient(135deg, #6366F1 0%, #00D1DA 100%)',
+                color: '#000',
+                fontWeight: 800,
+                fontFamily: 'var(--font-satoshi)',
+                borderRadius: '14px',
+                textTransform: 'none',
+                px: 4,
+                boxShadow: '0 8px 20px rgba(99, 102, 241, 0.15)',
+                '&:hover': { background: 'linear-gradient(135deg, #00E5FF 0%, #00C1CA 100%)', transform: 'translateY(-1px)' }
+              }}
+            >
+              Connect
+            </Button>
+          )}
         </Box>
       </Toolbar>
+      <EcosystemPortal 
+        open={isEcosystemPortalOpen} 
+        onClose={() => setIsEcosystemPortalOpen(false)} 
+      />
     </AppBar>
   );
 }
 
 export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
+  const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingNote, setIsLoadingNote] = useState(true);
   const { isAuthenticated, isLoading } = useAuth();
@@ -175,7 +277,6 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       }
       const note = await res.json();
       
-      // Handle Ghost Note Expiry Check
       if (note.metadata) {
         try {
           const meta = JSON.parse(note.metadata);
@@ -187,11 +288,29 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           }
         } catch (e: any) {
           if (e.message.includes('expired')) throw e;
-          // Ignore parse errors if not expiry related
         }
       }
 
       setVerifiedNote(note);
+
+      if (note.userId) {
+        try {
+          const profileRes = await fetch('/api/shared/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds: [note.userId] }),
+          });
+          if (profileRes.ok) {
+            const profilesPayload = await profileRes.json();
+            const author = profilesPayload.documents?.[0];
+            if (author) {
+              setAuthorProfile(author);
+            }
+          }
+        } catch (profileErr) {
+          console.warn('Failed to resolve author profile:', profileErr);
+        }
+      }
     } catch (err: any) {
       const message = err?.message || 'An error occurred';
       setError(message);
@@ -206,9 +325,9 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   if (!verifiedNote) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
         <Box sx={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+          <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-clash)', color: 'white' }}>
             Loading shared note
           </Typography>
           {error ? (
@@ -249,7 +368,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   if (isLoading) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress sx={{ color: '#6366F1' }} />
       </Box>
     );
@@ -260,11 +379,11 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       elevation={0}
       sx={{ 
         borderRadius: '32px', 
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        bgcolor: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(25px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        bgcolor: '#161412',
         overflow: 'hidden',
-        color: 'white'
+        color: 'white',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
       }}
     >
       <Box sx={{ p: { xs: 4, md: 6 }, borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
@@ -273,7 +392,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
             variant="h3" 
             sx={{ 
               fontWeight: 900, 
-              fontFamily: 'var(--font-space-grotesk)', 
+              fontFamily: 'var(--font-clash)', 
               lineHeight: 1.2,
               background: 'linear-gradient(90deg, #fff, #6366F1)',
               WebkitBackgroundClip: 'text',
@@ -294,6 +413,39 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               <EyeIcon sx={{ fontSize: 16 }} />
               <Typography variant="caption" sx={{ fontWeight: 600 }}>Public Note</Typography>
             </Box>
+            {authorProfile && (
+              <Link 
+                href={authorProfile.username ? `${getEcosystemUrl('connect')}/u/${authorProfile.username}` : '#'} 
+                target="_blank"
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1.5, 
+                  textDecoration: 'none',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  py: 0.5,
+                  px: 1.5,
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.06)',
+                    borderColor: 'rgba(99, 102, 241, 0.3)',
+                    transform: 'translateY(-1px)'
+                  }
+                }}
+              >
+                <Avatar 
+                  src={authorProfile.avatar} 
+                  sx={{ width: 20, height: 20, fontSize: '0.65rem', fontWeight: 800, bgcolor: '#6366F1', color: '#000' }}
+                >
+                  {getEffectiveDisplayName(authorProfile)[0].toUpperCase()}
+                </Avatar>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: '#6366F1' }}>
+                  {authorProfile.username ? `@${authorProfile.username}` : getEffectiveDisplayName(authorProfile)}
+                </Typography>
+              </Link>
+            )}
           </Box>
 
           {verifiedNote.tags && verifiedNote.tags.length > 0 && (
@@ -359,7 +511,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   if (isAuthenticated) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', color: 'white' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', color: 'white' }}>
         <SharedNoteHeader />
         <Container maxWidth="md" sx={{ py: 8, pt: 12 }}>
           <NoteContent />
@@ -377,12 +529,12 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               sx={{
                 p: 6,
                 borderRadius: '32px',
-                bgcolor: 'rgba(99, 102, 241, 0.03)',
+                bgcolor: '#161412',
                 border: '1px solid rgba(99, 102, 241, 0.1)',
-                backdropFilter: 'blur(10px)'
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02)'
               }}
             >
-              <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-clash)', color: 'white' }}>
                 View Your Notes
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 4, maxWidth: 500, mx: 'auto' }}>
@@ -415,20 +567,19 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'rgba(10, 10, 10, 0.95)', color: 'white' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', color: 'white' }}>
       <AppBar 
         position="fixed" 
         sx={{ 
-          bgcolor: 'rgba(10, 10, 10, 0.8)', 
-          backdropFilter: 'blur(25px)', 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: 'none'
+          bgcolor: '#161412',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.02)'
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 'lg', mx: 'auto', width: '100%' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Image src="/logo/kylrixnote.png" alt="Kylrix Note" width={32} height={32} style={{ borderRadius: '8px' }} />
-            <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', fontFamily: 'var(--font-clash)', color: 'white' }}>
               Kylrix Note
             </Typography>
           </Box>
@@ -453,10 +604,10 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ pt: 12, pb: 4, bgcolor: 'rgba(99, 102, 241, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      <Box sx={{ pt: 12, pb: 4, bgcolor: alpha('#6366F1', 0.02), borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
         <Container maxWidth="md">
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: alpha('#FFFFFF', 0.5), fontWeight: 600, fontFamily: 'var(--font-satoshi)' }}>
               Organize unlimited notes, AI insights & secure sharing.
             </Typography>
             <Button 
@@ -482,17 +633,17 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           <CommentsSection noteId={noteId} />
         </Box>
 
-        <Box sx={{ mt: 8, textAlign: 'center' }}>
+          <Box sx={{ mt: 8, textAlign: 'center' }}>
           <Paper
             sx={{
               p: 6,
               borderRadius: '32px',
-              bgcolor: 'rgba(99, 102, 241, 0.03)',
+              bgcolor: '#161412',
               border: '1px solid rgba(99, 102, 241, 0.1)',
-              backdropFilter: 'blur(10px)'
+              boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02)'
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-space-grotesk)', color: 'white' }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-clash)', color: 'white' }}>
               Create Your Own Notes
             </Typography>
             <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 4, maxWidth: 500, mx: 'auto' }}>

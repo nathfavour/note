@@ -58,16 +58,15 @@ export const MobileBottomNav: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(11, 9, 8, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: '24px',
           px: 2,
           py: 1.5,
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
           backgroundImage: 'none'
         }}
       >
@@ -157,10 +156,11 @@ export const DesktopSidebar: React.FC = () => {
         left: 0,
         top: 0,
         height: '100vh',
-        bgcolor: 'rgba(10, 10, 10, 0.95)',
-        backdropFilter: 'blur(25px) saturate(180%)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        bgcolor: '#0F0D0C',
+        backgroundImage: 'linear-gradient(90deg, #12100E 0%, #0A0908 100%)',
+        borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+        boxShadow: '10px 0 30px rgba(0,0,0,0.5), inset -1px 0 0 rgba(255,255,255,0.02)',
+        transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         width: isCollapsed ? '80px' : '280px',
         zIndex: 1200,
         pt: '80px' // Offset for AppHeader

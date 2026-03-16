@@ -22,8 +22,7 @@ const Overlay: React.FC = () => {
         backdrop: {
           timeout: 400,
           sx: { 
-            bgcolor: 'rgba(0, 0, 0, 0.4)', 
-            backdropFilter: 'blur(4px) saturate(120%)' 
+            bgcolor: 'rgba(0, 0, 0, 0.7)', 
           }
         },
       }}

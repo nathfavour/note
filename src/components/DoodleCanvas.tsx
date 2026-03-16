@@ -270,7 +270,7 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
           top: pipPosition.y,
           zIndex: 2000,
           width: 360,
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          bgcolor: 'rgba(15, 13, 12, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '24px',
@@ -348,7 +348,7 @@ export default function DoodleCanvas({ initialData, onSave, onClose }: DoodleCan
       fullScreen={mode === 'fullscreen'}
       PaperProps={{
         sx: {
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          bgcolor: 'rgba(15, 13, 12, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: mode === 'fullscreen' ? 0 : '32px',

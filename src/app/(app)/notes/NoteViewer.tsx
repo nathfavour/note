@@ -66,7 +66,7 @@ export default function NoteViewer({ note, onClose }: NoteViewerProps) {
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        bgcolor: 'rgba(10, 10, 10, 0.95)',
+        bgcolor: 'rgba(15, 13, 12, 0.95)',
         backdropFilter: 'blur(25px) saturate(180%)',
         color: 'white'
       }}

@@ -90,7 +90,7 @@ export function DynamicSidebar() {
             md: 450,
             lg: 500
           },
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          bgcolor: 'rgba(15, 13, 12, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
           backgroundImage: 'none',

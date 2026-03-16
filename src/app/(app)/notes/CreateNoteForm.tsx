@@ -48,7 +48,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
   const [isPublic, setIsPublic] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showDoodleEditor, setShowDoodleEditor] = useState(false);
+  const [showDoodleEditor, setShowDoodleEditor] = useState(initialFormat === 'doodle');
   const { closeOverlay } = useOverlay();
   const { showSuccess, showError } = useToast();
   const theme = useTheme();
@@ -83,6 +83,14 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
     setContent(doodleData);
     setFormat('doodle');
     setShowDoodleEditor(false);
+  };
+
+  const handleDoodleClose = () => {
+    setShowDoodleEditor(false);
+    // If it was opened as a pure doodle and hasn't been saved/modified, close the whole overlay
+    if (initialFormat === 'doodle' && !content) {
+      closeOverlay();
+    }
   };
 
   useEffect(() => {
@@ -139,7 +147,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
         <DoodleCanvas
           initialData={format === 'doodle' ? content : ''}
           onSave={handleDoodleSave}
-          onClose={() => setShowDoodleEditor(false)}
+          onClose={handleDoodleClose}
         />
       )}
       

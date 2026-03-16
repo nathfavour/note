@@ -34,7 +34,7 @@ export default function GlobalError({
                 p: 4,
                 borderRadius: 6,
                 textAlign: 'center',
-                bgcolor: 'rgba(10, 10, 10, 0.95)',
+                bgcolor: 'rgba(15, 13, 12, 0.95)',
                 backdropFilter: 'blur(25px) saturate(180%)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}

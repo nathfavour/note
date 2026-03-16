@@ -82,7 +82,7 @@ export default function AttachmentPage() {
     <Box 
       sx={{ 
         minHeight: '100vh',
-        bgcolor: 'rgba(10, 10, 10, 0.95)',
+        bgcolor: 'rgba(15, 13, 12, 0.95)',
         color: 'white',
         p: { xs: 2, md: 4 }
       }}

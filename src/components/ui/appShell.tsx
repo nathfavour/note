@@ -72,7 +72,7 @@ export default function AppShell({ children }: AppShellProps) {
           justifyContent: 'center', 
           minHeight: '100vh',
           gap: 3,
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
+          bgcolor: 'rgba(15, 13, 12, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
         }}
       >
@@ -160,7 +160,7 @@ export default function AppShell({ children }: AppShellProps) {
             p: 4, 
             borderRadius: '24px', 
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            bgcolor: 'rgba(10, 10, 10, 0.95)',
+            bgcolor: 'rgba(15, 13, 12, 0.95)',
             boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)'
           }}>
             <Typography 

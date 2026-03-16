@@ -27,12 +27,12 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       contrastText: '#FFFFFF',
     },
     background: {
-      default: mode === 'dark' ? '#000000' : '#F1F5F9', // Slightly cooler slate for light mode
-      paper: mode === 'dark' ? '#0A0A0B' : '#FFFFFF',
+      default: mode === 'dark' ? '#0A0908' : '#F1F5F9', // Deep Void Ash
+      paper: mode === 'dark' ? '#161412' : '#FFFFFF',   // Elevated Surface
     },
     text: {
       primary: mode === 'dark' ? '#F8FAFC' : '#0F172A',
-      secondary: mode === 'dark' ? '#94A3B8' : '#475569', // Darker slate for light mode contrast
+      secondary: mode === 'dark' ? '#94A3B8' : '#475569',
     },
     divider: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
   },
@@ -45,13 +45,27 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     button: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 700, textTransform: 'none' },
   },
   shape: { borderRadius: 16 },
+  shadows: [
+    'none',
+    '0px 2px 4px rgba(0,0,0,0.4)',
+    '0px 4px 8px rgba(0,0,0,0.4)',
+    '0px 8px 16px rgba(0,0,0,0.5)',
+    '0px 12px 24px rgba(0,0,0,0.5)',
+    '0px 16px 32px rgba(0,0,0,0.6)',
+    '0px 20px 40px rgba(0,0,0,0.6)',
+    '0px 24px 48px rgba(0,0,0,0.7)',
+    '0px 28px 56px rgba(0,0,0,0.7)',
+    '0px 32px 64px rgba(0,0,0,0.8)',
+    ...Array(15).fill('0px 32px 64px rgba(0,0,0,0.8)')
+  ] as any,
   components: {
     MuiCssBaseline: {
       styleOverrides: (theme) => ({
         body: {
           backgroundColor: theme.palette.background.default,
           backgroundImage: mode === 'dark' 
-            ? `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.15)} 0%, transparent 70%)`
+            ? `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.12)} 0%, transparent 70%), 
+               linear-gradient(180deg, ${alpha('#161412', 0.4)} 0%, transparent 100%)`
             : `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.05)} 0%, transparent 70%)`,
           backgroundAttachment: 'fixed',
           minHeight: '100vh',
@@ -66,18 +80,21 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           fontWeight: 700,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           border: `1px solid ${theme.palette.divider}`,
+          boxShadow: mode === 'dark' ? 'inset 0 1px 0 rgba(255,255,255,0.05)' : 'none',
           '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: `0 8px 20px -8px ${alpha(theme.palette.primary.main, 0.4)}`,
+            transform: 'translateY(-2px)',
+            boxShadow: mode === 'dark' 
+              ? `0 12px 24px -10px ${alpha(theme.palette.primary.main, 0.5)}, inset 0 1px 0 rgba(255,255,255,0.1)` 
+              : `0 8px 20px -8px ${alpha(theme.palette.primary.main, 0.4)}`,
           },
         }),
         containedPrimary: ({ theme }) => ({
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 rgba(255,255,255,0.2)`,
         }),
         containedSecondary: ({ theme }) => ({
           background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
-          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}, inset 0 1px 0 rgba(255,255,255,0.2)`,
         }),
       },
     },
@@ -86,19 +103,18 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           borderRadius: 28,
           background: mode === 'dark' 
-            ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`
+            ? `linear-gradient(165deg, #1C1A18 0%, #12100E 100%)`
             : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
-          backdropFilter: 'blur(20px) saturate(160%)',
-          border: `1px solid ${theme.palette.divider}`,
+          border: `1px solid ${mode === 'dark' ? alpha('#FFFFFF', 0.08) : theme.palette.divider}`,
           boxShadow: mode === 'dark'
-            ? `0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 1px ${alpha('#FFFFFF', 0.05)}`
+            ? `0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px ${alpha('#FFFFFF', 0.05)}, inset 0 -1px 0 rgba(0,0,0,0.5)`
             : `0 10px 30px -10px ${alpha(theme.palette.text.primary, 0.1)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.8)}`,
-          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
           '&:hover': {
-            transform: 'translateY(-6px) scale(1.01)',
-            borderColor: theme.palette.secondary.main,
+            transform: 'translateY(-8px) scale(1.01)',
+            borderColor: alpha(theme.palette.secondary.main, 0.4),
             boxShadow: mode === 'dark'
-              ? `0 25px 50px -12px rgba(0,0,0,0.7), 0 0 15px ${alpha(theme.palette.primary.main, 0.2)}`
+              ? `0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px ${alpha(theme.palette.primary.main, 0.15)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.1)}`
               : `0 25px 50px -12px ${alpha(theme.palette.primary.main, 0.2)}`,
           },
         }),
@@ -108,9 +124,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundImage: 'none',
-          backgroundColor: alpha(theme.palette.background.paper, 0.8),
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: mode === 'dark' ? 'rgba(22, 20, 18, 0.98)' : alpha(theme.palette.background.paper, 0.8),
+          border: `1px solid ${mode === 'dark' ? alpha('#FFFFFF', 0.05) : theme.palette.divider}`,
+          boxShadow: mode === 'dark' ? '0 10px 30px rgba(0,0,0,0.5)' : 'none',
         }),
       },
     },
