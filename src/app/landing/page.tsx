@@ -71,16 +71,16 @@ export default function LandingPage() {
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh', 
-      bgcolor: '#0F0D0C', 
+      bgcolor: '#0A0908', 
       color: 'rgba(255, 255, 255, 0.9)',
-      backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)'
+      backgroundImage: 'radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.1) 0%, transparent 70%)'
     }}>
       <AppBar 
         position="sticky" 
         sx={{ 
-          bgcolor: 'rgba(10, 10, 10, 0.8)', 
-          backdropFilter: 'blur(25px) saturate(180%)', 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(10, 9, 8, 0.8)', 
+          backdropFilter: 'none', 
+          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
           boxShadow: 'none',
           backgroundImage: 'none'
         }}
@@ -159,13 +159,13 @@ export default function LandingPage() {
               variant="h1" 
               sx={{ 
                 mb: 3, 
-                fontSize: { xs: '3rem', md: '5rem' }, 
+                fontSize: { xs: '3rem', md: '5.5rem' }, 
                 fontWeight: 900, 
-                lineHeight: 1,
-                fontFamily: '"Space Grotesk", sans-serif',
+                lineHeight: 0.9,
+                fontFamily: 'var(--font-clash), "Space Grotesk", sans-serif',
                 textTransform: 'uppercase',
                 letterSpacing: '-0.02em',
-                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.5) 100%)',
+                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -177,11 +177,11 @@ export default function LandingPage() {
               variant="body1" 
               sx={{ 
                 mb: 8, 
-                color: 'rgba(255, 255, 255, 0.6)', 
-                fontSize: { xs: '1.125rem', md: '1.35rem' }, 
-                maxWidth: '700px', 
+                color: 'rgba(255, 255, 255, 0.5)', 
+                fontSize: { xs: '1.125rem', md: '1.25rem' }, 
+                maxWidth: '650px', 
                 mx: 'auto',
-                fontFamily: '"Inter", sans-serif',
+                fontFamily: 'var(--font-satoshi), "Inter", sans-serif',
                 lineHeight: 1.6
               }}
             >
@@ -218,7 +218,7 @@ export default function LandingPage() {
           </Container>
         </Box>
 
-        <Box sx={{ py: { xs: 12, md: 20 }, bgcolor: 'rgba(255, 255, 255, 0.02)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+        <Box sx={{ py: { xs: 12, md: 20 }, bgcolor: '#0A0908' }}>
           <Container>
             <Box sx={{ textAlign: 'center', mb: 12, maxWidth: '800px', mx: 'auto' }}>
               <Typography 
@@ -226,7 +226,7 @@ export default function LandingPage() {
                 sx={{ 
                   mb: 3, 
                   fontWeight: 900, 
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-clash), "Space Grotesk", sans-serif',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   fontSize: { xs: '2rem', md: '3.5rem' }
@@ -238,8 +238,8 @@ export default function LandingPage() {
               <Typography 
                 variant="body1" 
                 sx={{ 
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontFamily: '"Inter", sans-serif',
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontFamily: 'var(--font-satoshi), "Inter", sans-serif',
                   fontSize: '1.1rem'
                 }}
               >
@@ -256,15 +256,17 @@ export default function LandingPage() {
                     display: 'flex', 
                     flexDirection: 'column', 
                     gap: 3,
-                    bgcolor: 'rgba(15, 13, 12, 0.95)',
-                    backdropFilter: 'blur(25px) saturate(180%)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    bgcolor: '#161412',
+                    backdropFilter: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
                     borderRadius: '32px',
                     p: 2,
-                    transition: 'transform 0.3s ease, border-color 0.3s ease',
+                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                     '&:hover': {
-                      transform: 'translateY(-10px)',
+                      transform: 'translateY(-8px) scale(1.01)',
                       borderColor: 'rgba(99, 102, 241, 0.3)',
+                      boxShadow: '0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px rgba(99, 102, 241, 0.1), inset 0 1px 1px rgba(255,255,255,0.08)',
                     }
                   }}>
                     <CardHeader>
@@ -313,7 +315,7 @@ export default function LandingPage() {
         </Box>
       </Box>
 
-      <Box component="footer" sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', py: 10, bgcolor: '#0F0D0C' }}>
+      <Box component="footer" sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', py: 10, bgcolor: '#0A0908' }}>
         <Container>
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={6}>
             <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">

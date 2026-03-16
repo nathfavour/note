@@ -419,9 +419,10 @@ export const GhostEditor = () => {
                 sx={{ 
                     mb: 3, 
                     borderRadius: '16px', 
-                    bgcolor: alpha(theme.palette.info.main, 0.05),
+                    bgcolor: '#161412',
                     color: theme.palette.info.main,
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                     '& .MuiAlert-message': { width: '100%' }
                 }}
             >
@@ -452,141 +453,145 @@ export const GhostEditor = () => {
                         p: 0, 
                         borderRadius: '32px', 
                         overflow: 'hidden',
-                        bgcolor: theme.palette.mode === 'dark' 
-                            ? 'rgba(255, 255, 255, 0.02)' 
-                            : 'rgba(0, 0, 0, 0.02)',
-                        border: `1px solid ${theme.palette.divider}`,
-                        backdropFilter: 'blur(20px)',
+                        bgcolor: '#161412',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
+                        backdropFilter: 'none',
                         position: 'relative',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                         '&:focus-within': {
-                            borderColor: theme.palette.secondary.main,
-                            boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.1)}`,
+                            borderColor: alpha(theme.palette.secondary.main, 0.4),
+                            boxShadow: `0 40px 80px -20px rgba(0,0,0,0.9), 0 0 20px ${alpha(theme.palette.secondary.main, 0.1)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.1)}`,
                         }
                     }}>
-                        {/* Action Buttons in Header Area */}
-                        <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 24, right: 24, zIndex: 10 }}>
-                            <Tooltip title={`Lifespan: ${LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label || 'Custom'}`} placement="top">
-                                <IconButton
-                                    onClick={() => setIsSettingsOpen(true)}
-                                    sx={{ 
-                                        width: 40,
-                                        height: 40,
-                                        bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                        color: theme.palette.secondary.main,
-                                        border: `1px solid ${theme.palette.divider}`,
-                                        position: 'relative',
-                                        '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.8), color: theme.palette.text.primary }
-                                    }}
-                                >
-                                    <svg width="40" height="40" style={{ position: 'absolute' }}>
-                                        <circle
-                                            cx="20"
-                                            cy="20"
-                                            r="18"
-                                            fill="transparent"
-                                            stroke="currentColor"
-                                            strokeWidth="1"
-                                            strokeDasharray="3 3"
-                                            opacity="0.3"
-                                        />
-                                    </svg>
-                                    <Typography 
-                                        variant="caption" 
-                                        sx={{ 
-                                            fontWeight: 900, 
-                                            fontSize: '0.65rem',
+                        {/* Action Header Area */}
+                        <Box sx={{ 
+                            px: 4, 
+                            pt: 3, 
+                            pb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.03)'
+                        }}>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: 1, 
+                                    px: 1.5, 
+                                    py: 0.5, 
+                                    borderRadius: '8px', 
+                                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(255, 255, 255, 0.05)'
+                                }}>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: content.length >= MAX_CONTENT_LENGTH ? theme.palette.error.main : 'rgba(255, 255, 255, 0.4)',
+                                            fontWeight: 700,
                                             fontFamily: 'var(--font-jetbrains-mono)',
-                                            textTransform: 'uppercase'
+                                            letterSpacing: '0.05em'
                                         }}
                                     >
-                                        {LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label.split(' ')[0].toLowerCase() || '7d'}
+                                        {content.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
                                     </Typography>
-                                </IconButton>
-                            </Tooltip>
+                                </Box>
 
-                            <Tooltip title="Copy Content" placement="top">
-                                <IconButton
-                                    onClick={handleCopyContent}
-                                    disabled={!content.trim()}
-                                    sx={{ 
-                                        bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                        color: isLinkCopied ? theme.palette.secondary.main : theme.palette.text.secondary,
-                                        border: `1px solid ${theme.palette.divider}`,
-                                        '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.8) }
-                                    }}
-                                >
-                                    {isLinkCopied ? <CheckIcon size={20} /> : <CopyIcon size={20} />}
-                                </IconButton>
-                            </Tooltip>
-
-                            <Tooltip title="Copy Link" placement="top">
-                                <IconButton
-                                    onClick={handleCreateAndCopyLink}
-                                    disabled={isCreating || !title.trim() || !content.trim()}
-                                    sx={{ 
-                                        bgcolor: copiedId ? alpha(theme.palette.secondary.main, 0.1) : alpha(theme.palette.background.paper, 0.4),
-                                        color: copiedId ? theme.palette.secondary.main : theme.palette.text.primary,
-                                        border: '1px solid',
-                                        borderColor: copiedId ? theme.palette.secondary.main : theme.palette.divider,
-                                        '&:hover': {
+                                <Tooltip title={`Lifespan: ${LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label || '7 Days'}`}>
+                                    <Box 
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: 1, 
+                                            px: 1.5, 
+                                            py: 0.5, 
+                                            borderRadius: '8px', 
+                                            cursor: 'pointer',
                                             bgcolor: alpha(theme.palette.secondary.main, 0.05),
-                                            borderColor: theme.palette.secondary.main
-                                        },
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {isCreating ? <CircularProgress size={20} color="inherit" /> : (copiedId ? <CheckIcon size={20} /> : <Share2 size={20} />)}
-                                </IconButton>
-                            </Tooltip>
-                        </Stack>
-
-                        <Box sx={{ p: 4, pb: 2 }}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 2 }}>
-                                {(content.trim().length >= 5 || isTitleManuallyEdited) && (
-                                    <TextField
-                                        fullWidth
-                                        placeholder="Note Title"
-                                        value={title}
-                                        onChange={(e) => {
-                                            setTitle(e.target.value);
-                                            setIsTitleManuallyEdited(true);
+                                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
+                                            color: theme.palette.secondary.main,
+                                            transition: 'all 0.2s',
+                                            '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.1) }
                                         }}
-                                        variant="standard"
-                                        InputProps={{
-                                            disableUnderline: true,
-                                            sx: { 
-                                                fontSize: '2rem', 
-                                                fontWeight: 900, 
-                                                fontFamily: 'var(--font-clash)',
-                                                color: 'var(--color-secondary)', 
-                                                pr: 18, 
-                                                animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                '@keyframes fadeIn': {
-                                                    '0%': { opacity: 0, transform: 'translateY(-10px)' },
-                                                    '100%': { opacity: 1, transform: 'translateY(0)' }
-                                                },
-                                                '&::placeholder': { opacity: 0.2 }
+                                    >
+                                        <Clock size={12} />
+                                        <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                                            {LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label.split(' ')[0] || '7d'}
+                                        </Typography>
+                                    </Box>
+                                </Tooltip>
+                            </Stack>
+
+                            <Stack direction="row" spacing={1}>
+                                <Tooltip title="Copy Content" placement="top">
+                                    <IconButton
+                                        onClick={handleCopyContent}
+                                        disabled={!content.trim()}
+                                        size="small"
+                                        sx={{ 
+                                            bgcolor: alpha(theme.palette.background.paper, 0.4),
+                                            color: isLinkCopied ? theme.palette.secondary.main : 'rgba(255, 255, 255, 0.4)',
+                                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'white' }
+                                        }}
+                                    >
+                                        {isLinkCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                                    </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title="Copy Share Link" placement="top">
+                                    <IconButton
+                                        onClick={handleCreateAndCopyLink}
+                                        disabled={isCreating || !title.trim() || !content.trim()}
+                                        size="small"
+                                        sx={{ 
+                                            bgcolor: copiedId ? alpha(theme.palette.secondary.main, 0.1) : alpha(theme.palette.background.paper, 0.4),
+                                            color: copiedId ? theme.palette.secondary.main : 'white',
+                                            border: '1px solid',
+                                            borderColor: copiedId ? theme.palette.secondary.main : 'rgba(255, 255, 255, 0.05)',
+                                            '&:hover': {
+                                                bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                                                borderColor: theme.palette.secondary.main
                                             }
                                         }}
-                                        sx={{ flex: 1 }}
-                                    />
-                                )}
-                                <Box sx={{ flexGrow: 1 }} />
-                                <Typography
-                                    variant="caption"
-                                    sx={{
-                                        color: content.length >= MAX_CONTENT_LENGTH ? theme.palette.error.main : 'rgba(255, 255, 255, 0.3)',
-                                        fontWeight: 700,
-                                        fontFamily: 'var(--font-jetbrains-mono)',
-                                        mb: 1.5,
-                                        ml: 2,
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {content.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
-                                </Typography>
+                                    >
+                                        {isCreating ? <CircularProgress size={16} color="inherit" /> : (copiedId ? <CheckIcon size={16} /> : <Share2 size={16} />)}
+                                    </IconButton>
+                                </Tooltip>
                             </Stack>
+                        </Box>
+
+                        <Box sx={{ p: 4, pt: 3, pb: 2 }}>
+                            {(content.trim().length >= 5 || isTitleManuallyEdited) && (
+                                <TextField
+                                    fullWidth
+                                    placeholder="Note Title"
+                                    value={title}
+                                    onChange={(e) => {
+                                        setTitle(e.target.value);
+                                        setIsTitleManuallyEdited(true);
+                                    }}
+                                    variant="standard"
+                                    InputProps={{
+                                        disableUnderline: true,
+                                        sx: { 
+                                            fontSize: '2.5rem', 
+                                            fontWeight: 900, 
+                                            fontFamily: 'var(--font-clash)',
+                                            color: 'white', 
+                                            mb: 1,
+                                            animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            '@keyframes fadeIn': {
+                                                '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                                                '100%': { opacity: 1, transform: 'translateY(0)' }
+                                            },
+                                            '&::placeholder': { opacity: 0.1 }
+                                        }
+                                    }}
+                                />
+                            )}
                             <TextField
                                 fullWidth
                                 multiline
@@ -614,12 +619,11 @@ export const GhostEditor = () => {
 
                         <Box sx={{ 
                             p: 3, 
-                            bgcolor: alpha(theme.palette.background.paper, 0.4), 
-                            borderTop: `1px solid ${theme.palette.divider}`,
+                            bgcolor: '#1C1A18', 
+                            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            background: 'linear-gradient(to right, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05))'
                         }}>
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <Box sx={{ display: 'flex', color: 'rgba(255, 255, 255, 0.3)' }}>
@@ -705,8 +709,9 @@ export const GhostEditor = () => {
                         <Paper sx={{ 
                             p: 3, 
                             borderRadius: '32px', 
-                            bgcolor: alpha(theme.palette.background.paper, 0.4),
-                            border: `1px solid ${theme.palette.divider}`,
+                            bgcolor: '#161412',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.5)',
                             height: 'fit-content'
                         }}>
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3, justifyContent: 'space-between' }}>
@@ -735,15 +740,17 @@ export const GhostEditor = () => {
                                                     key={note.id} 
                                                     onContextMenu={(e) => handleContextMenu(e, note.id)}
                                                     sx={{ 
-                                                        bgcolor: 'rgba(255, 255, 255, 0.03)', 
+                                                        bgcolor: '#1C1A18', 
                                                         borderRadius: '20px',
                                                         border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                        transition: 'all 0.2s',
+                                                        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                                                         position: 'relative',
+                                                        backgroundImage: 'none',
                                                         '&:hover': {
                                                             transform: 'translateX(4px)',
-                                                            bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                                            borderColor: 'rgba(99, 102, 241, 0.2)'
+                                                            bgcolor: '#1C1A18',
+                                                            borderColor: alpha(theme.palette.secondary.main, 0.4),
+                                                            boxShadow: `0 20px 40px -10px rgba(0,0,0,0.5), 0 0 10px ${alpha(theme.palette.secondary.main, 0.1)}`
                                                         }
                                                     }}
                                                 >
@@ -785,18 +792,20 @@ export const GhostEditor = () => {
                                         </Typography>
                                         <Stack spacing={1.5}>
                                             {staleSparks.map((note) => (
-                                                <Card 
+                                            <Card 
                                                     key={note.id} 
                                                     onContextMenu={(e) => handleContextMenu(e, note.id)}
                                                     sx={{ 
-                                                        bgcolor: 'rgba(255, 255, 255, 0.01)', 
+                                                        bgcolor: '#0F0D0C', 
                                                         borderRadius: '20px',
                                                         border: '1px solid rgba(255, 255, 255, 0.03)',
-                                                        transition: 'all 0.2s',
+                                                        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                                                        backgroundImage: 'none',
                                                         opacity: 0.6,
                                                         '&:hover': {
                                                             opacity: 1,
-                                                            bgcolor: 'rgba(255, 255, 255, 0.02)',
+                                                            bgcolor: '#161412',
+                                                            borderColor: alpha(theme.palette.error.main, 0.3)
                                                         }
                                                     }}
                                                 >
@@ -846,13 +855,13 @@ export const GhostEditor = () => {
                                     paper: {
                                         sx: {
                                             minWidth: 180,
-                                            bgcolor: 'rgba(15, 13, 12, 0.95)',
-                                            backdropFilter: 'blur(25px) saturate(180%)',
+                                            bgcolor: '#1C1A18',
+                                            backdropFilter: 'none',
                                             border: '1px solid rgba(255, 255, 255, 0.1)',
                                             borderRadius: '12px',
                                             backgroundImage: 'none',
                                             py: 0.5,
-                                            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+                                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05)',
                                         }
                                     }
                                 }}
@@ -878,7 +887,7 @@ export const GhostEditor = () => {
                             </Menu>
 
                             {/* Chronic User CTA */}
-                                <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: alpha(theme.palette.secondary.main, 0.1), border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}` }}>
+                                <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: '#1C1A18', border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' }}>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: theme.palette.secondary.main }}>
                                         Don&apos;t Lose Your Spark!
                                     </Typography>
@@ -909,9 +918,10 @@ export const GhostEditor = () => {
                 onClose={() => setIsSettingsOpen(false)}
                 PaperProps={{
                     sx: {
-                        bgcolor: 'rgba(15, 13, 12, 0.95)',
-                        backdropFilter: 'blur(25px) saturate(180%)',
+                        bgcolor: '#161412',
+                        backdropFilter: 'none',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
+                        boxShadow: '0 40px 80px -20px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.05)',
                         borderRadius: '24px',
                         backgroundImage: 'none',
                         maxWidth: '400px',

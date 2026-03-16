@@ -573,15 +573,26 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         sx={{ 
           bgcolor: '#161412',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.02)'
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.02)',
+          backgroundImage: 'none'
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 'lg', mx: 'auto', width: '100%' }}>
+        <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 'lg', mx: 'auto', width: '100%', minHeight: '88px' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Image src="/logo/kylrixnote.png" alt="Kylrix Note" width={32} height={32} style={{ borderRadius: '8px' }} />
-            <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', fontFamily: 'var(--font-clash)', color: 'white' }}>
-              Kylrix Note
-            </Typography>
+            <Logo 
+              app="note" 
+              size={40} 
+              variant="full"
+              sx={{ 
+                cursor: 'pointer', 
+                '&:hover': { opacity: 0.8 },
+                fontFamily: 'var(--font-clash)',
+                fontWeight: 900,
+                letterSpacing: '-0.04em'
+              }}
+              component={Link}
+              href="/"
+            />
           </Box>
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}>
             <Button component={Link} href="/" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, textTransform: 'none' }}>Home</Button>
