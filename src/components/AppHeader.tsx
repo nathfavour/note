@@ -28,7 +28,8 @@ import {
   Download,
   Sparkles,
   Bell,
-  
+  Sun,
+  Moon,
   
   Clock,
   Maximize2,
@@ -52,6 +53,7 @@ import { AICommandModal } from '@/components/ai/AICommandModal';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 import Logo from '@/components/common/Logo';
 import { getEcosystemUrl } from '@/constants/ecosystem';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface AppHeaderProps {
   className?: string;
@@ -59,6 +61,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const { allNotifications: islandHistory } = useIsland();
   const { } = useOverlay();
@@ -174,6 +177,28 @@ export default function AppHeader({ className }: AppHeaderProps) {
 
         {/* Right: Actions */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+          <Tooltip title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            <IconButton 
+              onClick={toggleTheme}
+              sx={{ 
+                color: 'text.secondary',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '12px',
+                width: 44,
+                height: 44,
+                '&:hover': { 
+                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                  borderColor: 'primary.main',
+                  boxShadow: (theme) => `0 0 15px ${alpha(theme.palette.primary.main, 0.1)}` 
+                }
+              }}
+            >
+              {theme === 'dark' ? <Sun size={20} strokeWidth={1.5} /> : <Moon size={20} strokeWidth={1.5} />}
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title="Notifications">
             <IconButton 
               onClick={toggleNotifications}

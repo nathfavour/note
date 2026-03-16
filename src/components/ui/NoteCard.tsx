@@ -291,17 +291,17 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
     ...(isPro ? [
       {
         label: 'AI Summarize',
-        icon: <SummarizeIcon sx={{ fontSize: 18, color: '#6366F1' }} />,
+        icon: <SummarizeIcon sx={{ fontSize: 18, color: 'primary.main' }} />,
         onClick: () => { handleAIAction('summarize'); }
       },
       {
         label: 'AI Fix Grammar',
-        icon: <GrammarIcon sx={{ fontSize: 18, color: '#6366F1' }} />,
+        icon: <GrammarIcon sx={{ fontSize: 18, color: 'primary.main' }} />,
         onClick: () => { handleAIAction('grammar'); }
       },
       {
         label: 'Convert To Todo',
-        icon: <TodoIcon sx={{ fontSize: 18, color: '#6366F1' }} />,
+        icon: <TodoIcon sx={{ fontSize: 18, color: 'primary.main' }} />,
         onClick: () => { handleCreateTodo(); }
       }
     ] : []),
@@ -340,15 +340,15 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
           cursor: 'pointer',
           position: 'relative',
           overflow: 'hidden',
-          bgcolor: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.8)',
+          border: '1.5px solid',
+          borderColor: 'divider',
           borderRadius: '24px',
           backdropFilter: 'blur(25px) saturate(180%)',
           // Hybrid 3D design: App Secondary (Pink) Internal Glow + Ecosystem Primary (Indigo) Hover State
-          boxShadow: (theme) => `
-            0 10px 30px rgba(0, 0, 0, 0.5),
-            inset 0 1px 1px rgba(236, 72, 153, ${theme.palette.mode === 'dark' ? 0.1 : 0.2})
-          `,
+          boxShadow: (theme) => theme.palette.mode === 'dark' 
+            ? `0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(236, 72, 153, 0.1)`
+            : `0 10px 30px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9)`,
           transform: 'perspective(1200px) rotateX(0deg)',
           transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
           // Brand gradient overlay (Pink to Indigo)
@@ -356,19 +356,19 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
             content: '""',
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%)',
+            background: (theme) => theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(236, 72, 153, 0.02) 0%, rgba(99, 102, 241, 0.02) 100%)',
             opacity: 1,
             zIndex: 0,
           },
           '&:hover': {
             transform: 'perspective(1200px) rotateX(4deg) translateY(-8px)',
             borderColor: 'secondary.main', 
-            bgcolor: 'rgba(255, 255, 255, 0.06)',
-            boxShadow: (theme) => `
-              0 30px 60px -15px rgba(0, 0, 0, 0.7),
-              0 0 25px rgba(99, 102, 241, 0.2),
-              inset 0 1px 1px rgba(236, 72, 153, 0.2)
-            `,
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 1)',
+            boxShadow: (theme) => theme.palette.mode === 'dark'
+              ? `0 30px 60px -15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.2), inset 0 1px 1px rgba(236, 72, 153, 0.2)`
+              : `0 30px 60px -15px rgba(15, 23, 42, 0.15), 0 0 25px rgba(99, 102, 241, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1)`,
             '&::after': {
               opacity: 1,
             }
@@ -417,11 +417,13 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
                     onClick={handleCopyShareLink}
                     sx={{
                       p: 0.5,
-                      color: 'rgba(255, 255, 255, 0.4)',
+                      color: 'text.secondary',
+                      opacity: 0.6,
                       borderRadius: '8px',
                       '&:hover': {
                         color: 'primary.main',
-                        bgcolor: 'rgba(99, 102, 241, 0.05)'
+                        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                        opacity: 1
                       }
                     }}
                   >
@@ -433,11 +435,13 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
                   onClick={handlePinToggle}
                   sx={{ 
                     p: 0.5,
-                    color: pinned ? 'primary.main' : 'rgba(255, 255, 255, 0.2)',
+                    color: pinned ? 'primary.main' : 'text.secondary',
+                    opacity: pinned ? 1 : 0.4,
                     borderRadius: '8px',
                     '&:hover': {
                       color: 'primary.main',
-                      bgcolor: 'rgba(99, 102, 241, 0.05)'
+                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                      opacity: 1
                     }
                   }}
                 >
@@ -473,9 +477,10 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
             <Box sx={{ 
               flex: 1, 
               borderRadius: '16px', 
-              border: '1px solid rgba(255,255,255,0.05)', 
+              border: '1.5px solid',
+              borderColor: 'divider',
               overflow: 'hidden', 
-              bgcolor: 'rgba(255, 255, 255, 0.02)',
+              bgcolor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.3 : 0.6),
               position: 'relative'
             }}>
               <canvas
@@ -489,9 +494,9 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
             <Typography 
               variant="body2" 
               sx={{ 
-                color: 'rgba(255, 255, 255, 0.6)',
+                color: 'text.secondary',
                 fontFamily: 'var(--font-satoshi)',
-                fontSize: '0.8rem',
+                fontSize: '0.85rem',
                 lineHeight: 1.6,
                 fontWeight: 500,
                 display: '-webkit-box',
@@ -518,15 +523,16 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
                 label={tag}
                 size="small"
                 sx={{ 
-                  height: 20, 
-                  fontSize: '9px', 
-                  fontWeight: 700,
+                  height: 22, 
+                  fontSize: '10px', 
+                  fontWeight: 800,
                   fontFamily: 'var(--font-jetbrains-mono)',
                   textTransform: 'uppercase',
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  color: 'rgba(255, 255, 255, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: '6px',
+                  bgcolor: (theme) => alpha(theme.palette.text.primary, 0.03),
+                  color: 'text.secondary',
+                  border: '1.5px solid',
+                  borderColor: 'divider',
+                  borderRadius: '8px',
                   '& .MuiChip-label': { px: 1 }
                 }}
               />

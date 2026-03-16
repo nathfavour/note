@@ -19,13 +19,17 @@ import { SudoProvider } from "@/contexts/SudoContext";
 import { NotesProvider } from "@/contexts/NotesContext";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
-import { darkTheme } from "@/theme/theme";
+import { darkTheme, lightTheme } from "@/theme/theme";
 import { EcosystemProvider } from "@/contexts/EcosystemContext";
 import { SubscriptionProvider } from "@/context/subscription/SubscriptionContext";
+import { useTheme } from "@/components/ThemeProvider";
 
 function MuiThemeWrapper({ children }: { children: React.ReactNode }) {
+    const { theme } = useTheme();
+    const muiTheme = theme === 'dark' ? darkTheme : lightTheme;
+    
     return (
-        <MuiThemeProvider theme={darkTheme}>
+        <MuiThemeProvider theme={muiTheme}>
             <CssBaseline />
             {children}
         </MuiThemeProvider>
