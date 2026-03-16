@@ -41,12 +41,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SubscriptionProvider>
             <EcosystemProvider>
                 <AppThemeProvider>
-                    <MuiThemeWrapper>
-                        <AuthProvider>
-                            <NotificationProvider>
-                                <KernelProvider>
-                                    <SudoProvider>
-                                        <NotesProvider>
+                    <AuthProvider>
+                        <NotificationProvider>
+                            <KernelProvider>
+                                <SudoProvider>
+                                    <NotesProvider>
+                                        <MuiThemeWrapper>
                                             <IslandProvider>
                                                 <ToastProvider>
                                                     <OverlayProvider>
@@ -65,12 +65,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                                     </OverlayProvider>
                                                 </ToastProvider>
                                             </IslandProvider>
-                                        </NotesProvider>
-                                    </SudoProvider>
-                                </KernelProvider>
-                            </NotificationProvider>
-                        </AuthProvider>
-                    </MuiThemeWrapper>
+                                        </MuiThemeWrapper>
+                                    </NotesProvider>
+                                </SudoProvider>
+                            </KernelProvider>
+                        </NotificationProvider>
+                    </AuthProvider>
                 </AppThemeProvider>
             </EcosystemProvider>
         </SubscriptionProvider>

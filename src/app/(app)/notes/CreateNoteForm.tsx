@@ -52,6 +52,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(Boolean(initialContent?.title));
+  const [showTitleInput, setShowTitleInput] = useState(Boolean(initialContent?.title));
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -276,6 +277,131 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
         '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '10px' }
       }}>
         <Stack sx={{ gap: { xs: 3, sm: 4 } }}>
+          {/* Title Input (Animated) */}
+          <Box sx={{ 
+            opacity: showTitleInput ? 1 : 0, 
+            maxHeight: showTitleInput ? '200px' : '0px',
+            transform: showTitleInput ? 'translateY(0)' : 'translateY(-10px)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            visibility: showTitleInput ? 'visible' : 'hidden',
+            pointerEvents: showTitleInput ? 'all' : 'none',
+            mb: showTitleInput ? 0 : -4
+          }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 800,
+                color: 'secondary.main',
+                mb: 1.5,
+                fontSize: '0.7rem',
+                fontFamily: 'var(--font-jetbrains-mono)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em'
+              }}
+            >
+              Designation
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Title your odyssey..."
+              value={title}
+              onChange={ (e) => handleTitleChange(e.target.value)}
+              variant="outlined"
+              inputProps={{ maxLength: 255 }}
+              autoComplete="off"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: '16px',
+                  color: 'white',
+                  fontFamily: 'var(--font-satoshi)',
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  '& fieldset': {
+                    borderColor: 'rgba(236, 72, 153, 0.1)',
+                    borderWidth: '1.5px'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(236, 72, 153, 0.3)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'secondary.main',
+                    borderWidth: '2px',
+                    boxShadow: '0 0 20px rgba(236, 72, 153, 0.15)'
+                  }
+                }
+              }}
+            />
+          </Box>
+
+          {/* Manifestation Input */}
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 800,
+                color: 'rgba(255, 255, 255, 0.5)',
+                mb: 1.5,
+                fontSize: '0.75rem',
+                fontFamily: 'var(--font-jetbrains-mono)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em'
+              }}
+            >
+              Manifestation
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={isMobile ? 5 : 8}
+              placeholder="Transcribe your consciousness..."
+              value={content}
+              onChange={ (e) => {
+                setContent(e.target.value);
+                if (e.target.value.length > 5 && !showTitleInput) {
+                  setShowTitleInput(true);
+                } else if (e.target.value.length <= 5 && showTitleInput && !isTitleManuallyEdited) {
+                  setShowTitleInput(false);
+                }
+              }}
+              variant="outlined"
+              inputProps={{ maxLength: 65000 }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '20px',
+                  color: 'white',
+                  fontFamily: 'var(--font-satoshi)',
+                  lineHeight: 1.6,
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: '1.5px'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.15)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'primary.main',
+                    borderWidth: '2px',
+                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.15)'
+                  }
+                }
+              }}
+            />
+            <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  textAlign: 'right',
+                  mt: 0.5,
+                  color: 'rgba(255, 255, 255, 0.3)',
+                  fontWeight: 600
+                }}
+              >
+                {content.length.toLocaleString()} / 65,000
+              </Typography>
+            </Box>
+
           {/* Tags Section */}
           <Box>
             <Typography
