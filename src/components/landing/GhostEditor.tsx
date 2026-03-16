@@ -24,7 +24,6 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    Slider,
     FormControl,
     FormLabel,
     RadioGroup,

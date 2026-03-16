@@ -53,7 +53,7 @@ interface EcosystemPortalProps {
 export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClose }: EcosystemPortalProps) {
     const [internalOpen, setInternalOpen] = useState(false);
     const [search, setSearch] = useState('');
-    const { launchWindow } = useKernel();
+    const { } = useKernel();
 
     const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
     const fallbackOnClose = useCallback(() => setInternalOpen(false), []);

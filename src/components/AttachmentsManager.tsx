@@ -49,8 +49,8 @@ export default function AttachmentsManager({ noteId, onAttachmentAdded }: Attach
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <UploadIcon sx={{ fontSize: 18, color: '#6366F1' }} /> Attachments
+        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 1, fontFamily: 'var(--font-clash)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <UploadIcon sx={{ fontSize: 18, color: '#EC4899' }} /> Attachments
         </Typography>
         
         <input
@@ -66,10 +66,11 @@ export default function AttachmentsManager({ noteId, onAttachmentAdded }: Attach
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
           sx={{
-            color: '#6366F1',
-            fontWeight: 700,
+            color: '#EC4899',
+            fontWeight: 800,
             textTransform: 'none',
-            '&:hover': { bgcolor: alpha('#6366F1', 0.1) }
+            fontFamily: 'var(--font-satoshi)',
+            '&:hover': { bgcolor: alpha('#EC4899', 0.1) }
           }}
         >
           {isUploading ? 'Uploading...' : 'Add Files'}
@@ -79,10 +80,10 @@ export default function AttachmentsManager({ noteId, onAttachmentAdded }: Attach
       {isUploading && (
         <Box sx={{ mt: 1, mb: 2 }}>
           <LinearProgress sx={{ 
-            height: 6, 
-            borderRadius: 3, 
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
-            '& .MuiLinearProgress-bar': { bgcolor: '#6366F1' }
+            height: 4, 
+            borderRadius: 2, 
+            bgcolor: '#0A0908',
+            '& .MuiLinearProgress-bar': { bgcolor: '#EC4899' }
           }} />
         </Box>
       )}
@@ -91,16 +92,16 @@ export default function AttachmentsManager({ noteId, onAttachmentAdded }: Attach
         <Box sx={{ 
           mt: 1, 
           p: 1.5, 
-          bgcolor: alpha('#ff4d4d', 0.1), 
-          borderRadius: '8px',
+          bgcolor: alpha('#ff4d4d', 0.05), 
+          borderRadius: '12px',
           border: '1px solid',
-          borderColor: alpha('#ff4d4d', 0.2),
+          borderColor: alpha('#ff4d4d', 0.1),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <Typography variant="caption" sx={{ color: '#ff4d4d' }}>{error}</Typography>
-          <IconButton size="small" onClick={() => setError(null)} sx={{ color: '#ff4d4d' }}>
+          <Typography variant="caption" sx={{ color: '#ff4d4d', fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>{error}</Typography>
+          <IconButton size="small" onClick={() => setError(null)} sx={{ color: '#ff4d4d', '&:hover': { bgcolor: alpha('#ff4d4d', 0.1) } }}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>

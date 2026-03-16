@@ -18,12 +18,14 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: '#161412',
+          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.4)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.02)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.02)',
           borderRadius: '24px',
           backgroundImage: 'none',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.8)',
         }
       }}
     >
@@ -32,8 +34,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           variant="h6" 
           sx={{ 
             fontWeight: 900, 
-            fontFamily: '"Space Grotesk", sans-serif',
-            color: '#6366F1',
+            fontFamily: 'var(--font-clash)',
+            color: '#EC4899',
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}
@@ -47,8 +49,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             color: 'rgba(255, 255, 255, 0.5)',
             transition: 'all 0.2s ease',
             '&:hover': { 
-              color: '#6366F1',
-              bgcolor: 'rgba(99, 102, 241, 0.1)'
+              color: '#EC4899',
+              bgcolor: alpha('#EC4899', 0.1)
             }
           }}
         >
@@ -56,7 +58,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ p: 3, pt: 1 }}>
-        <Box sx={{ color: '#FFFFFF' }}>
+        <Box sx={{ color: '#FFFFFF', fontFamily: 'var(--font-satoshi)' }}>
           {children}
         </Box>
       </DialogContent>

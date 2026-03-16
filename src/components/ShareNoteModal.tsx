@@ -306,25 +306,27 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: 'rgba(15, 13, 12, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: '#161412',
+          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.4)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.02)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.02)',
           borderRadius: '24px',
           backgroundImage: 'none',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.8)'
         }
       }}
     >
       <DialogTitle sx={{ p: 3, pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>
+          <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-0.02em', fontFamily: 'var(--font-clash)' }}>
             Share Note
           </Typography>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
             {noteTitle}
           </Typography>
         </Box>
-        <IconButton onClick={() => onOpenChange(false)} sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+        <IconButton onClick={() => onOpenChange(false)} sx={{ color: 'rgba(255, 255, 255, 0.4)', '&:hover': { color: '#EC4899', bgcolor: alpha('#EC4899', 0.1) } }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -336,11 +338,12 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
             sx={{
               mb: 3,
               borderRadius: '12px',
-              bgcolor: errorMsg ? alpha('#FF4D4D', 0.1) : alpha('#00FF00', 0.1),
-              color: errorMsg ? '#FF4D4D' : '#00FF00',
+              bgcolor: errorMsg ? alpha('#FF4D4D', 0.1) : alpha('#EC4899', 0.1),
+              color: errorMsg ? '#FF4D4D' : '#EC4899',
               border: '1px solid',
-              borderColor: errorMsg ? alpha('#FF4D4D', 0.2) : alpha('#00FF00', 0.2),
-              '& .MuiAlert-icon': { color: 'inherit' }
+              borderColor: errorMsg ? alpha('#FF4D4D', 0.2) : alpha('#EC4899', 0.2),
+              '& .MuiAlert-icon': { color: 'inherit' },
+              fontFamily: 'var(--font-satoshi)'
             }}
           >
             {errorMsg || successMsg}
@@ -348,7 +351,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
         )}
 
         <Box sx={{ mb: 4 }}>
-          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5, fontFamily: 'var(--font-clash)' }}>
             Invite Collaborators
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
@@ -366,17 +369,18 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                       </Box>
                     ),
                     endAdornment: isSearching ? (
-                      <CircularProgress size={16} sx={{ color: '#6366F1' }} />
+                      <CircularProgress size={16} sx={{ color: '#EC4899' }} />
                     ) : null
                   }
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '12px',
-                    bgcolor: 'rgba(255, 255, 255, 0.03)',
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                    '&.Mui-focused fieldset': { borderColor: '#6366F1' }
+                    bgcolor: '#0A0908',
+                    fontFamily: 'var(--font-satoshi)',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.05)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&.Mui-focused fieldset': { borderColor: '#EC4899' }
                   },
                   '& .MuiInputBase-input': { color: 'white' }
                 }}
@@ -392,12 +396,12 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                     right: 0,
                     zIndex: 10,
                     mt: 1,
-                    bgcolor: 'rgba(20, 20, 20, 0.98)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    bgcolor: '#1C1A18',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
                     borderRadius: '12px',
                     maxHeight: 200,
-                    overflow: 'auto'
+                    overflow: 'auto',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.4)'
                   }}
                 >
                   <List disablePadding>
@@ -411,23 +415,23 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                           textAlign: 'left',
                           border: 'none',
                           bgcolor: 'transparent',
-                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                          '&:hover': { bgcolor: alpha('#EC4899', 0.05) },
                           p: 1.5
                         }}
                       >
                         <ListItemAvatar>
                           <Avatar
                             src={resultPreviews[user.id] || undefined}
-                            sx={{ width: 32, height: 32, bgcolor: '#6366F1', color: '#000', fontWeight: 800, fontSize: '0.75rem' }}
+                            sx={{ width: 32, height: 32, bgcolor: '#EC4899', color: '#000', fontWeight: 800, fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains)' }}
                           >
                             {(user.name || user.email || '?').charAt(0).toUpperCase()}
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.name}
-                          primaryTypographyProps={{ variant: 'body2', fontWeight: 700, color: 'white' }}
+                          primaryTypographyProps={{ variant: 'body2', fontWeight: 700, color: 'white', fontFamily: 'var(--font-satoshi)' }}
                           secondary={user.username ? `@${user.username}` : user.email}
-                          secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)' }}
+                          secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-jetbrains)' }}
                         />
                       </ListItem>
                     ))}
@@ -445,15 +449,15 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                     right: 0,
                     zIndex: 10,
                     mt: 1,
-                    bgcolor: 'rgba(20, 20, 20, 0.98)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    bgcolor: '#1C1A18',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
                     borderRadius: '12px',
                     p: 2,
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.4)'
                   }}
                 >
-                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)' }}>
                     No users found matching &quot;@{query}&quot;
                   </Typography>
                 </Paper>
@@ -466,16 +470,18 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                 onChange={ (e) => setPermission(e.target.value as 'read' | 'write' | 'admin')}
                 sx={{
                   borderRadius: '12px',
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  bgcolor: '#0A0908',
                   color: 'white',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1' }
+                  fontFamily: 'var(--font-satoshi)',
+                  fontWeight: 700,
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.05)' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#EC4899' }
                 }}
               >
-                <MenuItem value="read">Read Only</MenuItem>
-                <MenuItem value="write">Read & Write</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="read" sx={{ fontFamily: 'var(--font-satoshi)' }}>Read Only</MenuItem>
+                <MenuItem value="write" sx={{ fontFamily: 'var(--font-satoshi)' }}>Read & Write</MenuItem>
+                <MenuItem value="admin" sx={{ fontFamily: 'var(--font-satoshi)' }}>Admin</MenuItem>
               </Select>
             </FormControl>
 
@@ -485,31 +491,32 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
               disabled={shareDisabled}
               sx={{
                 borderRadius: '12px',
-                bgcolor: '#6366F1',
+                bgcolor: '#EC4899',
                 color: '#000',
-                fontWeight: 800,
+                fontWeight: 900,
+                fontFamily: 'var(--font-clash)',
                 px: 3,
-                '&:hover': { bgcolor: '#00D1DA' },
-                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.2)' }
+                '&:hover': { bgcolor: '#F472B6' },
+                '&.Mui-disabled': { bgcolor: '#1C1A18', color: 'rgba(255, 255, 255, 0.2)' }
               }}
             >
-              {isLoading ? <CircularProgress size={20} color="inherit" /> : 'Share'}
+              {isLoading ? <CircularProgress size={20} color="inherit" /> : 'Invite'}
             </Button>
           </Box>
         </Box>
 
         <Box>
-          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 2 }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 2, fontFamily: 'var(--font-clash)' }}>
             Collaborators
           </Typography>
 
           {isLoadingUsers ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={24} sx={{ color: '#6366F1' }} />
+              <CircularProgress size={24} sx={{ color: '#EC4899' }} />
             </Box>
           ) : sharedUsers.length === 0 ? (
-            <Box sx={{ py: 4, textAlign: 'center', bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 600 }}>
+            <Box sx={{ py: 4, textAlign: 'center', bgcolor: '#0A0908', borderRadius: '16px', border: '1px dashed rgba(255, 255, 255, 0.05)' }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }}>
                 No collaborators yet
               </Typography>
             </Box>
@@ -519,26 +526,27 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                 <ListItem
                   key={user.id + (user.collaborationId || '')}
                   sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.02)',
+                    bgcolor: '#1C1A18',
                     borderRadius: '16px',
                     mb: 1.5,
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.03)',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.2)',
                     p: 1.5
                   }}
                 >
                   <ListItemAvatar>
                     <Avatar
                       src={sharedPreviews[user.id] || undefined}
-                      sx={{ width: 40, height: 40, bgcolor: alpha('#6366F1', 0.1), color: '#6366F1', fontWeight: 800 }}
+                      sx={{ width: 40, height: 40, bgcolor: alpha('#EC4899', 0.1), color: '#EC4899', fontWeight: 800, fontFamily: 'var(--font-jetbrains)' }}
                     >
                       {user.name ? user.name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={user.name || user.email}
-                    primaryTypographyProps={{ variant: 'body2', fontWeight: 800, color: 'white' }}
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: 800, color: 'white', fontFamily: 'var(--font-satoshi)' }}
                     secondary={user.name ? user.email : null}
-                    secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)' }}
+                    secondaryTypographyProps={{ variant: 'caption', color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-jetbrains)' }}
                   />
                   <ListItemSecondaryAction sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Select
@@ -549,27 +557,29 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                       sx={{
                         height: 32,
                         fontSize: '0.75rem',
-                        fontWeight: 800,
-                        color: '#6366F1',
+                        fontWeight: 900,
+                        fontFamily: 'var(--font-clash)',
+                        color: '#EC4899',
                         '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                        bgcolor: alpha('#6366F1', 0.05),
-                        borderRadius: '8px'
+                        bgcolor: alpha('#EC4899', 0.05),
+                        borderRadius: '8px',
+                        '&:hover': { bgcolor: alpha('#EC4899', 0.1) }
                       }}
                     >
-                      <MenuItem value="read">Read</MenuItem>
-                      <MenuItem value="write">Write</MenuItem>
-                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="read" sx={{ fontFamily: 'var(--font-satoshi)', fontSize: '0.75rem' }}>Read</MenuItem>
+                      <MenuItem value="write" sx={{ fontFamily: 'var(--font-satoshi)', fontSize: '0.75rem' }}>Write</MenuItem>
+                      <MenuItem value="admin" sx={{ fontFamily: 'var(--font-satoshi)', fontSize: '0.75rem' }}>Admin</MenuItem>
                     </Select>
 
                     {updatingCollab === user.collaborationId ? (
-                      <CircularProgress size={16} sx={{ color: '#6366F1' }} />
+                      <CircularProgress size={16} sx={{ color: '#EC4899' }} />
                     ) : (
                       <Tooltip title="Remove access">
                         <IconButton
                           size="small"
                           onClick={() => handleRemoveSharing(user.id, user.email)}
                           disabled={user.collaborationId === 'pending'}
-                          sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#FF4D4D' } }}
+                          sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#FF4D4D', bgcolor: alpha('#FF4D4D', 0.1) } }}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -589,6 +599,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
           sx={{
             color: 'rgba(255, 255, 255, 0.4)',
             fontWeight: 800,
+            fontFamily: 'var(--font-satoshi)',
             '&:hover': { color: 'white', bgcolor: 'rgba(255, 255, 255, 0.05)' }
           }}
         >
