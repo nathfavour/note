@@ -173,12 +173,12 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               sx={{
                 width: { xs: 40, sm: 48 },
                 height: { xs: 40, sm: 48 },
-                background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', // Ecosystem Primary
                 borderRadius: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.2)'
+                boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)'
               }}
             >
               {format === 'doodle' ? (
@@ -188,15 +188,15 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               )}
             </Box>
             <Box>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 900,
-                  fontSize: { xs: '1.15rem', sm: '1.5rem' },
-                  fontFamily: 'var(--font-clash-display)',
-                  letterSpacing: '-0.04em',
-                  color: 'white',
-                  lineHeight: 1.2
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 800, 
+                  fontFamily: 'var(--font-clash-display)', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '0.15em', 
+                  fontSize: '0.75rem', 
+                  color: 'secondary.main',
                 }}
               >
                 {format === 'doodle' ? 'Create Doodle' : 'New Thought'}
@@ -237,9 +237,9 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                   py: 0.5,
                   color: 'rgba(255, 255, 255, 0.5)',
                   '&.Mui-selected': {
-                    bgcolor: '#6366F1',
+                    bgcolor: 'primary.main',
                     color: 'black',
-                    '&:hover': { bgcolor: '#00E5EE' }
+                    '&:hover': { bgcolor: 'primary.dark' }
                   }
                 }
               }}
@@ -276,51 +276,93 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
         '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '10px' }
       }}>
         <Stack sx={{ gap: { xs: 3, sm: 4 } }}>
-          {/* Title Input */}
+          {/* Tags Section */}
           <Box>
             <Typography
               variant="subtitle2"
               sx={{
-                fontWeight: 800,
-                color: 'rgba(255, 255, 255, 0.5)',
-                mb: 1,
-                fontSize: '0.75rem',
-                fontFamily: 'var(--font-jetbrains-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em'
+                fontWeight: 700,
+                color: 'rgba(255, 255, 255, 0.9)',
+                mb: 1.5,
+                fontFamily: 'var(--font-space-grotesk)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
               }}
             >
-              Designation
+              <TagIcon sx={{ fontSize: 18 }} />
+              Tags
             </Typography>
-            <TextField
-              fullWidth
-              placeholder="Title your odyssey..."
-              value={title}
-              onChange={ (e) => handleTitleChange(e.target.value)}
-              variant="outlined"
-              inputProps={{ maxLength: 255 }}
-              autoComplete="off"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '16px',
-                  color: 'white',
-                  fontFamily: 'var(--font-satoshi)',
-                  fontWeight: 700,
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.08)',
-                    borderWidth: '1.5px'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#6366F1',
-                    borderWidth: '2px'
+            
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Add a tag..."
+                value={currentTag}
+                onChange={ (e) => setCurrentTag(e.target.value)}
+                onKeyPress={handleKeyPress}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                      borderWidth: '2px'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#EC4899'
+                    }
                   }
-                }
-              }}
-            />
+                }}
+              />
+              <IconButton
+                onClick={handleAddTag}
+                disabled={!currentTag.trim()}
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'black',
+                  borderRadius: '12px',
+                  width: 40,
+                  height: 40,
+                  '&:hover': { bgcolor: 'primary.dark' },
+                  '&.Mui-disabled': {
+                    bgcolor: 'rgba(99, 102, 241, 0.3)',
+                    color: 'rgba(0, 0, 0, 0.3)'
+                  }
+                }}
+              >
+                <PlusIcon />
+              </IconButton>
+            </Stack>
+
+            {tags.length > 0 && (
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {tags.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onDelete={() => handleRemoveTag(tag)}
+                    deleteIcon={<CloseIcon sx={{ fontSize: '12px !important' }} />}
+                    sx={{
+                      bgcolor: 'rgba(236, 72, 153, 0.1)',
+                      color: '#EC4899',
+                      border: '1px solid rgba(236, 72, 153, 0.2)',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      '& .MuiChip-deleteIcon': {
+                        color: '#EC4899',
+                        '&:hover': { color: 'white' }
+                      }
+                    }}
+                  />
+                ))}
+              </Stack>
+            )}
           </Box>
 
           {/* Visibility Toggle */}
@@ -361,10 +403,10 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                   fontWeight: 700,
                   fontFamily: 'var(--font-jetbrains-mono)',
                   '&.Mui-selected': {
-                    bgcolor: isPublic ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-                    color: isPublic ? '#6366F1' : 'white',
+                    bgcolor: isPublic ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                    color: isPublic ? '#EC4899' : 'white',
                     '&:hover': {
-                      bgcolor: isPublic ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.15)',
+                      bgcolor: isPublic ? 'rgba(236, 72, 153, 0.2)' : 'rgba(255, 255, 255, 0.15)',
                     }
                   }
                 }
@@ -373,293 +415,6 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               <ToggleButton value={false}>Private</ToggleButton>
               <ToggleButton value={true}>Public</ToggleButton>
             </ToggleButtonGroup>
-          </Box>
-
-          {/* Content - Text or Doodle */}
-          {format === 'text' ? (
-            <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 800,
-                color: 'rgba(255, 255, 255, 0.5)',
-                mb: 1.5,
-                fontSize: '0.75rem',
-                fontFamily: 'var(--font-jetbrains-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em'
-              }}
-            >
-              Manifestation
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={isMobile ? 5 : 8}
-              placeholder="Transcribe your consciousness..."
-              value={content}
-              onChange={ (e) => setContent(e.target.value)}
-              variant="outlined"
-              inputProps={{ maxLength: 65000 }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '20px',
-                  color: 'white',
-                  fontFamily: 'var(--font-satoshi)',
-                  lineHeight: 1.6,
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.08)',
-                    borderWidth: '1.5px'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#6366F1',
-                    borderWidth: '2px'
-                  }
-                }
-              }}
-            />
-              <Typography
-                variant="caption"
-                sx={{
-                  display: 'block',
-                  textAlign: 'right',
-                  mt: 0.5,
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  fontWeight: 600
-                }}
-              >
-                {content.length.toLocaleString()} / 65,000
-              </Typography>
-            </Box>
-          ) : (
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 700,
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  mb: 1,
-                  fontFamily: 'var(--font-space-grotesk)'
-                }}
-              >
-                Doodle
-              </Typography>
-              {content ? (
-                <Box
-                  sx={{
-                    position: 'relative',
-                    width: '100%',
-                    height: 200,
-                    borderRadius: '20px',
-                    border: '2px solid rgba(255, 255, 255, 0.1)',
-                    bgcolor: 'rgba(255, 255, 255, 0.03)',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <canvas 
-                    style={{ width: '100%', height: '100%' }}
-                    ref={(canvas) => {
-                      if (!canvas || !content) return;
-                      try {
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) return;
-                        const strokes = JSON.parse(content);
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        strokes.forEach((stroke: any) => {
-                          if (stroke.points.length < 2) return;
-                          ctx.strokeStyle = stroke.color;
-                          ctx.lineWidth = stroke.size;
-                          ctx.lineCap = 'round';
-                          ctx.lineJoin = 'round';
-                          ctx.beginPath();
-                          ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
-                          for (let i = 1; i < stroke.points.length; i++) {
-                            ctx.lineTo(stroke.points[i][0], stroke.points[i][1]);
-                          }
-                          ctx.stroke();
-                        });
-                      } catch {
-                        // Invalid doodle data
-                      }
-                    }}
-                    width={800}
-                    height={600}
-                  />
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={() => setShowDoodleEditor(true)}
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      bgcolor: 'rgba(0, 0, 0, 0)',
-                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.2)' },
-                      transition: 'background-color 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        bgcolor: '#6366F1',
-                        color: 'black',
-                        px: 2,
-                        py: 1,
-                        borderRadius: '10px',
-                        fontWeight: 700,
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      Edit
-                    </Box>
-                  </Box>
-                </Box>
-              ) : (
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={() => setShowDoodleEditor(true)}
-                  sx={{
-                    width: '100%',
-                    height: 200,
-                    border: '2px dashed rgba(255, 255, 255, 0.1)',
-                    borderRadius: '20px',
-                    bgcolor: 'rgba(255, 255, 255, 0.02)',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      borderColor: '#6366F1'
-                    },
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 2,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      bgcolor: 'rgba(99, 102, 241, 0.1)',
-                      borderRadius: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <PencilIcon sx={{ fontSize: 24, color: '#6366F1' }} />
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'white' }}>
-                      Start Drawing
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                      Click to open doodle editor
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {/* Tags Section */}
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 700,
-                color: 'rgba(255, 255, 255, 0.9)',
-                mb: 1.5,
-                fontFamily: 'var(--font-space-grotesk)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <TagIcon sx={{ fontSize: 18 }} />
-              Tags
-            </Typography>
-            
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Add a tag..."
-                value={currentTag}
-                onChange={ (e) => setCurrentTag(e.target.value)}
-                onKeyPress={handleKeyPress}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: '12px',
-                    color: 'white',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                      borderWidth: '2px'
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)'
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#6366F1'
-                    }
-                  }
-                }}
-              />
-              <IconButton
-                onClick={handleAddTag}
-                disabled={!currentTag.trim()}
-                sx={{
-                  bgcolor: '#6366F1',
-                  color: 'black',
-                  borderRadius: '12px',
-                  width: 40,
-                  height: 40,
-                  '&:hover': { bgcolor: '#00E5EE' },
-                  '&.Mui-disabled': {
-                    bgcolor: 'rgba(99, 102, 241, 0.3)',
-                    color: 'rgba(0, 0, 0, 0.3)'
-                  }
-                }}
-              >
-                <PlusIcon />
-              </IconButton>
-            </Stack>
-
-            {tags.length > 0 && (
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {tags.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    onDelete={() => handleRemoveTag(tag)}
-                    deleteIcon={<CloseIcon sx={{ fontSize: '12px !important' }} />}
-                    sx={{
-                      bgcolor: 'rgba(99, 102, 241, 0.1)',
-                      color: '#6366F1',
-                      border: '1px solid rgba(99, 102, 241, 0.2)',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      '& .MuiChip-deleteIcon': {
-                        color: '#6366F1',
-                        '&:hover': { color: 'white' }
-                      }
-                    }}
-                  />
-                ))}
-              </Stack>
-            )}
           </Box>
         </Stack>
       </Box>
@@ -708,16 +463,16 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
             px: { xs: 4, sm: 6 }, 
             py: { xs: 1.5, sm: 2 },
             borderRadius: '16px',
-            bgcolor: '#6366F1',
-            color: 'black',
+            bgcolor: 'secondary.main', // App Secondary
+            color: 'white',
             fontWeight: 900,
             fontFamily: 'var(--font-satoshi)',
             fontSize: { xs: '0.9rem', sm: '1rem' },
-            boxShadow: '0 8px 32px rgba(99, 102, 241, 0.25)',
+            boxShadow: '0 8px 32px rgba(236, 72, 153, 0.25)',
             transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
             '&:hover': { 
-              bgcolor: '#00D1DA',
-              boxShadow: '0 12px 40px rgba(99, 102, 241, 0.4)',
+              bgcolor: 'secondary.dark',
+              boxShadow: '0 12px 40px rgba(236, 72, 153, 0.4)',
               transform: 'translateY(-2px)'
             },
             '&:active': {
@@ -725,8 +480,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               filter: 'brightness(0.9)'
             },
             '&.Mui-disabled': {
-              bgcolor: 'rgba(99, 102, 241, 0.1)',
-              color: 'rgba(0, 0, 0, 0.3)',
+              bgcolor: 'rgba(236, 72, 153, 0.1)',
+              color: 'rgba(255, 255, 255, 0.3)',
               boxShadow: 'none'
             }
           }}
@@ -737,8 +492,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                 sx={{
                   width: 18,
                   height: 18,
-                  border: '2px solid rgba(0, 0, 0, 0.1)',
-                  borderTopColor: 'black',
+                  border: '2px solid rgba(255, 255, 255, 0.1)',
+                  borderTopColor: 'white',
                   borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                   '@keyframes spin': {

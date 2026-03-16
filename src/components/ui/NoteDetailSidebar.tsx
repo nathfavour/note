@@ -483,8 +483,8 @@ export function NoteDetailSidebar({
         <IconButton
           onClick={onBack || closeSidebar}
           sx={{
-            color: 'rgba(255, 255, 255, 0.5)',
-            '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+            color: theme.palette.text.secondary,
+            '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.1) }
           }}
         >
           <BackIcon />
@@ -500,8 +500,8 @@ export function NoteDetailSidebar({
                 }}
                 sx={{
                   display: { xs: 'none', md: 'inline-flex' },
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.1) }
                 }}
               >
                 <ArrowTopRightOnSquareIcon fontSize="small" />
@@ -524,8 +524,8 @@ export function NoteDetailSidebar({
                 }
               }}
               sx={{
-                color: isPublic ? '#6366F1' : 'rgba(255, 255, 255, 0.5)',
-                '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                color: isPublic ? theme.palette.primary.main : theme.palette.text.secondary,
+                '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.1) }
               }}
             >
               {isPublic ? <LinkIcon fontSize="small" /> : <LockIcon fontSize="small" />}
@@ -537,8 +537,8 @@ export function NoteDetailSidebar({
               <IconButton
                 onClick={handleCopyShareLink}
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.1) }
                 }}
               >
                 <ClipboardDocumentIcon fontSize="small" />
@@ -550,8 +550,8 @@ export function NoteDetailSidebar({
             <IconButton
               onClick={handlePinToggle}
               sx={{
-                color: pinned ? '#6366F1' : 'rgba(255, 255, 255, 0.5)',
-                '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                color: pinned ? theme.palette.secondary.main : theme.palette.text.secondary,
+                '&:hover': { color: theme.palette.secondary.main, bgcolor: alpha(theme.palette.secondary.main, 0.1) }
               }}
             >
               {pinned ? <PinIcon fontSize="small" /> : <PinOutlinedIcon fontSize="small" />}
@@ -563,8 +563,8 @@ export function NoteDetailSidebar({
               <IconButton
                 onClick={() => setShowDeleteConfirm(true)}
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  '&:hover': { color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)' }
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.error.main, bgcolor: alpha(theme.palette.error.main, 0.1) }
                 }}
               >
                 <TrashIcon fontSize="small" />
@@ -578,15 +578,15 @@ export function NoteDetailSidebar({
         ref={titleContainerRef}
         sx={{
           borderRadius: '24px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(255, 255, 255, 0.03)',
+          border: `1px solid ${theme.palette.divider}`,
+          bgcolor: alpha(theme.palette.background.paper, 0.4),
           backdropFilter: 'blur(10px)',
           p: 3,
           transition: 'all 0.3s ease',
           '&:focus-within': {
-            borderColor: '#6366F1',
-            bgcolor: 'rgba(99, 102, 241, 0.05)',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)',
+            borderColor: theme.palette.secondary.main,
+            bgcolor: alpha(theme.palette.secondary.main, 0.05),
+            boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.1)}`,
           }
         }}
       >
@@ -594,16 +594,16 @@ export function NoteDetailSidebar({
           <Typography
             variant="caption"
             sx={{
-              color: '#6366F1',
+              color: theme.palette.secondary.main,
               fontWeight: 900,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              fontFamily: '"Space Grotesk", sans-serif'
+              fontFamily: 'var(--font-clash)'
             }}
           >
             Title
           </Typography>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
             Tap to edit
           </Typography>
         </Box>
@@ -622,8 +622,8 @@ export function NoteDetailSidebar({
               sx: {
                 fontSize: '1.75rem',
                 fontWeight: 900,
-                color: '#FFFFFF',
-                fontFamily: '"Space Grotesk", sans-serif'
+                color: theme.palette.text.primary,
+                fontFamily: 'var(--font-clash)'
               }
             }}
           />
@@ -634,8 +634,8 @@ export function NoteDetailSidebar({
             sx={{
               fontWeight: 900,
               cursor: 'text',
-              color: '#FFFFFF',
-              fontFamily: '"Space Grotesk", sans-serif',
+              color: theme.palette.text.primary,
+              fontFamily: 'var(--font-clash)',
               fontSize: '1.75rem',
               lineHeight: 1.2
             }}
@@ -649,15 +649,15 @@ export function NoteDetailSidebar({
         ref={contentContainerRef}
         sx={{
           borderRadius: '24px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(255, 255, 255, 0.03)',
+          border: `1px solid ${theme.palette.divider}`,
+          bgcolor: alpha(theme.palette.background.paper, 0.4),
           backdropFilter: 'blur(10px)',
           p: 3,
           transition: 'all 0.3s ease',
           '&:focus-within': {
-            borderColor: '#6366F1',
-            bgcolor: 'rgba(99, 102, 241, 0.05)',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)',
+            borderColor: theme.palette.primary.main,
+            bgcolor: alpha(theme.palette.primary.main, 0.05),
+            boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.1)}`,
           }
         }}
       >
@@ -665,16 +665,16 @@ export function NoteDetailSidebar({
           <Typography
             variant="caption"
             sx={{
-              color: '#6366F1',
+              color: theme.palette.primary.main,
               fontWeight: 900,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              fontFamily: '"Space Grotesk", sans-serif'
+              fontFamily: 'var(--font-clash)'
             }}
           >
             Content
           </Typography>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
             Click inside to edit
           </Typography>
         </Box>
@@ -688,21 +688,21 @@ export function NoteDetailSidebar({
               fullWidth
               size="small"
               sx={{
-                bgcolor: 'rgba(255,255,255,0.05)',
+                bgcolor: alpha(theme.palette.text.primary, 0.05),
                 p: 0.5,
                 borderRadius: '12px',
                 '& .MuiToggleButton-root': {
                   border: 'none',
                   borderRadius: '8px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  color: theme.palette.text.secondary,
+                  fontFamily: 'var(--font-clash)',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   '&.Mui-selected': {
-                    bgcolor: '#6366F1',
-                    color: '#000000',
-                    '&:hover': { bgcolor: '#00D1DA' }
+                    bgcolor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    '&:hover': { bgcolor: theme.palette.primary.dark }
                   }
                 }
               }}
@@ -727,16 +727,16 @@ export function NoteDetailSidebar({
                   disableUnderline: true,
                   sx: {
                     fontSize: '0.95rem',
-                    color: 'rgba(255, 255, 255, 0.8)',
+                    color: theme.palette.text.primary,
                     lineHeight: 1.7,
-                    fontFamily: '"Inter", sans-serif'
+                    fontFamily: 'var(--font-satoshi)'
                   }
                 }}
               />
             ) : (
               <Box>
                 {content ? (
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
+                  <Box sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', overflow: 'hidden' }}>
                     <NoteContentDisplay
                       content={content}
                       format="doodle"
@@ -752,14 +752,14 @@ export function NoteDetailSidebar({
                       height: 160,
                       borderStyle: 'dashed',
                       borderRadius: '16px',
-                      borderColor: 'rgba(255,255,255,0.1)',
-                      color: 'rgba(255, 255, 255, 0.3)',
-                      fontFamily: '"Space Grotesk", sans-serif',
+                      borderColor: theme.palette.divider,
+                      color: theme.palette.text.secondary,
+                      fontFamily: 'var(--font-clash)',
                       fontWeight: 700,
                       '&:hover': {
-                        borderColor: '#6366F1',
-                        bgcolor: 'rgba(99, 102, 241, 0.05)',
-                        color: '#6366F1'
+                        borderColor: theme.palette.primary.main,
+                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        color: theme.palette.primary.main
                       }
                     }}
                   >
@@ -774,7 +774,7 @@ export function NoteDetailSidebar({
             <NoteContentRenderer
               content={displayContent}
               format={displayFormat}
-              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)' }}>No content</Typography>}
+              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary }}>No content</Typography>}
               onEditDoodle={displayFormat === 'doodle' ? activateContentEditing : undefined}
             />
 
@@ -795,16 +795,16 @@ export function NoteDetailSidebar({
                   }}
                   sx={{
                     borderRadius: '10px',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    fontFamily: '"Space Grotesk", sans-serif',
+                    borderColor: theme.palette.divider,
+                    color: theme.palette.text.secondary,
+                    fontFamily: 'var(--font-clash)',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     fontSize: '0.75rem',
                     '&:hover': {
-                      borderColor: '#6366F1',
-                      color: '#6366F1',
-                      bgcolor: 'rgba(99, 102, 241, 0.05)'
+                      borderColor: theme.palette.primary.main,
+                      color: theme.palette.primary.main,
+                      bgcolor: alpha(theme.palette.primary.main, 0.05)
                     }
                   }}
                 >
@@ -823,11 +823,11 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#6366F1',
+            color: theme.palette.primary.main,
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            fontFamily: '"Space Grotesk", sans-serif'
+            fontFamily: 'var(--font-clash)'
           }}
         >
           Tags
@@ -842,11 +842,11 @@ export function NoteDetailSidebar({
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
-                bgcolor: 'rgba(255,255,255,0.03)',
-                fontFamily: '"Inter", sans-serif',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                bgcolor: alpha(theme.palette.text.primary, 0.03),
+                fontFamily: 'var(--font-satoshi)',
+                '& fieldset': { borderColor: theme.palette.divider },
+                '&:hover fieldset': { borderColor: alpha(theme.palette.text.primary, 0.2) },
+                '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
               }
             }}
           />
@@ -858,11 +858,11 @@ export function NoteDetailSidebar({
                 label={tag}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(99, 102, 241, 0.1)',
-                  color: '#6366F1',
-                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  color: theme.palette.primary.main,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                   fontWeight: 700,
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-clash)',
                   textTransform: 'uppercase',
                   fontSize: '0.7rem',
                   borderRadius: '6px'
@@ -880,11 +880,11 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#6366F1',
+            color: theme.palette.primary.main,
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            fontFamily: '"Space Grotesk", sans-serif'
+            fontFamily: 'var(--font-clash)'
           }}
         >
           Attachments
@@ -902,19 +902,19 @@ export function NoteDetailSidebar({
             <Button
               fullWidth
               variant="outlined"
-              startIcon={isUploadingAttachment ? <CircularProgress size={16} sx={{ color: '#6366F1' }} /> : <PaperClipIcon />}
+              startIcon={isUploadingAttachment ? <CircularProgress size={16} sx={{ color: theme.palette.primary.main }} /> : <PaperClipIcon />}
               onClick={() => document.getElementById('attachment-input')?.click()}
               disabled={isUploadingAttachment}
               sx={{
                 borderRadius: '12px',
-                borderColor: 'rgba(255,255,255,0.1)',
-                color: '#FFFFFF',
-                fontFamily: '"Space Grotesk", sans-serif',
+                borderColor: theme.palette.divider,
+                color: theme.palette.text.primary,
+                fontFamily: 'var(--font-clash)',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 '&:hover': {
-                  borderColor: '#6366F1',
-                  bgcolor: 'rgba(99, 102, 241, 0.05)'
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05)
                 }
               }}
             >
@@ -923,7 +923,7 @@ export function NoteDetailSidebar({
             {attachmentErrors.length > 0 && (
               <Box sx={{ mt: 1.5 }}>
                 {attachmentErrors.map((err, i) => (
-                  <Typography key={i} variant="caption" sx={{ display: 'block', color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)', p: 1.5, borderRadius: '8px', mt: 1, fontFamily: '"Inter", sans-serif' }}>
+                  <Typography key={i} variant="caption" sx={{ display: 'block', color: theme.palette.error.main, bgcolor: alpha(theme.palette.error.main, 0.1), p: 1.5, borderRadius: '8px', mt: 1, fontFamily: 'var(--font-satoshi)' }}>
                     {err}
                   </Typography>
                 ))}
@@ -941,19 +941,19 @@ export function NoteDetailSidebar({
                 gap: 2,
                 p: 2,
                 borderRadius: '16px',
-                bgcolor: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                bgcolor: alpha(theme.palette.text.primary, 0.03),
+                border: `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderColor: 'rgba(255, 255, 255, 0.1)'
+                  bgcolor: alpha(theme.palette.text.primary, 0.05),
+                  borderColor: alpha(theme.palette.text.primary, 0.1)
                 }
               }}>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#6366F1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-clash)' }}>
                     {a.name}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: '"Inter", sans-serif' }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
                     {formatFileSize(a.size)}{a.mime ? ` • ${a.mime}` : ''}
                   </Typography>
                 </Box>
@@ -961,10 +961,10 @@ export function NoteDetailSidebar({
                   size="small"
                   href={`/notes/${note.$id}/${a.id}`}
                   sx={{
-                    color: '#6366F1',
+                    color: theme.palette.primary.main,
                     fontWeight: 800,
-                    fontFamily: '"Space Grotesk", sans-serif',
-                    '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                    fontFamily: 'var(--font-clash)',
+                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
                   }}
                 >
                   OPEN
@@ -973,7 +973,7 @@ export function NoteDetailSidebar({
             ))}
           </Box>
         ) : (
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No attachments</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>No attachments</Typography>
         )}
       </Box>
 
@@ -984,17 +984,17 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#6366F1',
+            color: theme.palette.primary.main,
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            fontFamily: '"Space Grotesk", sans-serif'
+            fontFamily: 'var(--font-clash)'
           }}
         >
           Linked Tasks (Flow)
         </Typography>
         {isLoadingTasks ? (
-          <CircularProgress size={20} sx={{ color: '#6366F1', ml: 1 }} />
+          <CircularProgress size={20} sx={{ color: theme.palette.primary.main, ml: 1 }} />
         ) : linkedTasks.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {linkedTasks.map((task) => (
@@ -1005,24 +1005,24 @@ export function NoteDetailSidebar({
                 gap: 2,
                 p: 2,
                 borderRadius: '16px',
-                bgcolor: 'rgba(99, 102, 241, 0.03)',
-                border: '1px solid rgba(99, 102, 241, 0.1)',
+                bgcolor: alpha(theme.palette.primary.main, 0.03),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(99, 102, 241, 0.06)',
-                  borderColor: 'rgba(99, 102, 241, 0.3)'
+                  bgcolor: alpha(theme.palette.primary.main, 0.06),
+                  borderColor: alpha(theme.palette.primary.main, 0.3)
                 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                  <TaskIcon sx={{ color: task.status === 'done' ? '#4CAF50' : '#6366F1', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <TaskIcon sx={{ color: task.status === 'done' ? '#4CAF50' : theme.palette.primary.main, fontSize: 18 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-clash)' }}>
                     {task.title}
                   </Typography>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => window.open(`https://flow.kylrix.space/tasks?taskId=${task.$id}`, '_blank')}
-                  sx={{ color: '#6366F1' }}
+                  sx={{ color: theme.palette.primary.main }}
                 >
                   <OpenIcon fontSize="small" />
                 </IconButton>
@@ -1030,7 +1030,7 @@ export function NoteDetailSidebar({
             ))}
           </Box>
         ) : (
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No linked tasks</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>No linked tasks</Typography>
         )}
       </Box>
 
@@ -1041,17 +1041,17 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#6366F1',
+            color: theme.palette.primary.main,
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            fontFamily: '"Space Grotesk", sans-serif'
+            fontFamily: 'var(--font-clash)'
           }}
         >
           Linked Events (Flow)
         </Typography>
         {isLoadingEvents ? (
-          <CircularProgress size={20} sx={{ color: '#6366F1', ml: 1 }} />
+          <CircularProgress size={20} sx={{ color: theme.palette.primary.main, ml: 1 }} />
         ) : linkedEvents.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {linkedEvents.map((event) => (
@@ -1062,24 +1062,24 @@ export function NoteDetailSidebar({
                 gap: 2,
                 p: 2,
                 borderRadius: '16px',
-                bgcolor: 'rgba(99, 102, 241, 0.03)',
-                border: '1px solid rgba(99, 102, 241, 0.1)',
+                bgcolor: alpha(theme.palette.primary.main, 0.03),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(99, 102, 241, 0.06)',
-                  borderColor: 'rgba(99, 102, 241, 0.3)'
+                  bgcolor: alpha(theme.palette.primary.main, 0.06),
+                  borderColor: alpha(theme.palette.primary.main, 0.3)
                 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                  <EventIcon sx={{ color: '#6366F1', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <EventIcon sx={{ color: theme.palette.primary.main, fontSize: 18 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-clash)' }}>
                     {event.title}
                   </Typography>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => window.open(`https://flow.kylrix.space/events?eventId=${event.$id}`, '_blank')}
-                  sx={{ color: '#6366F1' }}
+                  sx={{ color: theme.palette.primary.main }}
                 >
                   <OpenIcon fontSize="small" />
                 </IconButton>
@@ -1087,7 +1087,7 @@ export function NoteDetailSidebar({
             ))}
           </Box>
         ) : (
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No linked events</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>No linked events</Typography>
         )}
       </Box>
 
@@ -1098,17 +1098,17 @@ export function NoteDetailSidebar({
           sx={{
             display: 'block',
             mb: 2,
-            color: '#6366F1',
+            color: theme.palette.primary.main,
             fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
-            fontFamily: '"Space Grotesk", sans-serif'
+            fontFamily: 'var(--font-clash)'
           }}
         >
           Linked Secrets (Keep)
         </Typography>
         {isLoadingSecrets ? (
-          <CircularProgress size={20} sx={{ color: '#6366F1', ml: 1 }} />
+          <CircularProgress size={20} sx={{ color: theme.palette.primary.main, ml: 1 }} />
         ) : linkedSecrets.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {linkedSecrets.map((secret) => (
@@ -1119,24 +1119,24 @@ export function NoteDetailSidebar({
                 gap: 2,
                 p: 2,
                 borderRadius: '16px',
-                bgcolor: 'rgba(99, 102, 241, 0.03)',
-                border: '1px solid rgba(99, 102, 241, 0.1)',
+                bgcolor: alpha(theme.palette.primary.main, 0.03),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(99, 102, 241, 0.06)',
-                  borderColor: 'rgba(99, 102, 241, 0.3)'
+                  bgcolor: alpha(theme.palette.primary.main, 0.06),
+                  borderColor: alpha(theme.palette.primary.main, 0.3)
                 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                  <KeyIcon sx={{ color: '#6366F1', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <KeyIcon sx={{ color: theme.palette.primary.main, fontSize: 18 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-clash)' }}>
                     {secret.name}
                   </Typography>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => window.open(`https://vault.kylrix.space/vault?id=${secret.$id}`, '_blank')}
-                  sx={{ color: '#6366F1' }}
+                  sx={{ color: theme.palette.primary.main }}
                 >
                   <OpenIcon fontSize="small" />
                 </IconButton>
@@ -1144,16 +1144,16 @@ export function NoteDetailSidebar({
             ))}
           </Box>
         ) : (
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>No linked secrets</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>No linked secrets</Typography>
         )}
       </Box>
 
       {/* Metadata */}
-      <Box sx={{ pt: 4, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
+      <Box sx={{ pt: 4, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
           Created: {formatNoteCreatedDate(note)}
         </Typography>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.3)', fontFamily: '"Inter", sans-serif' }}>
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
           Updated: {formatNoteUpdatedDate(note)}
         </Typography>
       </Box>
@@ -1161,12 +1161,12 @@ export function NoteDetailSidebar({
 
       {/* Edit Actions */}
       {isEditing && (
-        <Box sx={{ pt: 4, borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box sx={{ pt: 4, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: '"Inter", sans-serif', fontWeight: 600 }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)', fontWeight: 600 }}>
               {isAutosaving ? 'Syncing changes…' : 'All changes synced'}
             </Typography>
-            {isAutosaving && <CircularProgress size={14} sx={{ color: '#6366F1' }} />}
+            {isAutosaving && <CircularProgress size={14} sx={{ color: theme.palette.primary.main }} />}
           </Box>
           <Button
             fullWidth
@@ -1174,14 +1174,14 @@ export function NoteDetailSidebar({
             onClick={handleCancel}
             sx={{
               borderRadius: '12px',
-              borderColor: 'rgba(255,255,255,0.1)',
-              color: '#FFFFFF',
-              fontFamily: '"Space Grotesk", sans-serif',
+              borderColor: theme.palette.divider,
+              color: theme.palette.text.primary,
+              fontFamily: 'var(--font-clash)',
               fontWeight: 700,
               textTransform: 'uppercase',
               '&:hover': {
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                bgcolor: 'rgba(255, 255, 255, 0.05)'
+                borderColor: alpha(theme.palette.text.primary, 0.3),
+                bgcolor: alpha(theme.palette.text.primary, 0.05)
               }
             }}
           >

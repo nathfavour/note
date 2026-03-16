@@ -291,13 +291,13 @@ export default function NotesPage() {
               onClick={handleCreateNoteClick} 
               {...sidebarIgnoreProps} 
               sx={{ 
-                color: 'primary.main',
-                bgcolor: 'rgba(99, 102, 241, 0.05)',
+                color: 'secondary.main',
+                bgcolor: 'rgba(236, 72, 153, 0.05)',
                 borderRadius: '12px',
-                border: '1px solid rgba(99, 102, 241, 0.1)',
+                border: '1px solid rgba(236, 72, 153, 0.1)',
                 '&:hover': {
-                  bgcolor: 'rgba(99, 102, 241, 0.1)',
-                  borderColor: 'rgba(99, 102, 241, 0.2)',
+                  bgcolor: 'rgba(236, 72, 153, 0.1)',
+                  borderColor: 'rgba(236, 72, 153, 0.2)',
                 }
               }}
             >
@@ -319,6 +319,17 @@ export default function NotesPage() {
             borderRadius: '32px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+            // Ecosystem accent glow
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-1px',
+              left: '10%',
+              right: '10%',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent, secondary.main, primary.main, transparent)',
+            }
           }}
         >
           <Box>
@@ -344,12 +355,12 @@ export default function NotesPage() {
               }}
             >
               {allNotes.length < totalNotes && !hasSearchResults ? (
-                <>Syncing <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#6366F1', fontSize: '0.85rem' }}>{allNotes.length}</Box> of <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, fontSize: '0.85rem' }}>{totalNotes}</Box> notes</>
+                <>Syncing <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: 'secondary.main', fontSize: '0.85rem' }}>{allNotes.length}</Box> of <Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, fontSize: '0.85rem' }}>{totalNotes}</Box> notes</>
               ) : (
                 hasSearchResults ? (
-                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#6366F1', fontSize: '0.85rem' }}>{totalCount}</Box> {totalCount === 1 ? 'result' : 'results'} found</>
+                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: 'secondary.main', fontSize: '0.85rem' }}>{totalCount}</Box> {totalCount === 1 ? 'result' : 'results'} found</>
                 ) : (
-                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#6366F1', fontSize: '0.85rem' }}>{totalNotes}</Box> {totalNotes === 1 ? 'note' : 'notes'}</>
+                  <><Box component="span" sx={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: 'secondary.main', fontSize: '0.85rem' }}>{totalNotes}</Box> {totalNotes === 1 ? 'note' : 'notes'}</>
                 )
               )}
             </Typography>
@@ -415,7 +426,7 @@ export default function NotesPage() {
             }}
           >
             {tags.map((tag, index) => (
-              <Button
+                  <Button
                 key={index}
                 variant={searchQuery === tag ? 'contained' : 'outlined'}
                 size="small"
@@ -428,12 +439,12 @@ export default function NotesPage() {
                   textTransform: 'none',
                   py: 1,
                   px: 2.5,
-                  bgcolor: searchQuery === tag ? 'primary.main' : 'rgba(255, 255, 255, 0.03)',
-                  borderColor: searchQuery === tag ? 'primary.main' : 'rgba(255, 255, 255, 0.08)',
-                  color: searchQuery === tag ? '#000' : 'rgba(255, 255, 255, 0.6)',
+                  bgcolor: searchQuery === tag ? 'secondary.main' : 'rgba(255, 255, 255, 0.03)',
+                  borderColor: searchQuery === tag ? 'secondary.main' : 'rgba(255, 255, 255, 0.08)',
+                  color: searchQuery === tag ? '#fff' : 'rgba(255, 255, 255, 0.6)',
                   '&:hover': {
-                    bgcolor: searchQuery === tag ? 'primary.light' : 'rgba(255, 255, 255, 0.05)',
-                    borderColor: searchQuery === tag ? 'primary.light' : 'rgba(255, 255, 255, 0.15)',
+                    bgcolor: searchQuery === tag ? 'secondary.light' : 'rgba(255, 255, 255, 0.05)',
+                    borderColor: searchQuery === tag ? 'secondary.light' : 'rgba(255, 255, 255, 0.15)',
                   }
                 }}
                 aria-pressed={searchQuery === tag}
@@ -588,15 +599,15 @@ export default function NotesPage() {
                   <Box 
                     sx={{ 
                       p: 1, 
-                      bgcolor: 'rgba(99, 102, 241, 0.05)', 
+                      bgcolor: 'rgba(236, 72, 153, 0.05)', 
                       borderRadius: '10px', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
-                      border: '1px solid rgba(99, 102, 241, 0.1)'
+                      border: '1px solid rgba(236, 72, 153, 0.1)'
                     }}
                   >
-                    <PinIcon sx={{ fontSize: 16, color: 'primary.main', transform: 'rotate(45deg)' }} />
+                    <PinIcon sx={{ fontSize: 16, color: 'secondary.main', transform: 'rotate(45deg)' }} />
                   </Box>
                   <Typography 
                     variant="h6" 
@@ -606,7 +617,7 @@ export default function NotesPage() {
                       textTransform: 'uppercase', 
                       letterSpacing: '0.15em', 
                       fontSize: '0.75rem', 
-                      color: 'primary.main',
+                      color: 'secondary.main',
                     }}
                   >
                     Pinned Notes

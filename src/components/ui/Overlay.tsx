@@ -20,10 +20,10 @@ const Overlay: React.FC = () => {
       slots={{ backdrop: Backdrop }}
       slotProps={{
         backdrop: {
-          timeout: 500,
+          timeout: 400,
           sx: { 
-            bgcolor: 'rgba(0, 0, 0, 0.7)', 
-            backdropFilter: 'blur(15px) saturate(160%)' 
+            bgcolor: 'rgba(0, 0, 0, 0.4)', 
+            backdropFilter: 'blur(4px) saturate(120%)' 
           }
         },
       }}

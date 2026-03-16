@@ -452,10 +452,17 @@ export const GhostEditor = () => {
                         p: 0, 
                         borderRadius: '32px', 
                         overflow: 'hidden',
-                        bgcolor: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        bgcolor: theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 255, 255, 0.02)' 
+                            : 'rgba(0, 0, 0, 0.02)',
+                        border: `1px solid ${theme.palette.divider}`,
                         backdropFilter: 'blur(20px)',
-                        position: 'relative'
+                        position: 'relative',
+                        transition: 'all 0.3s ease',
+                        '&:focus-within': {
+                            borderColor: theme.palette.secondary.main,
+                            boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.1)}`,
+                        }
                     }}>
                         {/* Action Buttons in Header Area */}
                         <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 24, right: 24, zIndex: 10 }}>
@@ -465,11 +472,11 @@ export const GhostEditor = () => {
                                     sx={{ 
                                         width: 40,
                                         height: 40,
-                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                        color: theme.palette.primary.main,
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        bgcolor: alpha(theme.palette.background.paper, 0.4),
+                                        color: theme.palette.secondary.main,
+                                        border: `1px solid ${theme.palette.divider}`,
                                         position: 'relative',
-                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)', color: 'white' }
+                                        '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.8), color: theme.palette.text.primary }
                                     }}
                                 >
                                     <svg width="40" height="40" style={{ position: 'absolute' }}>
@@ -503,10 +510,10 @@ export const GhostEditor = () => {
                                     onClick={handleCopyContent}
                                     disabled={!content.trim()}
                                     sx={{ 
-                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                        color: isLinkCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+                                        bgcolor: alpha(theme.palette.background.paper, 0.4),
+                                        color: isLinkCopied ? theme.palette.secondary.main : theme.palette.text.secondary,
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.8) }
                                     }}
                                 >
                                     {isLinkCopied ? <CheckIcon size={20} /> : <CopyIcon size={20} />}
@@ -518,13 +525,13 @@ export const GhostEditor = () => {
                                     onClick={handleCreateAndCopyLink}
                                     disabled={isCreating || !title.trim() || !content.trim()}
                                     sx={{ 
-                                        bgcolor: copiedId ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                                        color: copiedId ? '#6366F1' : 'white',
+                                        bgcolor: copiedId ? alpha(theme.palette.secondary.main, 0.1) : alpha(theme.palette.background.paper, 0.4),
+                                        color: copiedId ? theme.palette.secondary.main : theme.palette.text.primary,
                                         border: '1px solid',
-                                        borderColor: copiedId ? '#6366F1' : 'rgba(255, 255, 255, 0.1)',
+                                        borderColor: copiedId ? theme.palette.secondary.main : theme.palette.divider,
                                         '&:hover': {
-                                            bgcolor: 'rgba(99, 102, 241, 0.1)',
-                                            borderColor: '#6366F1'
+                                            bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                                            borderColor: theme.palette.secondary.main
                                         },
                                         transition: 'all 0.2s'
                                     }}
@@ -536,28 +543,36 @@ export const GhostEditor = () => {
 
                         <Box sx={{ p: 4, pb: 2 }}>
                             <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 2 }}>
-                                <TextField
-                                    fullWidth
-                                    placeholder="Note Title"
-                                    value={title}
-                                    onChange={(e) => {
-                                        setTitle(e.target.value);
-                                        setIsTitleManuallyEdited(true);
-                                    }}
-                                    variant="standard"
-                                    InputProps={{
-                                        disableUnderline: true,
-                                        sx: { 
-                                            fontSize: '2rem', 
-                                            fontWeight: 900, 
-                                            fontFamily: 'var(--font-clash)',
-                                            color: 'white',
-                                            pr: 18, 
-                                            '&::placeholder': { opacity: 0.2 }
-                                        }
-                                    }}
-                                    sx={{ flex: 1 }}
-                                />
+                                {(content.trim().length > 0 || isTitleManuallyEdited) && (
+                                    <TextField
+                                        fullWidth
+                                        placeholder="Note Title"
+                                        value={title}
+                                        onChange={(e) => {
+                                            setTitle(e.target.value);
+                                            setIsTitleManuallyEdited(true);
+                                        }}
+                                        variant="standard"
+                                        InputProps={{
+                                            disableUnderline: true,
+                                            sx: { 
+                                                fontSize: '2rem', 
+                                                fontWeight: 900, 
+                                                fontFamily: 'var(--font-clash)',
+                                                color: theme.palette.secondary.main, 
+                                                pr: 18, 
+                                                animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                '@keyframes fadeIn': {
+                                                    '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                                                    '100%': { opacity: 1, transform: 'translateY(0)' }
+                                                },
+                                                '&::placeholder': { opacity: 0.2 }
+                                            }
+                                        }}
+                                        sx={{ flex: 1 }}
+                                    />
+                                )}
+                                <Box sx={{ flexGrow: 1 }} />
                                 <Typography
                                     variant="caption"
                                     sx={{
@@ -599,8 +614,8 @@ export const GhostEditor = () => {
 
                         <Box sx={{ 
                             p: 3, 
-                            bgcolor: 'rgba(255, 255, 255, 0.03)', 
-                            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                            bgcolor: alpha(theme.palette.background.paper, 0.4), 
+                            borderTop: `1px solid ${theme.palette.divider}`,
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center'
@@ -612,7 +627,7 @@ export const GhostEditor = () => {
                                         Public & Anonymous
                                     </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', color: 'primary.main', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', color: theme.palette.secondary.main, alignItems: 'center' }}>
                                     <Clock size={16} />
                                     <Typography variant="caption" sx={{ ml: 1, fontWeight: 800 }}>
                                         Expires in {LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label || 'Custom'}
@@ -624,32 +639,32 @@ export const GhostEditor = () => {
                                 <Typography variant="caption" sx={{ display: 'block', mb: 1, opacity: 0.4, fontWeight: 700 }}>
                                     ONCE SHARED, THIS NOTE IS LOCKED.
                                 </Typography>
-                                <Button
-                                    onClick={handleCreateAndCopyLink}
-                                    disabled={isCreating || !title.trim() || !content.trim()}
-                                    sx={{ 
-                                        borderRadius: '100px',
-                                        px: 4,
-                                        py: 1.5,
-                                        fontWeight: 900,
-                                        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-                                        color: 'white',
-                                        boxShadow: '0 10px 30px rgba(99, 102, 241, 0.3)',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 15px 40px rgba(99, 102, 241, 0.5)',
-                                        }
-                                    }}
-                                >
-                                    {isCreating ? (
-                                        <CircularProgress size={20} color="inherit" />
-                                    ) : (
-                                        <>
-                                            {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
-                                            <Box component="span" sx={{ ml: 1 }}>{copiedId ? 'LINK COPIED' : 'COPY LINK'}</Box>
-                                        </>
-                                    )}
-                                </Button>
+                                    <Button
+                                        onClick={handleCreateAndCopyLink}
+                                        disabled={isCreating || !title.trim() || !content.trim()}
+                                        variant="contained"
+                                        color="secondary"
+                                        sx={{ 
+                                            borderRadius: '100px',
+                                            px: 4,
+                                            py: 1.5,
+                                            fontWeight: 900,
+                                            boxShadow: `0 10px 30px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: `0 15px 40px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                                            }
+                                        }}
+                                    >
+                                        {isCreating ? (
+                                            <CircularProgress size={20} color="inherit" />
+                                        ) : (
+                                            <>
+                                                {copiedId ? <CheckIcon size={18} /> : <Share2 size={18} />}
+                                                <Box component="span" sx={{ ml: 1 }}>{copiedId ? 'LINK COPIED' : 'COPY LINK'}</Box>
+                                            </>
+                                        )}
+                                    </Button>
                             </Box>
                         </Box>
                     </Paper>
@@ -660,18 +675,18 @@ export const GhostEditor = () => {
                             WANT TO KEEP YOUR NOTES FOREVER?
                         </Typography>
                         <Button 
-                            variant="outline"
+                            variant="outlined"
                             onClick={() => openIDMWindow()}
                             sx={{ 
                                 borderRadius: '100px', 
                                 px: 6,
                                 py: 2,
-                                border: '1px solid rgba(99, 102, 241, 0.3)',
-                                color: '#6366F1',
+                                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                                color: theme.palette.secondary.main,
                                 fontWeight: 900,
                                 '&:hover': {
-                                    bgcolor: 'rgba(99, 102, 241, 0.05)',
-                                    borderColor: '#6366F1'
+                                    bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                                    borderColor: theme.palette.secondary.main
                                 }
                             }}
                         >
@@ -687,13 +702,13 @@ export const GhostEditor = () => {
                         <Paper sx={{ 
                             p: 3, 
                             borderRadius: '32px', 
-                            bgcolor: 'rgba(255, 255, 255, 0.02)',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            bgcolor: alpha(theme.palette.background.paper, 0.4),
+                            border: `1px solid ${theme.palette.divider}`,
                             height: 'fit-content'
                         }}>
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3, justifyContent: 'space-between' }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <HistoryIcon size={20} color={theme.palette.primary.main} />
+                                    <HistoryIcon size={20} color={theme.palette.secondary.main} />
                                     <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)' }}>
                                         Your Sparks
                                     </Typography>
@@ -708,7 +723,7 @@ export const GhostEditor = () => {
                             <Stack spacing={3}>
                                 {activeSparks.length > 0 && (
                                     <Box>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: 'primary.main', mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 900, color: theme.palette.secondary.main, mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
                                             ACTIVE
                                         </Typography>
                                         <Stack spacing={1.5}>
@@ -748,7 +763,7 @@ export const GhostEditor = () => {
                                                             <IconButton 
                                                                 size="small" 
                                                                 onClick={() => window.open(`/shared/${note.id}`, '_blank')}
-                                                                sx={{ color: 'primary.main' }}
+                                                                sx={{ color: theme.palette.secondary.main }}
                                                             >
                                                                 <ExternalLink size={14} />
                                                             </IconButton>
@@ -860,27 +875,26 @@ export const GhostEditor = () => {
                             </Menu>
 
                             {/* Chronic User CTA */}
-                            <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: '#6366F1' }}>
-                                    Don&apos;t Lose Your Spark!
-                                </Typography>
-                                <Typography variant="caption" sx={{ display: 'block', mb: 2, opacity: 0.8 }}>
-                                    Sparks vanish from stash 7 days after creation. Claim them now to secure them.
-                                </Typography>
-                                <Button 
-                                    fullWidth
-                                    size="sm"
-                                    onClick={() => openIDMWindow()}
-                                    sx={{ 
-                                        bgcolor: '#6366F1', 
-                                        color: 'white', 
-                                        fontWeight: 900,
-                                        '&:hover': { bgcolor: '#4F46E5' }
-                                    }}
-                                >
-                                    CLAIM NOTES NOW
-                                </Button>
-                            </Box>
+                                <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: alpha(theme.palette.secondary.main, 0.1), border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}` }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: theme.palette.secondary.main }}>
+                                        Don&apos;t Lose Your Spark!
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ display: 'block', mb: 2, opacity: 0.8 }}>
+                                        Sparks vanish from stash 7 days after creation. Claim them now to secure them.
+                                    </Typography>
+                                    <Button 
+                                        fullWidth
+                                        size="sm"
+                                        onClick={() => openIDMWindow()}
+                                        variant="contained"
+                                        color="secondary"
+                                        sx={{ 
+                                            fontWeight: 900
+                                        }}
+                                    >
+                                        CLAIM NOTES NOW
+                                    </Button>
+                                </Box>
                         </Paper>
                     </Grid>
                 )}
@@ -921,12 +935,12 @@ export const GhostEditor = () => {
                         >
                             <Grid container spacing={1}>
                                 {LIFESPAN_OPTIONS.map((option) => (
-                                    <Grid item xs={6} key={option.value}>
+                                             <Grid item xs={6} key={option.value}>
                                         <FormControlLabel
                                             value={option.value}
-                                            control={<Radio sx={{ color: 'rgba(255,255,255,0.1)', '&.Mui-checked': { color: '#6366F1' } }} />}
+                                            control={<Radio sx={{ color: alpha(theme.palette.text.primary, 0.1), '&.Mui-checked': { color: theme.palette.secondary.main } }} />}
                                             label={
-                                                <Typography variant="body2" sx={{ fontWeight: 700, color: lifespanMs === option.value ? 'white' : 'rgba(255,255,255,0.4)' }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 700, color: lifespanMs === option.value ? theme.palette.text.primary : theme.palette.text.secondary }}>
                                                     {option.label}
                                                 </Typography>
                                             }
@@ -935,11 +949,11 @@ export const GhostEditor = () => {
                                                 width: '100%',
                                                 p: 1,
                                                 borderRadius: '12px',
-                                                bgcolor: lifespanMs === option.value ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                                                bgcolor: lifespanMs === option.value ? alpha(theme.palette.secondary.main, 0.1) : 'transparent',
                                                 border: '1px solid',
-                                                borderColor: lifespanMs === option.value ? '#6366F1' : 'rgba(255,255,255,0.05)',
+                                                borderColor: lifespanMs === option.value ? theme.palette.secondary.main : theme.palette.divider,
                                                 transition: 'all 0.2s',
-                                                '&:hover': { bgcolor: alpha('#6366F1', 0.05) }
+                                                '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.05) }
                                             }}
                                         />
                                     </Grid>
@@ -960,14 +974,13 @@ export const GhostEditor = () => {
                     <Button
                         fullWidth
                         onClick={() => setIsSettingsOpen(false)}
+                        variant="contained"
+                        color="secondary"
                         sx={{ 
                             mt: 4, 
                             borderRadius: '100px', 
                             py: 1.5, 
-                            bgcolor: '#6366F1', 
-                            color: 'white', 
-                            fontWeight: 900,
-                            '&:hover': { bgcolor: '#4F46E5' }
+                            fontWeight: 900
                         }}
                     >
                         APPLY SETTINGS

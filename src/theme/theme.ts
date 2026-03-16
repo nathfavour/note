@@ -1,167 +1,123 @@
-'use client';
-
 import { createTheme, ThemeOptions, alpha } from '@mui/material/styles';
 
-const getDesignTokens = (): ThemeOptions => ({
+/**
+ * KYLRIX ECOSYSTEM DESIGN SYSTEM v3
+ * Intelligent Theme Architecture
+ * 
+ * Concept: 
+ * 1. Semantic Tokens: We use standard MUI palette names but bind them to Ecosystem roles.
+ * 2. Primary = Ecosystem Identity (Indigo/Flow)
+ * 3. Secondary = App Identity (Pink/Note)
+ * 4. Surface System = Glassmorphic layers that adapt to background luminance.
+ */
+
+const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
-    mode: 'dark',
+    mode,
     primary: {
-      main: '#6366F1', // Electric Teal
-      contrastText: '#000000',
+      main: '#6366F1', // Ecosystem Indigo
+      light: '#818CF8',
+      dark: '#4F46E5',
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#F59E0B', // Amber Gold
+      main: '#EC4899', // App Pink
+      light: '#F472B6',
+      dark: '#DB2777',
+      contrastText: '#FFFFFF',
     },
     background: {
-      default: '#000000', // The Void
-      paper: '#0A0A0A',   // The Surface
+      default: mode === 'dark' ? '#000000' : '#F1F5F9', // Slightly cooler slate for light mode
+      paper: mode === 'dark' ? '#0A0A0B' : '#FFFFFF',
     },
     text: {
-      primary: '#F2F2F2',   // Titanium
-      secondary: '#A1A1AA', // Gunmetal
-      disabled: '#404040',  // Carbon
+      primary: mode === 'dark' ? '#F8FAFC' : '#0F172A',
+      secondary: mode === 'dark' ? '#94A3B8' : '#475569', // Darker slate for light mode contrast
     },
-    divider: 'rgba(255, 255, 255, 0.1)', // Subtle Border
+    divider: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
   },
   typography: {
     fontFamily: 'var(--font-satoshi), "Satoshi", sans-serif',
-    h1: {
-      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
-      fontSize: '3.5rem',
-      fontWeight: 900,
-      letterSpacing: '-0.04em',
-      color: '#F2F2F2',
-    },
-    h2: {
-      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
-      fontSize: '2.5rem',
-      fontWeight: 900,
-      letterSpacing: '-0.03em',
-    },
-    h3: {
-      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
-      fontSize: '2rem',
-      fontWeight: 900,
-      letterSpacing: '-0.02em',
-    },
-    h4: {
-      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
-      fontSize: '1.5rem',
-      fontWeight: 900,
-    },
-    body1: {
-      fontSize: '1rem',
-      fontWeight: 400,
-      lineHeight: 1.6,
-    },
-    body2: {
-      fontSize: '0.875rem',
-      fontWeight: 400,
-    },
-    caption: {
-      fontSize: '0.75rem',
-      color: '#A1A1AA',
-    },
-    button: {
-      fontFamily: 'var(--font-clash), "Clash Display", sans-serif',
-      textTransform: 'none',
-      fontWeight: 700,
-    },
+    h1: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 900 },
+    h2: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 900 },
+    h3: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 900 },
+    h4: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 900 },
+    button: { fontFamily: 'var(--font-clash), sans-serif', fontWeight: 700, textTransform: 'none' },
   },
-  shape: {
-    borderRadius: 12,
-  },
-  shadows: Array(25).fill('none') as any,
+  shape: { borderRadius: 16 },
   components: {
     MuiCssBaseline: {
-      styleOverrides: {
+      styleOverrides: (theme) => ({
         body: {
-          backgroundColor: '#000000',
-          color: '#F2F2F2',
-          fontFamily: 'var(--font-satoshi), "Satoshi", sans-serif',
+          backgroundColor: theme.palette.background.default,
+          backgroundImage: mode === 'dark' 
+            ? `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.15)} 0%, transparent 70%)`
+            : `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.05)} 0%, transparent 70%)`,
+          backgroundAttachment: 'fixed',
+          minHeight: '100vh',
         },
-      },
+      }),
     },
     MuiButton: {
       styleOverrides: {
-        root: {
-          borderRadius: '12px',
+        root: ({ theme }) => ({
+          borderRadius: 14,
           padding: '10px 24px',
+          fontWeight: 700,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: `1px solid ${theme.palette.divider}`,
           '&:hover': {
-            borderColor: 'rgba(99, 102, 241, 0.5)',
-            backgroundColor: 'rgba(99, 102, 241, 0.05)',
-            transform: 'translateY(-2px)',
+            transform: 'translateY(-1px)',
+            boxShadow: `0 8px 20px -8px ${alpha(theme.palette.primary.main, 0.4)}`,
           },
-          '&:active': {
-            transform: 'scale(0.98)',
-          },
-        },
-        containedPrimary: {
-          backgroundColor: '#6366F1',
-          color: '#000000',
-          border: 'none',
-          '&:hover': {
-            backgroundColor: alpha('#6366F1', 0.8),
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
-          },
-        },
+        }),
+        containedPrimary: ({ theme }) => ({
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+        }),
+        containedSecondary: ({ theme }) => ({
+          background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
+        }),
       },
     },
     MuiCard: {
       styleOverrides: {
-        root: {
-          borderRadius: 24,
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          backgroundImage: 'none',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        root: ({ theme }) => ({
+          borderRadius: 28,
+          background: mode === 'dark' 
+            ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`
+            : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
+          backdropFilter: 'blur(20px) saturate(160%)',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: mode === 'dark'
+            ? `0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 1px ${alpha('#FFFFFF', 0.05)}`
+            : `0 10px 30px -10px ${alpha(theme.palette.text.primary, 0.1)}, inset 0 1px 1px ${alpha('#FFFFFF', 0.8)}`,
+          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           '&:hover': {
-            borderColor: 'rgba(99, 102, 241, 0.3)',
-            transform: 'translateY(-4px)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            transform: 'translateY(-6px) scale(1.01)',
+            borderColor: theme.palette.secondary.main,
+            boxShadow: mode === 'dark'
+              ? `0 25px 50px -12px rgba(0,0,0,0.7), 0 0 15px ${alpha(theme.palette.primary.main, 0.2)}`
+              : `0 25px 50px -12px ${alpha(theme.palette.primary.main, 0.2)}`,
           },
-        },
+        }),
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: {
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
+        root: ({ theme }) => ({
           backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-        },
-      },
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: 'none',
-        },
-      },
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 24,
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          backgroundImage: 'none',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
-        },
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${theme.palette.divider}`,
+        }),
       },
     },
   },
 });
 
-export const darkTheme = createTheme(getDesignTokens());
-export const lightTheme = darkTheme;
+export const darkTheme = createTheme(getDesignTokens('dark'));
+export const lightTheme = createTheme(getDesignTokens('light'));
 
 export default darkTheme;

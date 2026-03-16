@@ -344,38 +344,46 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
           border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: '24px',
           backdropFilter: 'blur(25px) saturate(180%)',
-          // Subtle 3D shadow and highlight
-          boxShadow: `
+          // Hybrid 3D design: App Secondary (Pink) Internal Glow + Ecosystem Primary (Indigo) Hover State
+          boxShadow: (theme) => `
             0 10px 30px rgba(0, 0, 0, 0.5),
-            inset 0 1px 1px rgba(255, 255, 255, 0.05)
+            inset 0 1px 1px rgba(236, 72, 153, ${theme.palette.mode === 'dark' ? 0.1 : 0.2})
           `,
           transform: 'perspective(1200px) rotateX(0deg)',
           transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          // Brand gradient overlay (Pink to Indigo)
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%)',
+            opacity: 1,
+            zIndex: 0,
+          },
           '&:hover': {
             transform: 'perspective(1200px) rotateX(4deg) translateY(-8px)',
-            borderColor: 'rgba(99, 102, 241, 0.3)',
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
-            // Significantly elevated but contained shadow
-            boxShadow: `
+            borderColor: 'secondary.main', 
+            bgcolor: 'rgba(255, 255, 255, 0.06)',
+            boxShadow: (theme) => `
               0 30px 60px -15px rgba(0, 0, 0, 0.7),
-              0 0 20px rgba(99, 102, 241, 0.05),
-              inset 0 1px 1px rgba(255, 255, 255, 0.1)
+              0 0 25px rgba(99, 102, 241, 0.2),
+              inset 0 1px 1px rgba(236, 72, 153, 0.2)
             `,
             '&::after': {
               opacity: 1,
             }
           },
-          // Subtle light sweep effect on hover
           '&::after': {
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent)',
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent, #6366F1, transparent)',
             opacity: 0,
             transition: 'opacity 0.4s ease',
+            zIndex: 1,
           }
         }}
       >
@@ -383,13 +391,13 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
           sx={{ pb: 0.5, p: 2.5 }}
           title={
             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
-              <Typography 
+                  <Typography 
                 variant="h4" 
                 sx={{ 
                   fontSize: { xs: '0.875rem', sm: '1rem' }, 
                   fontWeight: 900,
                   fontFamily: 'var(--font-clash-display)',
-                  color: 'primary.main',
+                  color: 'secondary.main', // App Secondary
                   letterSpacing: '-0.02em',
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
