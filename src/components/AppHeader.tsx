@@ -143,9 +143,10 @@ export default function AppHeader({ className }: AppHeaderProps) {
       className={className}
       sx={{ 
         zIndex: 1201,
-        bgcolor: 'rgba(11, 9, 8, 0.95)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        backgroundImage: 'none'
+        bgcolor: '#0A0908',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        backgroundImage: 'none',
+        boxShadow: 'inset 0 -1px 0 rgba(0, 0, 0, 0.4)'
       }}
     >
       <Toolbar sx={{ 
@@ -181,16 +182,16 @@ export default function AppHeader({ className }: AppHeaderProps) {
               onClick={toggleTheme}
               sx={{ 
                 color: 'text.secondary',
-                bgcolor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid',
-                borderColor: 'divider',
+                bgcolor: '#161412',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                  bgcolor: '#1C1A18', 
                   borderColor: 'primary.main',
-                  boxShadow: (theme) => `0 0 15px ${alpha(theme.palette.primary.main, 0.1)}` 
+                  boxShadow: (theme) => `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px ${alpha(theme.palette.primary.main, 0.1)}` 
                 }
               }}
             >
@@ -202,19 +203,20 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={toggleNotifications}
               sx={{ 
-                color: (unreadCount > 0 || isNotificationsOpen) ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
-                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                color: (unreadCount > 0 || isNotificationsOpen) ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
+                bgcolor: '#161412',
                 border: '1px solid',
-                borderColor: (unreadCount > 0 || isNotificationsOpen) ? alpha('#6366F1', 0.2) : 'rgba(255, 255, 255, 0.08)',
+                borderColor: (unreadCount > 0 || isNotificationsOpen) ? alpha('#EC4899', 0.2) : 'rgba(255, 255, 255, 0.05)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
                 position: 'relative',
                 zIndex: 1301,
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
-                  borderColor: alpha('#6366F1', 0.4),
-                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)' 
+                  bgcolor: '#1C1A18', 
+                  borderColor: alpha('#EC4899', 0.4),
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
                 }
               }}
             >
@@ -224,7 +226,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   position: 'absolute',
                   top: -2,
                   right: -2,
-                  bgcolor: '#6366F1',
+                  bgcolor: '#EC4899',
                   color: '#000',
                   fontSize: '0.6rem',
                   fontWeight: 900,
@@ -234,7 +236,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '2px solid #050505',
+                  border: '2px solid #0A0908',
                   fontFamily: 'var(--font-mono)'
                 }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -272,9 +274,9 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   style={{
                     position: 'fixed',
                     zIndex: 1300,
-                    background: 'rgba(11, 9, 8, 0.98)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
+                    background: '#161412',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 40px 80px rgba(0,0,0,0.8)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'
@@ -283,7 +285,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   {/* Header */}
                   <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Zap size={18} color="#6366F1" strokeWidth={2} />
+                      <Zap size={18} color="#EC4899" strokeWidth={2} />
                       <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
                         Intelligence Feed
                       </Typography>
@@ -292,7 +294,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                       <IconButton 
                         size="small" 
                         onClick={() => setNotifViewMode(notifViewMode === 'dropdown' ? 'sidebar' : 'dropdown')}
-                        sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.05)' } }}
+                        sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#EC4899', bgcolor: 'rgba(236, 72, 153, 0.05)' } }}
                       >
                         {notifViewMode === 'dropdown' ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
                       </IconButton>
@@ -300,18 +302,19 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   </Box>
 
                   {/* Tabs */}
-                  <Box sx={{ display: 'flex', p: 1.5, gap: 1.5, bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
+                  <Box sx={{ display: 'flex', p: 1.5, gap: 1.5, bgcolor: '#0A0908' }}>
                     <Box 
                       onClick={() => setNotifTab('app')}
                       sx={{ 
                         flex: 1, py: 1.2, textAlign: 'center', cursor: 'pointer', borderRadius: '14px',
-                        bgcolor: notifTab === 'app' ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                        bgcolor: notifTab === 'app' ? 'rgba(236, 72, 153, 0.05)' : '#161412',
                         border: '1px solid',
-                        borderColor: notifTab === 'app' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                        transition: 'all 0.2s'
+                        borderColor: notifTab === 'app' ? 'rgba(236, 72, 153, 0.1)' : 'transparent',
+                        transition: 'all 0.2s',
+                        boxShadow: notifTab === 'app' ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : 'none'
                       }}
                     >
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'app' ? '#6366F1' : 'rgba(255, 255, 255, 0.3)', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'app' ? '#EC4899' : 'rgba(255, 255, 255, 0.3)', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
                         SYSTEM ({notifications.length})
                       </Typography>
                     </Box>
@@ -319,10 +322,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
                       onClick={() => setNotifTab('island')}
                       sx={{ 
                         flex: 1, py: 1.2, textAlign: 'center', cursor: 'pointer', borderRadius: '14px',
-                        bgcolor: notifTab === 'island' ? 'rgba(168, 85, 247, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                        bgcolor: notifTab === 'island' ? 'rgba(168, 85, 247, 0.05)' : '#161412',
                         border: '1px solid',
                         borderColor: notifTab === 'island' ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        boxShadow: notifTab === 'island' ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : 'none'
                       }}
                     >
                       <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'island' ? '#A855F7' : 'rgba(255, 255, 255, 0.3)', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
@@ -352,17 +356,18 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                 key={notif.$id}
                                 elevation={0}
                                 sx={{ 
-                                  p: 2.5, mb: 1.5, borderRadius: '18px', bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                                  p: 2.5, mb: 1.5, borderRadius: '18px', bgcolor: '#1C1A18', 
                                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.04)', borderColor: alpha('#6366F1', 0.2) },
+                                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                                  '&:hover': { bgcolor: '#161412', borderColor: alpha('#EC4899', 0.2) },
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease'
                                 }}
                                 onClick={() => markAsRead(notif.$id)}
                               >
                                 <Stack direction="row" spacing={2} alignItems="flex-start">
-                                  <Box sx={{ width: 40, height: 40, borderRadius: '12px', bgcolor: 'rgba(99, 102, 241, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(99, 102, 241, 0.1)' }}>
-                                    <Layers size={18} color="#6366F1" strokeWidth={1.5} />
+                                  <Box sx={{ width: 40, height: 40, borderRadius: '12px', bgcolor: 'rgba(236, 72, 153, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(236, 72, 153, 0.1)' }}>
+                                    <Layers size={18} color="#EC4899" strokeWidth={1.5} />
                                   </Box>
                                   <Box sx={{ minWidth: 0 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', display: 'block', mb: 0.5, fontFamily: 'var(--font-satoshi)', letterSpacing: '0.02em' }}>
@@ -395,9 +400,10 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                 key={notif.id}
                                 elevation={0}
                                 sx={{ 
-                                  p: 2.5, mb: 1.5, borderRadius: '18px', bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                                  p: 2.5, mb: 1.5, borderRadius: '18px', bgcolor: '#1C1A18', 
                                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.04)', borderColor: alpha('#A855F7', 0.2) },
+                                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                                  '&:hover': { bgcolor: '#161412', borderColor: alpha('#A855F7', 0.2) },
                                   cursor: 'pointer',
                                   position: 'relative'
                                 }}
@@ -414,7 +420,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                       top: 10, 
                                       right: 10, 
                                       color: 'rgba(255, 255, 255, 0.2)',
-                                      '&:hover': { color: '#6366F1', bgcolor: 'rgba(255, 255, 255, 0.05)' }
+                                      '&:hover': { color: '#EC4899', bgcolor: 'rgba(255, 255, 255, 0.05)' }
                                     }}
                                   >
                                     <Download size={14} strokeWidth={1.5} />
@@ -447,18 +453,18 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   </Box>
 
                   {/* Footer */}
-                  <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.01)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <Box sx={{ p: 2, bgcolor: '#0A0908', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
                     <Button 
                       fullWidth 
                       variant="text" 
                       onClick={() => markAllAsRead()}
                       sx={{ 
-                        color: '#6366F1', 
+                        color: '#EC4899', 
                         fontWeight: 900, 
                         fontSize: '0.65rem',
                         letterSpacing: '0.1em',
                         fontFamily: 'var(--font-mono)',
-                        '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.05)' } 
+                        '&:hover': { bgcolor: 'rgba(236, 72, 153, 0.05)' } 
                       }}
                     >
                       REVEAL ALL ACTIVITY
@@ -473,17 +479,18 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={() => setIsAIModalOpen(true)}
               sx={{ 
-                color: '#6366F1',
-                bgcolor: 'rgba(99, 102, 241, 0.05)',
+                color: '#EC4899',
+                bgcolor: 'rgba(236, 72, 153, 0.05)',
                 border: '1px solid',
-                borderColor: 'rgba(99, 102, 241, 0.1)',
+                borderColor: 'rgba(236, 72, 153, 0.1)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: 'rgba(99, 102, 241, 0.08)', 
-                  borderColor: '#6366F1',
-                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.2)' 
+                  bgcolor: 'rgba(236, 72, 153, 0.08)', 
+                  borderColor: '#EC4899',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.2)' 
                 }
               }}
             >
@@ -495,17 +502,17 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={() => setIsEcosystemPortalOpen(true)}
               sx={{ 
-                color: '#6366F1',
-                bgcolor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#EC4899',
+                bgcolor: '#161412',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
-                  borderColor: '#6366F1',
-                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)' 
+                  bgcolor: '#1C1A18', 
+                  borderColor: '#EC4899',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
                 }
               }}
             >
@@ -518,10 +525,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
               onClick={(e) => setAnchorElAccount(e.currentTarget)}
               sx={{ 
                 p: 0.5,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '14px',
-                bgcolor: 'rgba(255, 255, 255, 0.03)',
-                '&:hover': { borderColor: 'rgba(99, 102, 241, 0.3)', bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                bgcolor: '#161412',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                '&:hover': { borderColor: 'rgba(236, 72, 153, 0.3)', bgcolor: '#1C1A18' },
                 transition: 'all 0.2s'
               }}
             >
@@ -530,10 +538,10 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 sx={{ 
                   width: 34, 
                   height: 34, 
-                  bgcolor: '#050505',
+                  bgcolor: '#0A0908',
                   fontSize: '0.875rem',
                   fontWeight: 800,
-                  color: '#6366F1',
+                  color: '#EC4899',
                   borderRadius: '10px',
                   fontFamily: 'var(--font-mono)'
                 }}
@@ -548,15 +556,15 @@ export default function AppHeader({ className }: AppHeaderProps) {
               size="large"
               sx={{
                 ml: 1,
-                background: 'linear-gradient(135deg, #6366F1 0%, #00D1DA 100%)',
-                color: '#000',
+                background: 'linear-gradient(135deg, #EC4899 0%, #A855F7 100%)',
+                color: '#fff',
                 fontWeight: 800,
                 fontFamily: 'var(--font-satoshi)',
                 borderRadius: '14px',
                 textTransform: 'none',
                 px: 4,
-                boxShadow: '0 8px 20px rgba(99, 102, 241, 0.15)',
-                '&:hover': { background: 'linear-gradient(135deg, #00E5FF 0%, #00C1CA 100%)', transform: 'translateY(-1px)' }
+                boxShadow: '0 8px 20px rgba(236, 72, 153, 0.15)',
+                '&:hover': { background: 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)', transform: 'translateY(-1px)' }
               }}
             >
               Connect
@@ -573,11 +581,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
             sx: {
               mt: 2,
               width: 280,
-              bgcolor: 'rgba(11, 9, 8, 0.98)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              bgcolor: '#161412',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
               borderRadius: '28px',
               backgroundImage: 'none',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 25px 50px rgba(0,0,0,0.7)',
               p: 1,
               color: 'white'
             }
@@ -585,7 +593,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <Box sx={{ px: 2.5, py: 2.5, bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '20px', mb: 1 }}>
+          <Box sx={{ px: 2.5, py: 2.5, bgcolor: '#0A0908', borderRadius: '20px', mb: 1 }}>
             <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
               Identity
             </Typography>
@@ -608,7 +616,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 const idSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN || 'accounts';
                 window.location.href = `https://${idSubdomain}.${domain}/settings?source=${encodeURIComponent(window.location.origin)}&tab=profile`;
               }}
-              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}
+              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} strokeWidth={1.5} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
               <ListItemText primary="Account Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
@@ -618,7 +626,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 alert('Exporting your data to Markdown...');
                 setAnchorElAccount(null);
               }}
-              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}
+              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}><Download size={18} strokeWidth={1.5} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
               <ListItemText primary="Export Vault" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />

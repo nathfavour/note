@@ -25,7 +25,9 @@ import {
     Lock,
     Shield,
     Fingerprint,
-    Trash2
+    Trash2,
+    Save,
+    Eye
 } from 'lucide-react';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { SudoModal } from '@/components/overlays/SudoModal';

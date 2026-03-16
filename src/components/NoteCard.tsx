@@ -80,27 +80,32 @@ export default function NoteCard({
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        bgcolor: 'rgba(20, 20, 20, 0.7)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        bgcolor: '#161412',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
         borderRadius: '24px',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         backgroundImage: 'none',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.4)',
         position: 'relative',
         overflow: 'hidden',
         '&::after': {
           content: '""',
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%)',
+          background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, transparent 100%)',
           opacity: 0,
           transition: 'opacity 0.4s'
         },
         '&:hover': {
-          transform: 'translateY(-6px)',
-          borderColor: 'rgba(245, 158, 11, 0.4)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-          bgcolor: 'rgba(25, 25, 25, 0.8)',
+          transform: 'perspective(1200px) translateY(-6px) rotateX(2deg)',
+          borderColor: 'rgba(236, 72, 153, 0.3)',
+          boxShadow: `
+            inset 0 1px 0 rgba(255, 255, 255, 0.08), 
+            inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+            0 20px 40px rgba(0,0,0,0.4),
+            0 0 20px rgba(236, 72, 153, 0.1)
+          `,
+          bgcolor: '#1C1A18',
           '&::after': {
             opacity: 1
           }
@@ -129,8 +134,8 @@ export default function NoteCard({
             <Box sx={{ 
               p: 1, 
               borderRadius: '12px', 
-              bgcolor: isEncrypted ? alpha('#F59E0B', 0.1) : 'rgba(255, 255, 255, 0.05)',
-              color: isEncrypted ? '#F59E0B' : 'rgba(255, 255, 255, 0.4)',
+              bgcolor: isEncrypted ? alpha('#EC4899', 0.1) : 'rgba(255, 255, 255, 0.05)',
+              color: isEncrypted ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
               display: 'flex'
             }}>
               {isEncrypted ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
@@ -187,10 +192,10 @@ export default function NoteCard({
               component={Link} 
               href={`/notes/${id}`}
               sx={{ 
-                color: '#6366F1',
-                bgcolor: alpha('#6366F1', 0.05),
+                color: '#EC4899',
+                bgcolor: alpha('#EC4899', 0.05),
                 borderRadius: '12px',
-                '&:hover': { bgcolor: alpha('#6366F1', 0.15) }
+                '&:hover': { bgcolor: alpha('#EC4899', 0.15) }
               }}
             >
               <EditIcon fontSize="small" />
@@ -230,12 +235,11 @@ export default function NoteCard({
           onClose={handleMenuClose}
           PaperProps={{
             sx: {
-              bgcolor: 'rgba(10, 10, 10, 0.98)',
-              backdropFilter: 'blur(25px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              bgcolor: '#161412',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
               borderRadius: '16px',
               mt: 1,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 30px rgba(0,0,0,0.5)',
               '& .MuiMenuItem-root': {
                 px: 2,
                 py: 1.5,
@@ -243,7 +247,7 @@ export default function NoteCard({
                 fontWeight: 800,
                 color: 'rgba(255, 255, 255, 0.6)',
                 '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  bgcolor: '#1C1A18',
                   color: 'white'
                 }
               }

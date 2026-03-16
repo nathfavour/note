@@ -75,7 +75,7 @@ function SearchResultAvatar({ result }: { result: SearchResult }) {
           bgcolor: '#A855F7',
           color: '#fff',
           fontWeight: 800,
-          fontFamily: '"Space Grotesk", sans-serif'
+          fontFamily: 'var(--font-mono)'
         }}
       >
         {result.title.charAt(0).toUpperCase()}
@@ -91,7 +91,7 @@ function SearchResultAvatar({ result }: { result: SearchResult }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: result.type === 'note' ? '#6366F1' : '#10B981'
+        color: result.type === 'note' ? '#EC4899' : '#10B981'
       }}
     >
       {result.icon}
@@ -292,20 +292,21 @@ export default function GlobalSearch({
         variant="outlined"
         sx={{
           '& .MuiOutlinedInput-root': {
-            backgroundColor: 'rgba(22, 20, 18, 0.98)',
+            backgroundColor: '#161412',
             borderRadius: '16px',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             '& fieldset': {
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             },
             '&:hover fieldset': {
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
             },
             '&.Mui-focused fieldset': {
-              border: '1px solid #6366F1',
+              border: '1px solid #EC4899',
             },
           },
           '& .MuiInputBase-input': {
-            fontFamily: '"Inter", sans-serif',
+            fontFamily: 'var(--font-satoshi)',
             color: 'rgba(255, 255, 255, 0.9)',
           }
         }}
@@ -344,17 +345,18 @@ export default function GlobalSearch({
                           width: 24,
                           height: 24,
                           fontSize: '0.75rem',
-                          backgroundColor: '#6366F1',
-                          color: '#000',
+                          backgroundColor: '#0A0908',
+                          color: '#EC4899',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
                           fontWeight: 900,
-                          fontFamily: '"Space Grotesk", sans-serif'
+                          fontFamily: 'var(--font-mono)'
                         }}
                         src={smallProfileUrl ?? undefined}
                       >
                         {user.name.charAt(0).toUpperCase()}
                       </Avatar>
                     ) : (
-                      <AccountIcon sx={{ color: '#6366F1' }} />
+                      <AccountIcon sx={{ color: '#EC4899' }} />
                     )}
                   </IconButton>
                 )}
@@ -377,18 +379,18 @@ export default function GlobalSearch({
                 onDelete={() => handleFilterToggle(filter)}
                 size="small"
                 sx={{
-                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                  color: '#6366F1',
-                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                  color: '#EC4899',
+                  border: '1px solid rgba(236, 72, 153, 0.2)',
                   fontWeight: 700,
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-mono)',
                   textTransform: 'uppercase',
                   fontSize: '0.7rem',
                   '& .MuiChip-deleteIcon': {
-                    color: '#6366F1',
-                    '&:hover': { color: '#00D1D9' }
+                    color: '#EC4899',
+                    '&:hover': { color: '#F472B6' }
                   },
-                  '& .MuiChip-icon': { color: '#6366F1' }
+                  '& .MuiChip-icon': { color: '#EC4899' }
                 }}
               />
             );
@@ -408,11 +410,11 @@ export default function GlobalSearch({
             zIndex: 1000,
             maxHeight: 400,
             overflow: 'auto',
-            bgcolor: 'rgba(22, 20, 18, 0.99)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            bgcolor: '#161412',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '16px',
             backgroundImage: 'none',
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.5)',
           }}
         >
           {results.length > 0 ? (
@@ -429,8 +431,9 @@ export default function GlobalSearch({
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                      '& .MuiListItemText-primary': { color: '#6366F1' }
+                      backgroundColor: '#1C1A18',
+                      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                      '& .MuiListItemText-primary': { color: '#EC4899' }
                     },
                   }}
                 >
@@ -449,7 +452,7 @@ export default function GlobalSearch({
                         sx: {
                           fontWeight: 700,
                           fontSize: '0.9rem',
-                          fontFamily: '"Space Grotesk", sans-serif',
+                          fontFamily: 'var(--font-clash)',
                           color: 'rgba(255, 255, 255, 0.9)',
                           transition: 'color 0.2s ease'
                         }
@@ -457,7 +460,7 @@ export default function GlobalSearch({
                       secondary: {
                         sx: {
                           fontSize: '0.75rem',
-                          fontFamily: '"Inter", sans-serif',
+                          fontFamily: 'var(--font-satoshi)',
                           color: 'rgba(255, 255, 255, 0.5)'
                         }
                       }
@@ -468,7 +471,7 @@ export default function GlobalSearch({
             </List>
           ) : query ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontFamily: '"Inter", sans-serif' }}>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontFamily: 'var(--font-satoshi)' }}>
                 No results found for &quot;{query}&quot;
               </Typography>
             </Box>
@@ -480,7 +483,7 @@ export default function GlobalSearch({
                   px: 2,
                   pb: 1.5,
                   color: 'rgba(255, 255, 255, 0.4)',
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-mono)',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -501,7 +504,8 @@ export default function GlobalSearch({
                       width: 'calc(100% - 16px)',
                       cursor: 'pointer',
                       '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        backgroundColor: '#1C1A18',
+                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)'
                       },
                     }}
                   >
@@ -514,7 +518,7 @@ export default function GlobalSearch({
                         primary: {
                           sx: {
                             fontSize: '0.85rem',
-                            fontFamily: '"Inter", sans-serif',
+                            fontFamily: 'var(--font-satoshi)',
                             color: 'rgba(255, 255, 255, 0.7)'
                           }
                         }
@@ -538,10 +542,10 @@ export default function GlobalSearch({
             sx: {
               borderRadius: '16px',
               minWidth: 200,
-              bgcolor: 'rgba(22, 20, 18, 0.99)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              bgcolor: '#161412',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
               backgroundImage: 'none',
-              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.5)',
               mt: 1,
               py: 1
             }
@@ -556,7 +560,7 @@ export default function GlobalSearch({
             px: 2,
             py: 1.25,
             gap: 2,
-            '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#6366F1' }
+            '&:hover': { bgcolor: '#1C1A18', color: '#EC4899', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' }
           }}
         >
           <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
@@ -568,7 +572,7 @@ export default function GlobalSearch({
               primary: {
                 sx: {
                   fontWeight: 700,
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-mono)',
                   textTransform: 'uppercase',
                   fontSize: '0.8rem',
                   letterSpacing: '0.05em'
@@ -583,7 +587,7 @@ export default function GlobalSearch({
             px: 2,
             py: 1.25,
             gap: 2,
-            '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#6366F1' }
+            '&:hover': { bgcolor: '#1C1A18', color: '#EC4899', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' }
           }}
         >
           <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
@@ -595,7 +599,7 @@ export default function GlobalSearch({
               primary: {
                 sx: {
                   fontWeight: 700,
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-mono)',
                   textTransform: 'uppercase',
                   fontSize: '0.8rem',
                   letterSpacing: '0.05em'
@@ -604,15 +608,15 @@ export default function GlobalSearch({
             }}
           />
         </MenuItem>
-        <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+        <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
         <MenuItem
           onClick={handleLogout}
           sx={{
             px: 2,
             py: 1.25,
             gap: 2,
-            color: '#FF453A',
-            '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.1)' }
+            color: '#FF4D4D',
+            '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.05)' }
           }}
         >
           <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
@@ -624,7 +628,7 @@ export default function GlobalSearch({
               primary: {
                 sx: {
                   fontWeight: 700,
-                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontFamily: 'var(--font-mono)',
                   textTransform: 'uppercase',
                   fontSize: '0.8rem',
                   letterSpacing: '0.05em'

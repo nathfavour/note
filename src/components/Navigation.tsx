@@ -58,15 +58,15 @@ export const MobileBottomNav: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          bgcolor: 'rgba(11, 9, 8, 0.95)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: '#161412',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
           borderRadius: '24px',
           px: 2,
           py: 1.5,
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0,0,0,0.6)',
           backgroundImage: 'none'
         }}
       >
@@ -77,16 +77,16 @@ export const MobileBottomNav: React.FC = () => {
             href={href}
             sx={{
               color: isActive(href) ? '#000' : 'rgba(255, 255, 255, 0.6)',
-              bgcolor: isActive(href) ? 'var(--color-primary)' : 'transparent',
+              bgcolor: isActive(href) ? '#EC4899' : 'transparent',
               borderRadius: '16px',
               p: 1.5,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                bgcolor: isActive(href) ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.05)',
+                bgcolor: isActive(href) ? '#EC4899' : 'rgba(255, 255, 255, 0.05)',
                 transform: 'translateY(-2px)'
               },
               ...(isActive(href) && {
-                boxShadow: '0 0 15px rgba(99, 102, 241, 0.4)',
+                boxShadow: '0 0 15px rgba(236, 72, 153, 0.4)',
                 transform: 'translateY(-4px)'
               })
             }}
@@ -156,14 +156,13 @@ export const DesktopSidebar: React.FC = () => {
         left: 0,
         top: 0,
         height: '100vh',
-        bgcolor: '#0F0D0C',
-        backgroundImage: 'linear-gradient(90deg, #12100E 0%, #0A0908 100%)',
+        bgcolor: '#0A0908',
         borderRight: '1px solid rgba(255, 255, 255, 0.05)',
-        boxShadow: '10px 0 30px rgba(0,0,0,0.5), inset -1px 0 0 rgba(255,255,255,0.02)',
+        boxShadow: '10px 0 30px rgba(0,0,0,0.5), inset -1px 0 0 rgba(0, 0, 0, 0.4)',
         transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         width: isCollapsed ? '80px' : '280px',
         zIndex: 1200,
-        pt: '80px' // Offset for AppHeader
+        pt: '88px' // Match AppHeader minHeight
       }}
     >
       <Box sx={{ 
@@ -207,14 +206,16 @@ export const DesktopSidebar: React.FC = () => {
                   px: isCollapsed ? 2 : 2.5,
                   py: 1.75,
                   transition: 'all 0.2s ease',
-                  bgcolor: active ? alpha('#6366F1', 0.1) : 'transparent',
-                  color: active ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.6)',
+                  bgcolor: active ? alpha('#EC4899', 0.1) : 'transparent',
+                  color: active ? '#EC4899' : 'rgba(255, 255, 255, 0.6)',
                   border: '1px solid',
-                  borderColor: active ? alpha('#6366F1', 0.2) : 'transparent',
+                  borderColor: active ? alpha('#EC4899', 0.2) : 'transparent',
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : 'none',
                   '&:hover': {
-                    bgcolor: active ? alpha('#6366F1', 0.15) : 'rgba(255, 255, 255, 0.05)',
+                    bgcolor: active ? alpha('#EC4899', 0.15) : '#161412',
                     transform: 'translateX(4px)',
-                    color: active ? 'var(--color-primary)' : 'white'
+                    color: active ? '#EC4899' : 'white',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)'
                   },
                   justifyContent: isCollapsed ? 'center' : 'flex-start'
                 }}
@@ -238,7 +239,7 @@ export const DesktopSidebar: React.FC = () => {
                   />
                 )}
                 {active && !isCollapsed && (
-                  <Box sx={{ width: 4, height: 20, bgcolor: 'var(--color-electric)', borderRadius: '2px', ml: 'auto', boxShadow: '0 0 10px var(--color-electric)' }} />
+                  <Box sx={{ width: 4, height: 20, bgcolor: '#EC4899', borderRadius: '2px', ml: 'auto', boxShadow: '0 0 10px rgba(236, 72, 153, 0.5)' }} />
                 )}
               </ListItemButton>
             </Tooltip>
@@ -254,8 +255,9 @@ export const DesktopSidebar: React.FC = () => {
             gap: 2, 
             p: 2, 
             borderRadius: '16px', 
-            bgcolor: 'rgba(255, 255, 255, 0.02)',
+            bgcolor: '#161412',
             border: '1px solid rgba(255, 255, 255, 0.05)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             mb: 2,
             justifyContent: isCollapsed ? 'center' : 'flex-start'
           }}>
@@ -264,11 +266,12 @@ export const DesktopSidebar: React.FC = () => {
               sx={{ 
                 width: 36, 
                 height: 36, 
-                bgcolor: 'var(--color-primary)',
-                color: '#000',
+                bgcolor: '#0A0908',
+                color: '#EC4899',
                 fontSize: '0.875rem',
                 fontWeight: 800,
-                borderRadius: '10px'
+                borderRadius: '10px',
+                fontFamily: 'var(--font-mono)'
               }}
             >
               {user.name ? user.name[0].toUpperCase() : 'U'}
