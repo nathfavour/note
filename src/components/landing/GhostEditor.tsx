@@ -543,7 +543,7 @@ export const GhostEditor = () => {
 
                         <Box sx={{ p: 4, pb: 2 }}>
                             <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 2 }}>
-                                {(content.trim().length > 0 || isTitleManuallyEdited) && (
+                                {(content.trim().length >= 5 || isTitleManuallyEdited) && (
                                     <TextField
                                         fullWidth
                                         placeholder="Note Title"
@@ -559,7 +559,7 @@ export const GhostEditor = () => {
                                                 fontSize: '2rem', 
                                                 fontWeight: 900, 
                                                 fontFamily: 'var(--font-clash)',
-                                                color: theme.palette.secondary.main, 
+                                                color: 'var(--color-secondary)', 
                                                 pr: 18, 
                                                 animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                                                 '@keyframes fadeIn': {
@@ -618,7 +618,8 @@ export const GhostEditor = () => {
                             borderTop: `1px solid ${theme.palette.divider}`,
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            background: 'linear-gradient(to right, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05))'
                         }}>
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <Box sx={{ display: 'flex', color: 'rgba(255, 255, 255, 0.3)' }}>
@@ -627,7 +628,7 @@ export const GhostEditor = () => {
                                         Public & Anonymous
                                     </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', color: theme.palette.secondary.main, alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', color: 'var(--color-secondary)', alignItems: 'center' }}>
                                     <Clock size={16} />
                                     <Typography variant="caption" sx={{ ml: 1, fontWeight: 800 }}>
                                         Expires in {LIFESPAN_OPTIONS.find(o => o.value === lifespanMs)?.label || 'Custom'}
@@ -649,10 +650,12 @@ export const GhostEditor = () => {
                                             px: 4,
                                             py: 1.5,
                                             fontWeight: 900,
-                                            boxShadow: `0 10px 30px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                                            bgcolor: 'var(--color-secondary)',
+                                            boxShadow: `0 10px 30px ${alpha('#EC4899', 0.3)}`,
                                             '&:hover': {
                                                 transform: 'translateY(-2px)',
-                                                boxShadow: `0 15px 40px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                                                bgcolor: '#D946EF',
+                                                boxShadow: `0 15px 40px ${alpha('#EC4899', 0.5)}`,
                                             }
                                         }}
                                     >

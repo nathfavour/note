@@ -7,6 +7,7 @@ import {
   Box, 
   IconButton, 
   Chip, 
+  alpha,
 } from '@mui/material';
 import { useContextMenu } from './ContextMenuContext';
 import { useDynamicSidebar } from './DynamicSidebar';
