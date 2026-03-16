@@ -20,6 +20,7 @@ import {
   Logout as ArrowLeftOnRectangleIcon,
   Login as ArrowRightOnRectangleIcon,
   PushPin as PinIcon,
+  Brush as PencilIcon,
 } from '@mui/icons-material';
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
@@ -207,6 +208,10 @@ export default function NotesPage() {
     openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
   };
 
+  const handleCreateDoodleClick = () => {
+    openOverlay(<CreateNoteForm initialFormat="doodle" onNoteCreated={handleNoteCreated} />);
+  };
+
   // Calculate available space and determine optimal card size
   const gridSx = useMemo(() => {
     if (!isCollapsed && isDynamicSidebarOpen) {
@@ -288,6 +293,22 @@ export default function NotesPage() {
           </Typography>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <IconButton 
+              onClick={handleCreateDoodleClick} 
+              {...sidebarIgnoreProps} 
+              sx={{ 
+                color: 'primary.main',
+                bgcolor: 'rgba(99, 102, 241, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(99, 102, 241, 0.1)',
+                '&:hover': {
+                  bgcolor: 'rgba(99, 102, 241, 0.1)',
+                  borderColor: 'rgba(99, 102, 241, 0.2)',
+                }
+              }}
+            >
+              <PencilIcon />
+            </IconButton>
+            <IconButton 
               onClick={handleCreateNoteClick} 
               {...sidebarIgnoreProps} 
               sx={{ 
@@ -366,6 +387,22 @@ export default function NotesPage() {
             </Typography>
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton
+              onClick={handleCreateDoodleClick}
+              {...sidebarIgnoreProps}
+              sx={{ 
+                color: 'secondary.main',
+                bgcolor: 'rgba(236, 72, 153, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(236, 72, 153, 0.1)',
+                '&:hover': {
+                  bgcolor: 'rgba(236, 72, 153, 0.1)',
+                  borderColor: 'rgba(236, 72, 153, 0.2)',
+                }
+              }}
+            >
+              <PencilIcon />
+            </IconButton>
             <IconButton
               onClick={handleToggleSidebar}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}

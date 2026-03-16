@@ -19,6 +19,8 @@ import {
   LocalOffer as TagIcon,
   Add as PlusIcon,
   Brush as PencilIcon,
+  Public as PublicIcon,
+  Lock as PrivateIcon,
 } from '@mui/icons-material';
 import { Button } from '@/components/ui/Button';
 import { buildAutoTitleFromContent } from '@/constants/noteTitle';
@@ -211,15 +213,15 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                   display: { xs: 'none', sm: 'block' }
                 }}
               >
-                {format === 'doodle' ? 'Sketch your ideas' : 'Capture your brilliance'}
+                {isPublic ? 'Visible to anyone with the link' : 'Only visible to you'}
               </Typography>
             </Box>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
             <ToggleButtonGroup
-              value={format}
+              value={isPublic}
               exclusive
-              onChange={(_, newFormat) => newFormat && setFormat(newFormat)}
+              onChange={(_, val) => val !== null && setIsPublic(val)}
               size="small"
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.04)',
@@ -229,27 +231,22 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                 '& .MuiToggleButton-root': {
                   border: 'none',
                   borderRadius: '8px',
-                  paddingLeft: theme.spacing(1.5),
-                  paddingRight: theme.spacing(1.5),
-                  [theme.breakpoints.up('sm')]: {
-                    paddingLeft: theme.spacing(2),
-                    paddingRight: theme.spacing(2),
-                  },
+                  px: 2,
                   py: 0.5,
                   color: 'rgba(255, 255, 255, 0.5)',
                   '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: 'black',
-                    '&:hover': { bgcolor: 'primary.dark' }
+                    bgcolor: isPublic ? 'secondary.main' : 'rgba(255, 255, 255, 0.1)',
+                    color: isPublic ? 'white' : 'white',
+                    '&:hover': { bgcolor: isPublic ? 'secondary.dark' : 'rgba(255, 255, 255, 0.15)' }
                   }
                 }
               }}
             >
-              <ToggleButton value="text">
-                <DescriptionIcon sx={{ fontSize: 18 }} />
+              <ToggleButton value={false}>
+                <PrivateIcon sx={{ fontSize: 18 }} />
               </ToggleButton>
-              <ToggleButton value="doodle">
-                <PencilIcon sx={{ fontSize: 18 }} />
+              <ToggleButton value={true}>
+                <PublicIcon sx={{ fontSize: 18 }} />
               </ToggleButton>
             </ToggleButtonGroup>
             
@@ -299,11 +296,11 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                 letterSpacing: '0.15em'
               }}
             >
-              Designation
+              Title
             </Typography>
             <TextField
               fullWidth
-              placeholder="Title your odyssey..."
+              placeholder="Give your note a title..."
               value={title}
               onChange={ (e) => handleTitleChange(e.target.value)}
               variant="outlined"
@@ -334,7 +331,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
             />
           </Box>
 
-          {/* Manifestation Input */}
+          {/* Content Input */}
           <Box>
             <Typography
               variant="subtitle2"
@@ -348,13 +345,13 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                 letterSpacing: '0.1em'
               }}
             >
-              Manifestation
+              Content
             </Typography>
             <TextField
               fullWidth
               multiline
               rows={isMobile ? 5 : 8}
-              placeholder="Transcribe your consciousness..."
+              placeholder="What's on your mind?..."
               value={content}
               onChange={ (e) => {
                 setContent(e.target.value);
@@ -489,58 +486,6 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                 ))}
               </Stack>
             )}
-          </Box>
-
-          {/* Visibility Toggle */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            bgcolor: 'rgba(255, 255, 255, 0.03)', 
-            p: 2.5, 
-            borderRadius: '24px', 
-            border: '1px solid rgba(255, 255, 255, 0.08)' 
-          }}>
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white', fontSize: '0.875rem', fontFamily: 'var(--font-satoshi)' }}>
-                Privacy Mode
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)' }}>
-                {isPublic ? 'Publicly discoverable' : 'Vaulted session'}
-              </Typography>
-            </Box>
-            <ToggleButtonGroup
-              value={isPublic}
-              exclusive
-              onChange={(_, val) => val !== null && setIsPublic(val)}
-              size="small"
-              sx={{
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '12px',
-                p: 0.5,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                '& .MuiToggleButton-root': {
-                  border: 'none',
-                  borderRadius: '8px',
-                  px: 2.5,
-                  py: 0.6,
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-jetbrains-mono)',
-                  '&.Mui-selected': {
-                    bgcolor: isPublic ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-                    color: isPublic ? '#EC4899' : 'white',
-                    '&:hover': {
-                      bgcolor: isPublic ? 'rgba(236, 72, 153, 0.2)' : 'rgba(255, 255, 255, 0.15)',
-                    }
-                  }
-                }
-              }}
-            >
-              <ToggleButton value={false}>Private</ToggleButton>
-              <ToggleButton value={true}>Public</ToggleButton>
-            </ToggleButtonGroup>
           </Box>
         </Stack>
       </Box>
