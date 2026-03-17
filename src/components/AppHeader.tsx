@@ -199,10 +199,10 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={toggleNotifications}
               sx={{ 
-                color: (unreadCount > 0 || isNotificationsOpen) ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
+                color: (unreadCount > 0 || isNotificationsOpen) ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
                 bgcolor: '#161412',
                 border: '1px solid',
-                borderColor: (unreadCount > 0 || isNotificationsOpen) ? alpha('#EC4899', 0.2) : 'rgba(255, 255, 255, 0.05)',
+                borderColor: (unreadCount > 0 || isNotificationsOpen) ? alpha('#6366F1', 0.2) : 'rgba(255, 255, 255, 0.05)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
@@ -210,9 +210,9 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 zIndex: 1301,
                 boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: '#1C1A18', 
-                  borderColor: alpha('#EC4899', 0.4),
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
+                    bgcolor: '#1C1A18', 
+                    borderColor: alpha('#6366F1', 0.4),
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(99, 102, 241, 0.1)' 
                 }
               }}
             >
@@ -222,8 +222,8 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   position: 'absolute',
                   top: -2,
                   right: -2,
-                  bgcolor: '#EC4899',
-                  color: '#000',
+                  bgcolor: '#6366F1',
+                  color: '#fff',
                   fontSize: '0.6rem',
                   fontWeight: 900,
                   width: 16,
@@ -281,7 +281,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   {/* Header */}
                   <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Zap size={18} color="#EC4899" strokeWidth={2} />
+                      <Zap size={18} color="#6366F1" strokeWidth={2} />
                       <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
                         Intelligence Feed
                       </Typography>
@@ -290,7 +290,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                       <IconButton 
                         size="small" 
                         onClick={() => setNotifViewMode(notifViewMode === 'dropdown' ? 'sidebar' : 'dropdown')}
-                        sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#EC4899', bgcolor: 'rgba(236, 72, 153, 0.05)' } }}
+                        sx={{ color: 'rgba(255, 255, 255, 0.3)', '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.05)' } }}
                       >
                         {notifViewMode === 'dropdown' ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
                       </IconButton>
@@ -298,19 +298,19 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   </Box>
 
                   {/* Tabs */}
-                  <Box sx={{ display: 'flex', p: 1.5, gap: 1.5, bgcolor: '#0A0908' }}>
+                    <Box sx={{ display: 'flex', p: 1.5, gap: 1.5, bgcolor: '#0A0908' }}>
                     <Box 
                       onClick={() => setNotifTab('app')}
                       sx={{ 
                         flex: 1, py: 1.2, textAlign: 'center', cursor: 'pointer', borderRadius: '14px',
-                        bgcolor: notifTab === 'app' ? 'rgba(236, 72, 153, 0.05)' : '#161412',
+                        bgcolor: notifTab === 'app' ? 'rgba(99, 102, 241, 0.05)' : '#161412',
                         border: '1px solid',
-                        borderColor: notifTab === 'app' ? 'rgba(236, 72, 153, 0.1)' : 'transparent',
+                        borderColor: notifTab === 'app' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
                         transition: 'all 0.2s',
                         boxShadow: notifTab === 'app' ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : 'none'
                       }}
                     >
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'app' ? '#EC4899' : 'rgba(255, 255, 255, 0.3)', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: notifTab === 'app' ? '#6366F1' : 'rgba(255, 255, 255, 0.3)', letterSpacing: '0.05em', fontFamily: 'var(--font-satoshi)' }}>
                         SYSTEM ({notifications.length})
                       </Typography>
                     </Box>
@@ -362,8 +362,8 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                 onClick={() => markAsRead(notif.$id)}
                               >
                                 <Stack direction="row" spacing={2} alignItems="flex-start">
-                                  <Box sx={{ width: 40, height: 40, borderRadius: '12px', bgcolor: 'rgba(236, 72, 153, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(236, 72, 153, 0.1)' }}>
-                                    <Layers size={18} color="#EC4899" strokeWidth={1.5} />
+                                  <Box sx={{ width: 40, height: 40, borderRadius: '12px', bgcolor: 'rgba(99, 102, 241, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(99, 102, 241, 0.1)' }}>
+                                    <Layers size={18} color="#6366F1" strokeWidth={1.5} />
                                   </Box>
                                   <Box sx={{ minWidth: 0 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', display: 'block', mb: 0.5, fontFamily: 'var(--font-satoshi)', letterSpacing: '0.02em' }}>
@@ -399,10 +399,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                   p: 2.5, mb: 1.5, borderRadius: '18px', bgcolor: '#1C1A18', 
                                   border: '1px solid rgba(255, 255, 255, 0.05)',
                                   boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                                  '&:hover': { bgcolor: '#161412', borderColor: alpha('#A855F7', 0.2) },
+                                  '&:hover': { bgcolor: '#161412', borderColor: alpha('#6366F1', 0.2) },
                                   cursor: 'pointer',
                                   position: 'relative'
                                 }}
+                                onClick={() => markAsRead(notif.id)}
                               >
                                 <Tooltip title="Copy Content">
                                   <IconButton
@@ -416,7 +417,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                                       top: 10, 
                                       right: 10, 
                                       color: 'rgba(255, 255, 255, 0.2)',
-                                      '&:hover': { color: '#EC4899', bgcolor: 'rgba(255, 255, 255, 0.05)' }
+                                      '&:hover': { color: '#6366F1', bgcolor: 'rgba(255, 255, 255, 0.05)' }
                                     }}
                                   >
                                     <Download size={14} strokeWidth={1.5} />
@@ -455,12 +456,12 @@ export default function AppHeader({ className }: AppHeaderProps) {
                       variant="text" 
                       onClick={() => markAllAsRead()}
                       sx={{ 
-                        color: '#EC4899', 
+                        color: '#6366F1', 
                         fontWeight: 900, 
                         fontSize: '0.65rem',
                         letterSpacing: '0.1em',
                         fontFamily: 'var(--font-mono)',
-                        '&:hover': { bgcolor: 'rgba(236, 72, 153, 0.05)' } 
+                        '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.05)' } 
                       }}
                     >
                       REVEAL ALL ACTIVITY
@@ -475,18 +476,18 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={() => setIsAIModalOpen(true)}
               sx={{ 
-                color: '#EC4899',
-                bgcolor: 'rgba(236, 72, 153, 0.05)',
+                color: '#6366F1',
+                bgcolor: 'rgba(99, 102, 241, 0.05)',
                 border: '1px solid',
-                borderColor: 'rgba(236, 72, 153, 0.1)',
+                borderColor: 'rgba(99, 102, 241, 0.1)',
                 borderRadius: '12px',
                 width: 44,
                 height: 44,
                 boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
-                  bgcolor: 'rgba(236, 72, 153, 0.08)', 
-                  borderColor: '#EC4899',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.2)' 
+                  bgcolor: 'rgba(99, 102, 241, 0.08)', 
+                  borderColor: '#6366F1',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(99, 102, 241, 0.2)' 
                 }
               }}
             >
@@ -498,7 +499,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <IconButton 
               onClick={() => setIsEcosystemPortalOpen(true)}
               sx={{ 
-                color: '#EC4899',
+                color: '#6366F1',
                 bgcolor: '#161412',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '12px',
@@ -507,8 +508,8 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                 '&:hover': { 
                   bgcolor: '#1C1A18', 
-                  borderColor: '#EC4899',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
+                  borderColor: '#6366F1',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(99, 102, 241, 0.1)' 
                 }
               }}
             >
@@ -525,7 +526,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 borderRadius: '14px',
                 bgcolor: '#161412',
                 boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                '&:hover': { borderColor: 'rgba(236, 72, 153, 0.3)', bgcolor: '#1C1A18' },
+                '&:hover': { borderColor: 'rgba(99, 102, 241, 0.3)', bgcolor: '#1C1A18' },
                 transition: 'all 0.2s'
               }}
             >
@@ -537,7 +538,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
                   bgcolor: '#0A0908',
                   fontSize: '0.875rem',
                   fontWeight: 800,
-                  color: '#EC4899',
+                  color: '#6366F1',
                   borderRadius: '10px',
                   fontFamily: 'var(--font-mono)'
                 }}
