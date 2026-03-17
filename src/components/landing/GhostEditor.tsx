@@ -42,7 +42,9 @@ import {
     Trash2,
     MoreVertical,
     Settings as SettingsIcon,
-    X
+    X,
+    Eye as EyeIcon,
+    RefreshCcw
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
 import toast from 'react-hot-toast';
@@ -155,8 +157,51 @@ export const GhostEditor = () => {
     const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(false);
     
     // Lifespan Settings
-    const [lifespanMs, setLifespanMs] = useState(60 * 60 * 1000); // Default 1 hour
+    const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [viewingNote, setViewingNote] = useState<GhostNoteRef | null>(null);
+    const [isViewingFull, setIsViewingFull] = useState(false);
+    const [fullNoteContent, setFullNoteContent] = useState<string | null>(null);
+    const [isLoadingFull, setIsLoadingFull] = useState(false);
+
+    const handleViewNote = async (note: GhostNoteRef) => {
+        setViewingNote(note);
+        setIsViewingFull(true);
+        setIsLoadingFull(true);
+        try {
+            const res = await fetch(`/api/shared/${note.id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setFullNoteContent(data.content);
+            } else {
+                toast.error("Could not fetch note content");
+            }
+        } catch (e) {
+            toast.error("Failed to load note");
+        } finally {
+            setIsLoadingFull(false);
+        }
+    };
+
+    const handleRecreate = () => {
+        if (!fullNoteContent) return;
+        setTitle(viewingNote?.title || '');
+        setContent(fullNoteContent);
+        setIsViewingFull(false);
+        setViewingNote(null);
+        setFullNoteContent(null);
+        setIsTitleManuallyEdited(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast.success("Note populated in editor");
+    };
+
+    const handleCopyFullContent = async () => {
+        if (!fullNoteContent) return;
+        const copied = await copyToClipboard(fullNoteContent);
+        if (copied) {
+            toast.success("Content copied");
+        }
+    };
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number;
         mouseY: number;
@@ -771,6 +816,13 @@ export const GhostEditor = () => {
                                                             </Typography>
                                                             <IconButton 
                                                                 size="small" 
+                                                                onClick={() => handleViewNote(note)}
+                                                                sx={{ color: theme.palette.secondary.main }}
+                                                            >
+                                                                <EyeIcon size={14} />
+                                                            </IconButton>
+                                                            <IconButton 
+                                                                size="small" 
                                                                 onClick={() => window.open(`/shared/${note.id}`, '_blank')}
                                                                 sx={{ color: theme.palette.secondary.main }}
                                                             >
@@ -823,15 +875,25 @@ export const GhostEditor = () => {
                                                         <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'error.main', fontWeight: 700 }}>
                                                             Link expired. Recoverable for 7 days.
                                                         </Typography>
-                                                        <Button 
-                                                            fullWidth
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => openIDMWindow()}
-                                                            sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5 }}
-                                                        >
-                                                            CLAIM TO RESTORE
-                                                        </Button>
+                                                            <Button 
+                                                                fullWidth
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleViewNote(note)}
+                                                                sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5, mb: 0.5 }}
+                                                            >
+                                                                VIEW STALE NOTE
+                                                            </Button>
+                                                            <Button 
+                                                                fullWidth
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => openIDMWindow()}
+                                                                sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5 }}
+                                                            >
+                                                                CLAIM TO RESTORE
+                                                            </Button>
+
                                                     </CardContent>
                                                 </Card>
                                             ))}
@@ -973,32 +1035,96 @@ export const GhostEditor = () => {
                             </Grid>
                         </RadioGroup>
                     </FormControl>
-                    
-                    <Box sx={{ mt: 4, p: 2, borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                            <Shield size={16} color={theme.palette.info.main} style={{ marginTop: 2 }} />
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
-                                Notes expire after the selected time, becoming inaccessible via their share link. However, you can still claim them from your sparks stash for up to 7 days from creation.
-                            </Typography>
-                        </Stack>
-                    </Box>
-
-                    <Button
-                        fullWidth
-                        onClick={() => setIsSettingsOpen(false)}
-                        variant="contained"
-                        color="secondary"
-                        sx={{ 
-                            mt: 4, 
-                            borderRadius: '100px', 
-                            py: 1.5, 
-                            fontWeight: 900
-                        }}
-                    >
-                        APPLY SETTINGS
-                    </Button>
                 </DialogContent>
             </Dialog>
+
+            {/* Note Viewer Modal */}
+            <Dialog
+                fullWidth
+                maxWidth="md"
+                open={isViewingFull}
+                onClose={() => setIsViewingFull(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: '#161412',
+                        backgroundImage: 'none',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '24px',
+                        minHeight: '60vh'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <Stack>
+                        <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                            {viewingNote?.title}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                            GHOST SPARK • {viewingNote && new Date(viewingNote.createdAt).toLocaleDateString()}
+                        </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1}>
+                        {fullNoteContent && (
+                            <>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={handleCopyFullContent}
+                                    startIcon={<CopyIcon size={16} />}
+                                    sx={{ 
+                                        borderRadius: '12px', 
+                                        fontWeight: 800, 
+                                        px: 2,
+                                        borderColor: alpha(theme.palette.secondary.main, 0.4),
+                                        color: theme.palette.secondary.main,
+                                        '&:hover': {
+                                            borderColor: theme.palette.secondary.main,
+                                            bgcolor: alpha(theme.palette.secondary.main, 0.05)
+                                        }
+                                    }}
+                                >
+                                    COPY
+                                </Button>
+                                <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={handleRecreate}
+                                    startIcon={<RefreshCcw size={16} />}
+                                    sx={{ borderRadius: '12px', fontWeight: 800, px: 2 }}
+                                >
+                                    RECREATE
+                                </Button>
+                            </>
+                        )}
+                        <IconButton onClick={() => setIsViewingFull(false)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                            <X size={20} />
+                        </IconButton>
+                    </Stack>
+
+                </DialogTitle>
+                <DialogContent sx={{ p: 4 }}>
+                    {isLoadingFull ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                            <CircularProgress color="secondary" />
+                        </Box>
+                    ) : (
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                whiteSpace: 'pre-wrap', 
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontFamily: 'var(--font-satoshi)',
+                                lineHeight: 1.8,
+                                fontSize: '1.1rem'
+                            }}
+                        >
+                            {fullNoteContent || "Note content is unavailable."}
+                        </Typography>
+                    )}
+                </DialogContent>
+            </Dialog>
+
         </Container>
     );
 };
