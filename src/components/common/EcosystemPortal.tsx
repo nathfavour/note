@@ -15,35 +15,10 @@ import {
     Search,
     X,
     Zap,
-    Activity,
-    Fingerprint,
-    FileText,
-    Shield,
-    Waypoints,
-    GripHorizontal
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-/**
- * Premium Icon Mapper
- */
-const PremiumIcon = ({ name, size = 20, color = 'currentColor' }: { name: string, size?: number, color?: string }) => {
-    const icons: Record<string, any> = {
-        'fingerprint': Fingerprint,
-        'file-text': FileText,
-        'shield': Shield,
-        'waypoints': Waypoints,
-        'zap': Zap,
-        'activity': Activity,
-        'grip': GripHorizontal
-    };
-    
-    const IconComponent = icons[name] || Zap;
-    return <IconComponent size={size} color={color} strokeWidth={1.5} />;
-};
-
 import { ECOSYSTEM_APPS, getEcosystemUrl } from '@/constants/ecosystem';
-import { useKernel } from '@/ecosystem/kernel/EcosystemKernel';
+import Logo, { KylrixApp } from './Logo';
 
 interface EcosystemPortalProps {
     open?: boolean;
@@ -53,7 +28,6 @@ interface EcosystemPortalProps {
 export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClose }: EcosystemPortalProps) {
     const [internalOpen, setInternalOpen] = useState(false);
     const [search, setSearch] = useState('');
-    const { } = useKernel();
 
     const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
     const fallbackOnClose = useCallback(() => setInternalOpen(false), []);
@@ -70,9 +44,8 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const FLAGSHIP_APPS = ['note', 'vault', 'flow', 'connect'];
-    const filteredApps = ECOSYSTEM_APPS.filter(app =>
-        FLAGSHIP_APPS.includes(app.id) && (
+    const filteredApps = ECOSYSTEM_APPS.filter(app => 
+        app.type === 'app' && (
             app.label.toLowerCase().includes(search.toLowerCase()) ||
             app.description.toLowerCase().includes(search.toLowerCase())
         )
@@ -98,7 +71,7 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
         return segments[0];
     };
 
-    const handleAppClick = (subdomain: string, _label: string, _appId: string) => {
+    const handleAppClick = (subdomain: string) => {
         const currentSubdomain = getCurrentSubdomain();
         if (subdomain === currentSubdomain) {
             onClose();
@@ -106,7 +79,7 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
         }
 
         const url = getEcosystemUrl(subdomain);
-        window.location.href = url;
+        window.location.assign(url);
         onClose();
     };
 
@@ -151,15 +124,15 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                         bgcolor: 'rgba(10, 10, 10, 0.8)',
                         backdropFilter: 'blur(40px) saturate(180%)',
                         border: '1px solid rgba(255, 255, 255, 0.12)',
-                        boxShadow: '0 32px 64px rgba(0,0,0,0.7), 0 0 100px rgba(0, 240, 255, 0.05)',
+                        boxShadow: '0 32px 64px rgba(0,0,0,0.7), 0 0 100px rgba(99, 102, 241, 0.05)',
                         overflow: 'hidden'
                     }}
                 >
                     {/* Header / Search */}
                     <Box sx={{ p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                            <Zap size={24} color="#00F0FF" strokeWidth={1.5} />
-                            <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-space-grotesk)', letterSpacing: '-0.02em', color: 'white' }}>
+                            <Zap size={24} color="#6366F1" strokeWidth={1.5} />
+                            <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', color: 'white' }}>
                                 KYLRIX <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>PORTAL</Box>
                             </Typography>
                             <Box sx={{ flexGrow: 1 }} />
@@ -179,20 +152,19 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                             mt: 2,
                             border: '1px solid rgba(255, 255, 255, 0.08)',
                             '&:focus-within': {
-                                borderColor: 'rgba(0, 240, 255, 0.5)',
+                                borderColor: 'rgba(99, 102, 241, 0.5)',
                                 bgcolor: 'rgba(255, 255, 255, 0.06)'
                             }
                         }}>
                             <Search size={20} color="rgba(255, 255, 255, 0.3)" strokeWidth={1.5} />
                             <InputBase
                                 autoFocus
-                                placeholder="Jump to app or search actions..."
+                                placeholder="Jump to app or search..."
                                 fullWidth
                                 value={search}
-                                onChange={ (e) => setSearch(e.target.value)}
+                                onChange={(_e) => setSearch(_e.target.value)}
                                 sx={{
                                     color: 'white',
-                                    fontFamily: 'var(--font-inter)',
                                     fontSize: '1rem',
                                     fontWeight: 500
                                 }}
@@ -219,10 +191,10 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                         </Typography>
                         <Grid container spacing={2}>
                             {filteredApps.map((app) => (
-                                <Grid size={{ xs: 12, sm: 6 }} key={app.id}>
+                                <Grid item xs={12} sm={6} key={app.id}>
                                     <Box
                                         component="button"
-                                        onClick={() => handleAppClick(app.subdomain, app.label, app.id)}
+                                        onClick={() => handleAppClick(app.subdomain)}
                                         sx={{
                                             width: '100%',
                                             display: 'flex',
@@ -248,17 +220,17 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                                         }}
                                     >
                                         <Box sx={{
-                                            width: 44,
-                                            height: 44,
-                                            borderRadius: '12px',
+                                            width: 48,
+                                            height: 48,
+                                            borderRadius: '14px',
                                             bgcolor: alpha(app.color, 0.15),
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '1.5rem',
-                                            border: `1px solid ${alpha(app.color, 0.2)}`
+                                            border: `1px solid ${alpha(app.color, 0.2)}`,
+                                            overflow: 'hidden'
                                         }}>
-                                            <PremiumIcon name={app.icon} color={app.color} />
+                                            <Logo app={app.id as KylrixApp} size={28} variant="icon" />
                                         </Box>
                                         <Box>
                                             <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
@@ -275,8 +247,8 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                     </Box>
 
                     {/* Footer */}
-                    <Box sx={{ p: 2, bgcolor: 'rgba(0, 240, 255, 0.03)', display: 'flex', justifyContent: 'center' }}>
-                        <Typography variant="caption" sx={{ color: 'rgba(0, 240, 255, 0.4)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                    <Box sx={{ p: 2, bgcolor: 'rgba(99, 102, 241, 0.03)', display: 'flex', justifyContent: 'center' }}>
+                        <Typography variant="caption" sx={{ color: 'rgba(99, 102, 241, 0.4)', fontWeight: 700, letterSpacing: '0.05em' }}>
                             KYLRIX ECOSYSTEM v1.0
                         </Typography>
                     </Box>
