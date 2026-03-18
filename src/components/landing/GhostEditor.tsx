@@ -51,6 +51,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/components/ui/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { buildAutoTitleFromContent } from '@/constants/noteTitle';
+import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useToast } from '@/components/ui/Toast';
 
 const GHOST_STORAGE_KEY = 'kylrix_ghost_notes_v2';
@@ -156,23 +157,125 @@ export const GhostEditor = () => {
     const [isLinkCopied, setIsLinkCopied] = useState(false);
     const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(false);
     
+    const { openSidebar, closeSidebar } = useDynamicSidebar();
+    
     // Lifespan Settings
     const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [viewingNote, setViewingNote] = useState<GhostNoteRef | null>(null);
-    const [isViewingFull, setIsViewingFull] = useState(false);
     const [fullNoteContent, setFullNoteContent] = useState<string | null>(null);
     const [isLoadingFull, setIsLoadingFull] = useState(false);
 
+    const handleRecreate = (content: string, noteTitle?: string) => {
+        if (!content) return;
+        setTitle(noteTitle || '');
+        setContent(content);
+        setIsViewingFull(false);
+        setViewingNote(null);
+        setFullNoteContent(null);
+        setIsTitleManuallyEdited(true);
+        closeSidebar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast.success("Note populated in editor");
+    };
+
+    const handleCopyFullContent = async (content: string) => {
+        if (!content) return;
+        const copied = await copyToClipboard(content);
+        if (copied) {
+            toast.success("Content copied");
+        }
+    };
+
     const handleViewNote = async (note: GhostNoteRef) => {
         setViewingNote(note);
-        setIsViewingFull(true);
         setIsLoadingFull(true);
+        
+        // Open sidebar with a loading state
+        openSidebar(
+            <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Stack spacing={1}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                        {note.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                        GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
+                    </Typography>
+                </Stack>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <CircularProgress color="secondary" />
+                </Box>
+            </Box>,
+            note.id
+        );
+
         try {
             const res = await fetch(`/api/shared/${note.id}`);
             if (res.ok) {
                 const data = await res.json();
                 setFullNoteContent(data.content);
+                
+                // Update sidebar with actual content
+                openSidebar(
+                    <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <Stack spacing={1}>
+                            <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                                {note.title}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                                GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
+                            </Typography>
+                        </Stack>
+                        
+                        <Stack direction="row" spacing={1.5}>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => handleCopyFullContent(data.content)}
+                                startIcon={<CopyIcon size={16} />}
+                                sx={{ 
+                                    flex: 1,
+                                    borderRadius: '12px', 
+                                    fontWeight: 800, 
+                                    borderColor: alpha(theme.palette.secondary.main, 0.4),
+                                    color: theme.palette.secondary.main,
+                                    '&:hover': {
+                                        borderColor: theme.palette.secondary.main,
+                                        bgcolor: alpha(theme.palette.secondary.main, 0.05)
+                                    }
+                                }}
+                            >
+                                COPY
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => handleRecreate(data.content, note.title)}
+                                startIcon={<RefreshCcw size={16} />}
+                                sx={{ flex: 1, borderRadius: '12px', fontWeight: 800 }}
+                            >
+                                RECREATE
+                            </Button>
+                        </Stack>
+
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                whiteSpace: 'pre-wrap', 
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontFamily: 'var(--font-satoshi)',
+                                lineHeight: 1.8,
+                                fontSize: '1.05rem',
+                                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                                pt: 4
+                            }}
+                        >
+                            {data.content || "Note content is empty."}
+                        </Typography>
+                    </Box>,
+                    note.id
+                );
             } else {
                 toast.error("Could not fetch note content");
             }
@@ -180,26 +283,6 @@ export const GhostEditor = () => {
             toast.error("Failed to load note");
         } finally {
             setIsLoadingFull(false);
-        }
-    };
-
-    const handleRecreate = () => {
-        if (!fullNoteContent) return;
-        setTitle(viewingNote?.title || '');
-        setContent(fullNoteContent);
-        setIsViewingFull(false);
-        setViewingNote(null);
-        setFullNoteContent(null);
-        setIsTitleManuallyEdited(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        toast.success("Note populated in editor");
-    };
-
-    const handleCopyFullContent = async () => {
-        if (!fullNoteContent) return;
-        const copied = await copyToClipboard(fullNoteContent);
-        if (copied) {
-            toast.success("Content copied");
         }
     };
     const [contextMenu, setContextMenu] = useState<{
@@ -1037,94 +1120,6 @@ export const GhostEditor = () => {
                     </FormControl>
                 </DialogContent>
             </Dialog>
-
-            {/* Note Viewer Modal */}
-            <Dialog
-                fullWidth
-                maxWidth="md"
-                open={isViewingFull}
-                onClose={() => setIsViewingFull(false)}
-                PaperProps={{
-                    sx: {
-                        bgcolor: '#161412',
-                        backgroundImage: 'none',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '24px',
-                        minHeight: '60vh'
-                    }
-                }}
-            >
-                <DialogTitle sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <Stack>
-                        <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
-                            {viewingNote?.title}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
-                            GHOST SPARK • {viewingNote && new Date(viewingNote.createdAt).toLocaleDateString()}
-                        </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1}>
-                        {fullNoteContent && (
-                            <>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={handleCopyFullContent}
-                                    startIcon={<CopyIcon size={16} />}
-                                    sx={{ 
-                                        borderRadius: '12px', 
-                                        fontWeight: 800, 
-                                        px: 2,
-                                        borderColor: alpha(theme.palette.secondary.main, 0.4),
-                                        color: theme.palette.secondary.main,
-                                        '&:hover': {
-                                            borderColor: theme.palette.secondary.main,
-                                            bgcolor: alpha(theme.palette.secondary.main, 0.05)
-                                        }
-                                    }}
-                                >
-                                    COPY
-                                </Button>
-                                <Button
-                                    size="small"
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={handleRecreate}
-                                    startIcon={<RefreshCcw size={16} />}
-                                    sx={{ borderRadius: '12px', fontWeight: 800, px: 2 }}
-                                >
-                                    RECREATE
-                                </Button>
-                            </>
-                        )}
-                        <IconButton onClick={() => setIsViewingFull(false)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
-                            <X size={20} />
-                        </IconButton>
-                    </Stack>
-
-                </DialogTitle>
-                <DialogContent sx={{ p: 4 }}>
-                    {isLoadingFull ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                            <CircularProgress color="secondary" />
-                        </Box>
-                    ) : (
-                        <Typography 
-                            variant="body1" 
-                            sx={{ 
-                                whiteSpace: 'pre-wrap', 
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                fontFamily: 'var(--font-satoshi)',
-                                lineHeight: 1.8,
-                                fontSize: '1.1rem'
-                            }}
-                        >
-                            {fullNoteContent || "Note content is unavailable."}
-                        </Typography>
-                    )}
-                </DialogContent>
-            </Dialog>
-
         </Container>
     );
 };
