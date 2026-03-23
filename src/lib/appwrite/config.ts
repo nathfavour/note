@@ -49,6 +49,8 @@ export const APPWRITE_CONFIG = {
         TEMP_UPLOADS: 'temp_uploads'
     },
     FUNCTIONS: {
+        PERMISSION_UPDATER: 'permission-updater',
+        CLAIM_GHOST_NOTES: 'claim-ghost-notes',
         SEARCH_USERS: '69a582720012957d2027',
         SYNC_USER_PROFILE: '69a583ac002b674685b0',
         NOTIFY_ON_SHARE: '69a58c1c001c39695bf6',

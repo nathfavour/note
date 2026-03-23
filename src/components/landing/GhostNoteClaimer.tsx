@@ -36,7 +36,7 @@ export const GhostNoteClaimer = () => {
                 try {
                     const noteIds = history.map(n => n.id);
                     await functions.createExecution(
-                        'claim-ghost-notes', // Function ID
+                        APPWRITE_CONFIG.FUNCTIONS.CLAIM_GHOST_NOTES || 'claim-ghost-notes', // Function ID
                         JSON.stringify({ noteIds, ghostSecret: secret }),
                         false, // async
                         '/', // path
