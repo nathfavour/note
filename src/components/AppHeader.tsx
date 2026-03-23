@@ -36,7 +36,8 @@ import {
   
   Info,
   Layers,
-  Zap
+  Zap,
+  Wallet
 } from 'lucide-react';
 import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -50,6 +51,7 @@ import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePrevi
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { AICommandModal } from '@/components/ai/AICommandModal';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
+import { WalletSidebar } from '@/components/overlays/WalletSidebar';
 import Logo from '@/components/common/Logo';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { useTheme } from '@/components/ThemeProvider';
@@ -73,6 +75,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
 
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
 
   const [_currentSubdomain, setCurrentSubdomain] = useState<string | null>(null);
   const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
@@ -173,6 +176,28 @@ export default function AppHeader({ className }: AppHeaderProps) {
 
         {/* Right: Actions */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+          <Tooltip title="Secure Wallet">
+            <IconButton 
+              onClick={() => setIsWalletOpen(true)}
+              sx={{ 
+                color: '#EC4899',
+                bgcolor: '#161412',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                width: 44,
+                height: 44,
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                '&:hover': { 
+                  bgcolor: '#1C1A18', 
+                  borderColor: '#EC4899',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
+                }
+              }}
+            >
+              <Wallet size={20} strokeWidth={1.5} />
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
             <IconButton 
               onClick={toggleTheme}
@@ -644,6 +669,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
         <EcosystemPortal 
           open={isEcosystemPortalOpen} 
           onClose={() => setIsEcosystemPortalOpen(false)} 
+        />
+
+        <WalletSidebar
+          isOpen={isWalletOpen}
+          onClose={() => setIsWalletOpen(false)}
         />
       </Toolbar>
     </AppBar>
