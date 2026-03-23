@@ -14,13 +14,13 @@ import GlobalShortcuts from "@/components/GlobalShortcuts";
 import { KernelProvider } from "@/ecosystem/kernel/EcosystemKernel";
 import { EcosystemPortal } from "@/components/common/EcosystemPortal";
 import { EcosystemEvents } from "@/components/common/EcosystemEvents";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { SudoProvider } from "@/contexts/SudoContext";
-import { NotesProvider } from "@/contexts/NotesContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { SudoProvider } from "@/context/SudoContext";
+import { NotesProvider } from "@/context/NotesContext";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { darkTheme, lightTheme } from "@/theme/theme";
-import { EcosystemProvider } from "@/contexts/EcosystemContext";
+import { EcosystemProvider } from "@/context/EcosystemContext";
 import { SubscriptionProvider } from "@/context/subscription/SubscriptionContext";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -44,9 +44,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <AuthProvider>
                         <NotificationProvider>
                             <KernelProvider>
-                                <SudoProvider>
-                                    <NotesProvider>
-                                        <MuiThemeWrapper>
+                                <NotesProvider>
+                                    <MuiThemeWrapper>
+                                        <SudoProvider>
                                             <IslandProvider>
                                                 <ToastProvider>
                                                     <OverlayProvider>
@@ -65,9 +65,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                                     </OverlayProvider>
                                                 </ToastProvider>
                                             </IslandProvider>
-                                        </MuiThemeWrapper>
-                                    </NotesProvider>
-                                </SudoProvider>
+                                        </SudoProvider>
+                                    </MuiThemeWrapper>
+                                </NotesProvider>
                             </KernelProvider>
                         </NotificationProvider>
                     </AuthProvider>

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import type { Notes } from '@/types/appwrite';
 import NoteCard from '@/components/ui/NoteCard';
 import { getSharedNotes, listPublicNotesByUser, getCurrentUser } from '@/lib/appwrite';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 import {
   Box,
   Typography,

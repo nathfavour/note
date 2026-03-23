@@ -41,7 +41,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';

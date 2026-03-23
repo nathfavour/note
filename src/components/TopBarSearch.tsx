@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Notes } from '@/types/appwrite';
 import { formatNoteCreatedDate } from '@/lib/date-utils';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 import { useSearch } from '@/hooks/useSearch';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { NoteDetailSidebar } from '@/components/ui/NoteDetailSidebar';

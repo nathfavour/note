@@ -14,7 +14,7 @@ import {
   Brush as PencilIcon 
 } from '@mui/icons-material';
 import { useOverlay } from '@/components/ui/OverlayContext';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 

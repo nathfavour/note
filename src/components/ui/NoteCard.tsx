@@ -12,7 +12,7 @@ import {
 import { useContextMenu } from './ContextMenuContext';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 import type { Notes } from '@/types/appwrite';
 import { DoodleStroke } from '@/types/notes';
 import {

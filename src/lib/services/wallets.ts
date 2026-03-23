@@ -263,13 +263,13 @@ const parseRootEnvelope = async (encryptedSecret: string): Promise<WalletRootEnv
 };
 
 const listWalletRows = async (userId: string) => {
-    const response = await tablesDB.listRows(PASSWORD_MANAGER_DB, WALLETS_TABLE, [
+    const response = await tablesDB.listDocuments(PASSWORD_MANAGER_DB, WALLETS_TABLE, [
         Query.equal('ownerId', ownerIdForUser(userId)),
         Query.equal('type', 'main'),
         Query.limit(100),
     ]);
 
-    return sortWallets(response.rows);
+    return sortWallets(response.documents);
 };
 
 const createWalletRow = async (
@@ -281,7 +281,7 @@ const createWalletRow = async (
     const address = await deriveAddress(root, chain, cache);
     const encryptedSecret = await ecosystemSecurity.encrypt(JSON.stringify(root));
 
-    return tablesDB.createRow(
+    return tablesDB.createDocument(
         PASSWORD_MANAGER_DB,
         WALLETS_TABLE,
         ID.unique(),
@@ -305,24 +305,24 @@ const syncWalletMap = async (userId: string, wallets: any[]) => {
         )
     );
 
-    const existing = await tablesDB.listRows(NOTE_DB, WALLET_MAP_TABLE, [
+    const existing = await tablesDB.listDocuments(NOTE_DB, WALLET_MAP_TABLE, [
         Query.equal('userId', userId),
         Query.limit(100),
     ]);
 
-    for (const row of existing.rows) {
+    for (const row of existing.documents) {
         if (!publicAddresses.includes(row.walletAddressLower)) {
-            await tablesDB.deleteRow(NOTE_DB, WALLET_MAP_TABLE, row.$id);
+            await tablesDB.deleteDocument(NOTE_DB, WALLET_MAP_TABLE, row.$id);
         }
     }
 
-    const existingAddresses = new Set(existing.rows.map((row: any) => row.walletAddressLower));
+    const existingAddresses = new Set(existing.documents.map((row: any) => row.walletAddressLower));
 
     for (const walletAddressLower of publicAddresses) {
         if (existingAddresses.has(walletAddressLower)) continue;
 
         try {
-            await tablesDB.createRow(
+            await tablesDB.createDocument(
                 NOTE_DB,
                 WALLET_MAP_TABLE,
                 ID.unique(),

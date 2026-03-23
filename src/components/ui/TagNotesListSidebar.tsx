@@ -8,7 +8,7 @@ import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import NoteCard from '@/components/ui/NoteCard';
 import { NoteCardSkeleton } from './NoteCardSkeleton';
-import { useNotes } from '@/contexts/NotesContext';
+import { useNotes } from '@/context/NotesContext';
 
 interface TagNotesListSidebarProps {
   tag: Tags;

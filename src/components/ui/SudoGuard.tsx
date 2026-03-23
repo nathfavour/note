@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSudo } from "@/contexts/SudoContext";
+import { useSudo } from "@/context/SudoContext";
 import { Box, Typography, Button, alpha } from "@mui/material";
 import ShieldIcon from "@mui/icons-material/Shield";
 

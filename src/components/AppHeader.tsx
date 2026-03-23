@@ -42,7 +42,7 @@ import {
 import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
 import { useAuth } from '@/components/ui/AuthContext';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { useIsland } from '@/components/ui/DynamicIsland';
 import { motion, AnimatePresence } from 'framer-motion';
 
