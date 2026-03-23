@@ -114,6 +114,14 @@ export const WalletSidebar = ({ isOpen, onClose }: WalletSidebarProps) => {
         refreshWallets();
     }, [isOpen, isUnlocked, refreshWallets]);
 
+    useEffect(() => {
+        if (isOpen && hasMasterpass === false) {
+            const baseUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
+            const callbackUrl = encodeURIComponent(baseUrl + '?openWallet=true');
+            window.location.href = `https://vault.kylrix.space/masterpass?callbackUrl=${callbackUrl}`;
+        }
+    }, [isOpen, hasMasterpass]);
+
     const handleUnlock = () => {
         requestSudo({
             onSuccess: async () => {
@@ -239,9 +247,32 @@ export const WalletSidebar = ({ isOpen, onClose }: WalletSidebarProps) => {
                     <Typography variant="body1" sx={{ fontWeight: 700, mb: 1, fontFamily: 'Satoshi', color: 'white' }}>
                         Vault Setup Required
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', maxWidth: 260, fontFamily: 'Satoshi' }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', mb: 4, maxWidth: 260, fontFamily: 'Satoshi' }}>
                         Wallet provisioning becomes automatic once your MasterPass exists for Tier 3 encryption.
                     </Typography>
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            const baseUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
+                            const callbackUrl = encodeURIComponent(baseUrl + '?openWallet=true');
+                            window.location.href = `https://vault.kylrix.space/masterpass?callbackUrl=${callbackUrl}`;
+                        }}
+                        sx={{
+                            bgcolor: 'white',
+                            color: '#000',
+                            fontWeight: 900,
+                            borderRadius: '14px',
+                            px: 4,
+                            py: 1.5,
+                            textTransform: 'none',
+                            fontFamily: 'Satoshi',
+                            ...rimLight,
+                            '&:hover': { bgcolor: alpha('#fff', 0.9), transform: 'translateY(-1px)' },
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                    >
+                        Setup MasterPass
+                    </Button>
                 </Box>
             ) : !isUnlocked ? (
                 <Box sx={{

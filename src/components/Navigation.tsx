@@ -29,11 +29,14 @@ import {
   Puzzle,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  Wallet
 } from 'lucide-react';
+import { WalletSidebar } from '@/components/overlays/WalletSidebar';
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
   const navLinks = [
@@ -94,7 +97,28 @@ export const MobileBottomNav: React.FC = () => {
             <Icon size={24} strokeWidth={1.5} />
           </IconButton>
         ))}
+        <IconButton
+          onClick={() => setIsWalletOpen(true)}
+          sx={{
+            color: isWalletOpen ? '#000' : 'rgba(255, 255, 255, 0.6)',
+            bgcolor: isWalletOpen ? '#EC4899' : 'transparent',
+            borderRadius: '16px',
+            p: 1.5,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              bgcolor: isWalletOpen ? '#EC4899' : 'rgba(255, 255, 255, 0.05)',
+              transform: 'translateY(-2px)'
+            },
+            ...(isWalletOpen && {
+              boxShadow: '0 0 15px rgba(236, 72, 153, 0.4)',
+              transform: 'translateY(-4px)'
+            })
+          }}
+        >
+          <Wallet size={24} strokeWidth={1.5} />
+        </IconButton>
       </Paper>
+      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
     </Box>
   );
 };
@@ -104,6 +128,7 @@ export const DesktopSidebar: React.FC = () => {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
   const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -143,6 +168,7 @@ export const DesktopSidebar: React.FC = () => {
     { icon: Link2, label: 'Shared Links', path: '/shared' },
     { icon: Tag, label: 'Tags', path: '/tags' },
     { icon: Puzzle, label: 'Extensions', path: '/extensions' },
+    { icon: Wallet, label: 'Wallet', path: 'wallet', action: () => setIsWalletOpen(true) },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -193,13 +219,12 @@ export const DesktopSidebar: React.FC = () => {
       <List sx={{ flex: 1, px: 2, py: 3, overflowY: 'auto' }}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.path);
+          const active = item.action ? isWalletOpen : isActive(item.path);
 
           return (
             <Tooltip key={item.path} title={isCollapsed ? item.label : ''} placement="right">
               <ListItemButton
-                component={Link}
-                href={item.path}
+                {...(item.action ? { onClick: item.action } : { component: Link, href: item.path })}
                 sx={{
                   borderRadius: '16px',
                   mb: 1.5,
@@ -246,6 +271,7 @@ export const DesktopSidebar: React.FC = () => {
           );
         })}
       </List>
+      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
 
       <Box sx={{ p: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
         {isAuthenticated && user && (

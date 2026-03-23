@@ -7,6 +7,7 @@ import { ecosystemSecurity } from "@/lib/ecosystem/security";
 interface SudoOptions {
     onSuccess: () => void;
     onCancel?: () => void;
+    intent?: "unlock" | "initialize" | "reset";
 }
 
 interface SudoContextType {
@@ -52,9 +53,10 @@ export function SudoProvider({ children }: { children: ReactNode }) {
         <SudoContext.Provider value={{ requestSudo, isUnlocked }}>
             {children}
             <SudoModal
-                open={isSudoOpen}
+                isOpen={isSudoOpen}
                 onSuccess={handleSuccess}
-                onClose={handleCancel}
+                onCancel={handleCancel}
+                intent={pendingAction?.intent}
             />
         </SudoContext.Provider>
     );

@@ -36,16 +36,16 @@ import { PasskeySetup } from "./PasskeySetup";
 import toast from "react-hot-toast";
 
 interface SudoModalProps {
-    open: boolean;
+    isOpen: boolean;
     onSuccess: () => void;
-    onClose: () => void;
+    onCancel: () => void;
     intent?: "unlock" | "initialize" | "reset";
 }
 
 export function SudoModal({
-    open,
+    isOpen,
     onSuccess,
-    onClose,
+    onCancel,
     intent,
 }: SudoModalProps) {
     const { user, logout } = useAuth();
@@ -98,11 +98,11 @@ export function SudoModal({
     }, []);
 
     const handlePasskeyVerify = useCallback(async () => {
-        if (!user?.$id || !open) return;
+        if (!user?.$id || !isOpen) return;
         setPasskeyLoading(true);
         try {
             const success = await unlockWithPasskey(user.$id);
-            if (success && open) {
+            if (success && isOpen) {
                 toast.success("Verified via Passkey");
                 handleSuccessWithSync();
             }
@@ -111,19 +111,19 @@ export function SudoModal({
         } finally {
             setPasskeyLoading(false);
         }
-    }, [user?.$id, open, handleSuccessWithSync]);
+    }, [user?.$id, isOpen, handleSuccessWithSync]);
 
     const handleLogout = async () => {
         setLoading(true);
         await logout();
         setLoading(false);
-        onClose();
+        onCancel();
         window.location.href = "/";
     };
 
     // Check if user has passkey and PIN set up
     useEffect(() => {
-        if (open && user?.$id) {
+        if (isOpen && user?.$id) {
             const pinSet = ecosystemSecurity.isPinSet();
             setHasPin(pinSet);
 
@@ -153,7 +153,7 @@ export function SudoModal({
                 }
 
                 // Enforce Master Password setup if missing
-                if (!passwordPresent && open) {
+                if (!passwordPresent && isOpen) {
                     handleRedirectToVaultSetup();
                     setIsDetecting(false);
                     return;
@@ -179,13 +179,13 @@ export function SudoModal({
             setPasskeyLoading(false);
             setIsDetecting(true);
         }
-    }, [open, user?.$id, intent, handleRedirectToVaultSetup]);
+    }, [isOpen, user?.$id, intent, handleRedirectToVaultSetup]);
 
     useEffect(() => {
-        if (open && mode === "passkey" && hasPasskey && !passkeyLoading) {
+        if (isOpen && mode === "passkey" && hasPasskey && !passkeyLoading) {
             handlePasskeyVerify();
         }
-    }, [open, mode, hasPasskey, handlePasskeyVerify]);
+    }, [isOpen, mode, hasPasskey, handlePasskeyVerify]);
 
     const handlePasswordVerify = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -275,7 +275,7 @@ export function SudoModal({
 
     return (
         <Dialog
-            open={open}
+            open={isOpen}
             onClose={() => { }} // Prevent closing by clicking outside
             maxWidth="xs"
             fullWidth
