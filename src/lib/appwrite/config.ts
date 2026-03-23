@@ -5,7 +5,9 @@ export const APPWRITE_CONFIG = {
     PROJECT_ID,
     DATABASES: {
         NOTE: '67ff05a9000296822396',
+        KYLRIXNOTE: '67ff05a9000296822396', // Alias for WalletService
         VAULT: 'passwordManagerDb',
+        PASSWORD_MANAGER: 'passwordManagerDb', // Alias for WalletService
         FLOW: 'whisperrflow',
         CHAT: 'chat'
     },
@@ -24,7 +26,13 @@ export const APPWRITE_CONFIG = {
             SUBSCRIPTIONS: 'subscriptions',
             NOTE_TAGS: 'note_tags',
             NOTE_REVISIONS: 'note_revisions',
-            BLOGPOSTS: '67ff065a003e2bb950f7'
+            BLOGPOSTS: '67ff065a003e2bb950f7',
+            WALLET_MAP: 'walletMap' // Added for WalletService
+        },
+        KYLRIXNOTE: { // Alias for WalletService
+            USERS: '67ff05c900247b5673d3',
+            ACTIVITY_LOG: 'activityLog',
+            WALLET_MAP: 'walletMap'
         },
         VAULT: {
             CREDENTIALS: 'credentials',
@@ -32,7 +40,13 @@ export const APPWRITE_CONFIG = {
             FOLDERS: 'folders',
             SECURITY_LOGS: 'securityLogs',
             USER: 'user',
-            KEYCHAIN: 'keychain'
+            KEYCHAIN: 'keychain',
+            WALLETS: 'wallets' // Added for WalletService
+        },
+        PASSWORD_MANAGER: { // Alias for WalletService
+            KEYCHAIN: 'keychain',
+            IDENTITIES: 'identities',
+            WALLETS: 'wallets'
         },
         FLOW: {
             TASKS: 'tasks',

@@ -62,6 +62,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { SudoProvider } from '@/context/SudoContext';
+
 export default function AppLayout({
   children,
 }: {
@@ -70,7 +72,9 @@ export default function AppLayout({
   return (
     <SidebarProvider>
       <DynamicSidebarProvider>
-        <AppLayoutContent>{children}</AppLayoutContent>
+        <SudoProvider>
+          <AppLayoutContent>{children}</AppLayoutContent>
+        </SudoProvider>
       </DynamicSidebarProvider>
     </SidebarProvider>
   );
