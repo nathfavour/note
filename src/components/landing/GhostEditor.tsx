@@ -38,13 +38,12 @@ import {
     ExternalLink,
     Clock,
     Shield,
-    Share2,
-    Trash2,
-    MoreVertical,
-    Settings as SettingsIcon,
-    X,
-    Eye as EyeIcon,
-    RefreshCcw
+    Share2, 
+    Trash2, 
+    MoreVertical, 
+    X, 
+    Eye as EyeIcon, 
+    RefreshCcw 
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
 import toast from 'react-hot-toast';
@@ -162,17 +161,12 @@ export const GhostEditor = () => {
     // Lifespan Settings
     const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [viewingNote, setViewingNote] = useState<GhostNoteRef | null>(null);
-    const [fullNoteContent, setFullNoteContent] = useState<string | null>(null);
-    const [isLoadingFull, setIsLoadingFull] = useState(false);
 
     const handleRecreate = (content: string, noteTitle?: string) => {
         if (!content) return;
         setTitle(noteTitle || '');
         setContent(content);
         setIsViewingFull(false);
-        setViewingNote(null);
-        setFullNoteContent(null);
         setIsTitleManuallyEdited(true);
         closeSidebar();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -188,9 +182,6 @@ export const GhostEditor = () => {
     };
 
     const handleViewNote = async (note: GhostNoteRef) => {
-        setViewingNote(note);
-        setIsLoadingFull(true);
-        
         // Open sidebar with a loading state
         openSidebar(
             <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -212,8 +203,7 @@ export const GhostEditor = () => {
         try {
             const res = await fetch(`/api/shared/${note.id}`);
             if (res.ok) {
-                const data = await res.json();
-                setFullNoteContent(data.content);
+                // const data = await res.json();
                 
                 // Update sidebar with actual content
                 openSidebar(

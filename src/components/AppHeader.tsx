@@ -14,39 +14,26 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
-  
-  Paper,
+
   alpha,
-  Button,
-  Stack
-} from '@mui/material';
-import {
+  Button
+  } from '@mui/material';
+  import {
   Settings,
   LogOut,
   LayoutGrid,
   Download,
   Sparkles,
-  Bell,
-  Sun,
-  Moon,
-  
-  Clock,
-  Maximize2,
-  Minimize2,
-  
-  Info,
-  Layers,
-  Zap,
-  Wallet
-} from 'lucide-react';
-import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
-import { useAuth } from '@/components/ui/AuthContext';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useNotifications } from '@/context/NotificationContext';
-import { useIsland } from '@/components/ui/DynamicIsland';
-import { motion, AnimatePresence } from 'framer-motion';
 
-import { useOverlay } from '@/components/ui/OverlayContext';
+  Wallet
+  } from 'lucide-react';
+  import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
+  import { useAuth } from '@/components/ui/AuthContext';
+  import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+  import { useNotifications } from '@/context/NotificationContext';
+  import { useIsland } from '@/components/ui/DynamicIsland';
+
+  import { useOverlay } from '@/components/ui/OverlayContext';
 import { getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { TopBarSearch } from '@/components/TopBarSearch';
@@ -63,9 +50,9 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-  const { allNotifications: islandHistory } = useIsland();
+  const { } = useTheme();
+  const { } = useNotifications();
+  const { } = useIsland();
   const { } = useOverlay();
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
   
@@ -83,11 +70,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
       router.replace(pathname + (newQuery ? `?${newQuery}` : ''));
     }
   }, [searchParams, router, pathname]);
-
-  // Advanced Notifications State
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifViewMode, setNotifViewMode] = useState<'dropdown' | 'sidebar'>('dropdown');
-  const [notifTab, setNotifTab] = useState<'app' | 'island'>('app');
 
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
@@ -146,11 +128,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
   const handleLogout = () => {
     setAnchorElAccount(null);
     logout();
-  };
-
-  const toggleNotifications = () => {
-    setIsNotificationsOpen(!isNotificationsOpen);
-    if (!isNotificationsOpen) setNotifViewMode('dropdown');
   };
 
 
