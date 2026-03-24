@@ -142,7 +142,7 @@ const Logo: React.FC<LogoProps> = ({
             fontSize: `${size * 0.7}px`, 
             lineHeight: 1, 
             textTransform: 'uppercase', 
-            fontFamily: '"Clash Display Variable", "Clash Display", sans-serif' 
+            fontFamily: 'var(--font-clash)' 
           }}>
             {current.label}
           </Typography>

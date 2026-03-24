@@ -180,7 +180,7 @@ export default function AppShell({ children }: AppShellProps) {
               variant="body2" 
               sx={{ 
                 color: 'rgba(255, 255, 255, 0.7)',
-                fontFamily: '"Inter", sans-serif',
+                fontFamily: 'var(--font-satoshi), sans-serif',
                 maxWidth: 300,
                 lineHeight: 1.6
               }}

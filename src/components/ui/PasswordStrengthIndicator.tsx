@@ -96,7 +96,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
                   variant="caption" 
                   sx={{ 
                     color: isError ? 'rgba(255, 69, 58, 0.8)' : 'rgba(99, 102, 241, 0.8)',
-                    fontFamily: '"Inter", sans-serif',
+                    fontFamily: 'var(--font-satoshi), sans-serif',
                     fontSize: '0.75rem'
                   }}
                 >
@@ -111,7 +111,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
       {strength.isValid && (
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
           <CheckCircleIcon sx={{ fontSize: 14, color: '#6366F1' }} />
-          <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
+          <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 600, fontFamily: 'var(--font-satoshi), sans-serif' }}>
             Password meets all requirements
           </Typography>
         </Stack>

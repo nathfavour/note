@@ -55,7 +55,7 @@ export function Badge({ children, variant = 'default' }: BadgeProps) {
         borderRadius: '4px',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
-        fontFamily: '"Inter", sans-serif',
+        fontFamily: 'var(--font-satoshi), sans-serif',
         ...getStyles()
       }} 
     />

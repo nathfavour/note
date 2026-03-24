@@ -106,7 +106,7 @@ export function AIHeroInput({ onPromptSelectAction }: AIHeroInputProps) {
               py: 1.5,
               px: 3,
               color: 'white',
-              fontFamily: '"Inter", sans-serif',
+              fontFamily: 'var(--font-satoshi), sans-serif',
               '& fieldset': {
                 borderColor: inputValue ? 'rgba(99, 102, 241, 0.5)' : 'rgba(255, 255, 255, 0.1)',
                 borderWidth: 1,
@@ -231,7 +231,7 @@ export function AIHeroInput({ onPromptSelectAction }: AIHeroInputProps) {
                     noWrap 
                     sx={{ 
                       fontWeight: 700, 
-                      fontFamily: '"Inter", sans-serif',
+                      fontFamily: 'var(--font-satoshi), sans-serif',
                       fontSize: '0.9rem'
                     }}
                   >

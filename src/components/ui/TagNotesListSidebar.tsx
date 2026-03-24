@@ -121,7 +121,7 @@ export function TagNotesListSidebar({
               variant="body2" 
               sx={{ 
                 color: 'rgba(255, 255, 255, 0.4)',
-                fontFamily: '"Inter", sans-serif',
+                fontFamily: 'var(--font-satoshi), sans-serif',
                 fontStyle: 'italic'
               }}
             >

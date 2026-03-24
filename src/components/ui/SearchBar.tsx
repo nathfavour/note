@@ -79,7 +79,7 @@ export function SearchBar({
           },
           '& .MuiInputBase-input': {
             color: '#FFFFFF',
-            fontFamily: '"Inter", sans-serif',
+            fontFamily: 'var(--font-satoshi), sans-serif',
             '&::placeholder': {
               color: 'rgba(255, 255, 255, 0.3)',
               opacity: 1,

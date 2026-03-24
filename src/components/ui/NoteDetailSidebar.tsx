@@ -1237,7 +1237,7 @@ export function NoteDetailSidebar({
           Delete Note
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: '"Inter", sans-serif', lineHeight: 1.6 }}>
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'var(--font-satoshi), sans-serif', lineHeight: 1.6 }}>
             Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action is permanent and cannot be undone.
           </Typography>
         </DialogContent>

@@ -181,7 +181,7 @@ export default function LandingPage() {
                 fontSize: { xs: '1.125rem', md: '1.25rem' }, 
                 maxWidth: '650px', 
                 mx: 'auto',
-                fontFamily: 'var(--font-satoshi), "Inter", sans-serif',
+                fontFamily: 'var(--font-satoshi), sans-serif',
                 lineHeight: 1.6
               }}
             >
@@ -239,7 +239,7 @@ export default function LandingPage() {
                 variant="body1" 
                 sx={{ 
                   color: 'rgba(255, 255, 255, 0.4)',
-                  fontFamily: 'var(--font-satoshi), "Inter", sans-serif',
+                  fontFamily: 'var(--font-satoshi), sans-serif',
                   fontSize: '1.1rem'
                 }}
               >
@@ -299,7 +299,7 @@ export default function LandingPage() {
                         variant="body2" 
                         sx={{ 
                           color: 'rgba(255, 255, 255, 0.5)',
-                          fontFamily: '"Inter", sans-serif',
+                          fontFamily: 'var(--font-satoshi), sans-serif',
                           lineHeight: 1.6,
                           fontSize: '0.95rem'
                         }}

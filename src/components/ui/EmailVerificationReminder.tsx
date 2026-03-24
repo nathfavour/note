@@ -81,7 +81,7 @@ export const EmailVerificationReminder: React.FC = () => {
           }}>
             Verify Your Email
           </AlertTitle>
-          <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255, 255, 255, 0.7)', fontFamily: '"Inter", sans-serif' }}>
+          <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'var(--font-satoshi), sans-serif' }}>
             Please verify your email address to ensure account security and access all features.
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>

@@ -146,7 +146,7 @@ export default function AttachmentViewer({ attachmentIds, onAttachmentDeleted }:
                   sx={{ 
                     fontWeight: 700, 
                     color: 'white',
-                    fontFamily: 'var(--font-inter)'
+                    fontFamily: 'var(--font-satoshi)'
                   }}
                 >
                   {attachment.name}

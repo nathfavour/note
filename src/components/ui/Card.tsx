@@ -75,7 +75,7 @@ const CardDescription = React.forwardRef<
     variant="body2"
     sx={{
       color: 'rgba(255, 255, 255, 0.5)',
-      fontFamily: '"Inter", sans-serif',
+      fontFamily: 'var(--font-satoshi), sans-serif',
       maxWidth,
       ...sx
     }}
