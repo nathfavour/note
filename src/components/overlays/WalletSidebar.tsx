@@ -154,11 +154,6 @@ export const WalletSidebar = ({ isOpen, onClose }: WalletSidebarProps) => {
         }
     };
 
-    const primaryWallet = useMemo(
-        () => wallets.find((wallet) => wallet.chain === 'eth') || wallets[0] || null,
-        [wallets]
-    );
-
     const addableNetworks = useMemo(
         () => WalletService.supportedChains.filter((chain) => !wallets.some((wallet) => wallet.chain === chain)),
         [wallets]

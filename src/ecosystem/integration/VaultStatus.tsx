@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Box,
     Button,
     Paper,
-    Typography,
-    alpha
+    Typography
 } from '@mui/material';
 import {
     Lock,
@@ -32,7 +31,7 @@ export const VaultStatus = () => {
             AppwriteService.hasMasterpass(user.$id).then(setIsInitialized);
         }
         setIsLocked(!ecosystemSecurity.status.isUnlocked);
-    }, [user?.$id, ecosystemSecurity.status.isUnlocked]);
+    }, [user?.$id]);
 
     const handleAction = () => {
         if (isInitialized === false) {

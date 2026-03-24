@@ -269,10 +269,8 @@ export const GhostEditor = () => {
             } else {
                 toast.error("Could not fetch note content");
             }
-        } catch (e) {
+        } catch (_e) {
             toast.error("Failed to load note");
-        } finally {
-            setIsLoadingFull(false);
         }
     };
     const [contextMenu, setContextMenu] = useState<{

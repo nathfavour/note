@@ -71,13 +71,13 @@ export function SubscriptionProvider({
             if (data.country_code && PPP_DATA[data.country_code]) {
               setRegionCode(data.country_code);
             }
-          } catch (e) {
-            console.error('IP detection failed', e);
+          } catch (_e) {
+            console.error('IP detection failed', _e);
           }
         }
 
         setIsLoading(false);
-      } catch (error) {
+      } catch (_error) {
         setCurrentTier('FREE');
         // Still try IP detection for logged out users
         try {
@@ -86,7 +86,7 @@ export function SubscriptionProvider({
           if (data.country_code && PPP_DATA[data.country_code]) {
             setRegionCode(data.country_code);
           }
-        } catch (e) {}
+        } catch (_e) {}
         setIsLoading(false);
       }
     };

@@ -6,7 +6,6 @@
 
 import { MeshProtocol } from './mesh';
 import { databases } from '../appwrite';
-import { APPWRITE_CONFIG } from '../appwrite/config';
 import { Query, ID } from 'appwrite';
 
 export class EcosystemSecurity {
