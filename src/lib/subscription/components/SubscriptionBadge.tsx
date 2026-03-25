@@ -36,16 +36,6 @@ export function SubscriptionBadge({ showFree = false }: SubscriptionBadgeProps) 
       color: '#0070f3',
       border: '1px solid rgba(0, 112, 243, 0.3)',
     },
-    ULTRA: {
-      backgroundColor: 'rgba(121, 40, 202, 0.1)',
-      color: '#7928ca',
-      border: '1px solid rgba(121, 40, 202, 0.3)',
-    },
-    ENTERPRISE: {
-      backgroundColor: 'rgba(255, 0, 128, 0.1)',
-      color: '#ff0080',
-      border: '1px solid rgba(255, 0, 128, 0.3)',
-    }
   };
 
   const currentStyle = styles[currentTier] || styles.FREE;
