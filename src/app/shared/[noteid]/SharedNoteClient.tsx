@@ -19,7 +19,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
-import { createNote, listNotes } from '@/lib/appwrite';
+import { 
+  createNote, 
+  listNotes,
+  realtime,
+  APPWRITE_DATABASE_ID,
+  APPWRITE_TABLE_ID_NOTES
+} from '@/lib/appwrite';
 import { useToast } from '@/components/ui/Toast';
 import {
   Box,

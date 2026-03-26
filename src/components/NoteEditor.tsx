@@ -20,6 +20,7 @@ import AttachmentsManager from '@/components/AttachmentsManager';
 import NoteContent from '@/components/NoteContent';
 import { formatFileSize } from '@/lib/utils';
 import { createNote, updateNote, getNote } from '@/lib/appwrite';
+import { useDataNexus } from '@/context/DataNexusContext';
 
 interface AttachmentMeta { id: string; name: string; size: number; mime: string | null; }
 
@@ -109,13 +110,24 @@ export default function NoteEditor({
   const [error, setError] = useState<string | null>(null);
   const [internalNoteId, setInternalNoteId] = useState<string | undefined>(externalNoteId);
   const effectiveNoteId = internalNoteId || externalNoteId;
+  const { fetchOptimized, setCachedData, getCachedData } = useDataNexus();
 
   useEffect(() => {
     if (externalNoteId && externalNoteId !== internalNoteId) {
       setInternalNoteId(externalNoteId);
+
+      const CACHE_KEY = `note_${externalNoteId}`;
+      const cached = getCachedData<any>(CACHE_KEY);
+      if (cached) {
+        setTitle(cached.title || '');
+        setContent(cached.content || '');
+        setFormat((cached.format as 'text' | 'doodle') || 'text');
+        setIsPublic(!!cached.isPublic);
+      }
+
       (async () => {
         try {
-          const n = await getNote(externalNoteId);
+          const n = await fetchOptimized(CACHE_KEY, () => getNote(externalNoteId));
           if (n) {
             setTitle(n.title || '');
             setContent(n.content || '');
@@ -126,7 +138,7 @@ export default function NoteEditor({
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalNoteId]);
+  }, [externalNoteId, fetchOptimized, getCachedData]);
 
   const handleSave = async () => {
     if (!title.trim() && !content.trim()) return;
@@ -141,6 +153,8 @@ export default function NoteEditor({
           format,
           isPublic
         });
+        // Update cache
+        setCachedData(`note_${effectiveNoteId}`, saved);
       } else {
         saved = await createNote({ 
           title: title.trim(), 
@@ -149,7 +163,10 @@ export default function NoteEditor({
           isPublic,
           tags: [] 
         });
-        setInternalNoteId(saved?.$id || saved?.id);
+        const newId = saved?.$id || saved?.id;
+        setInternalNoteId(newId);
+        // Update cache
+        if (newId) setCachedData(`note_${newId}`, saved);
         onNoteCreated?.(saved);
       }
       onSave?.(saved);
