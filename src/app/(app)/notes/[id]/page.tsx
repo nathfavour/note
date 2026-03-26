@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getNote, updateNote, deleteNote } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite';
@@ -28,6 +28,7 @@ import { useToast } from '@/components/ui/Toast';
 import CommentsSection from '@/app/(app)/notes/Comments';
 import NoteReactions from '@/app/(app)/notes/NoteReactions';
 import SudoGuard from '@/components/ui/SudoGuard';
+import { useDataNexus } from '@/context/DataNexusContext';
 
 export default function NoteEditorPage() {
   const { id } = useParams();
@@ -39,19 +40,29 @@ export default function NoteEditorPage() {
   const { showSuccess, showError } = useToast();
   const theme = useTheme();
   const isMobileViewport = useMediaQuery(theme.breakpoints.down('md'));
+  const { fetchOptimized, setCachedData, invalidate, getCachedData } = useDataNexus();
+
+  const CACHE_KEY = useMemo(() => id ? `note_${id}` : null, [id]);
 
   useEffect(() => {
     let mounted = true;
 
-    if (!id) {
+    if (!id || !CACHE_KEY) {
       setIsLoading(false);
       return;
     }
 
+    // Try to get from cache first for instant UI
+    const cached = getCachedData<Notes>(CACHE_KEY);
+    if (cached) {
+      setNote(cached);
+      setIsLoading(false);
+    }
+
     (async () => {
-      setIsLoading(true);
+      if (!cached) setIsLoading(true);
       try {
-        const fetched = await getNote(id as string);
+        const fetched = await fetchOptimized(CACHE_KEY, () => getNote(id as string));
         if (mounted) {
           setNote(fetched);
         }
@@ -66,12 +77,14 @@ export default function NoteEditorPage() {
     return () => {
       mounted = false;
     };
-  }, [id, showError]);
+  }, [id, CACHE_KEY, showError, fetchOptimized, getCachedData]);
 
   const handleUpdate = async (updated: Notes) => {
     try {
       const saved = await updateNote(updated.$id || (id as string) || '', updated);
       setNote(saved);
+      // Update cache
+      if (CACHE_KEY) setCachedData(CACHE_KEY, saved);
       showSuccess('Saved', 'Note updated successfully');
     } catch (error: any) {
       console.error('Update failed', error);
@@ -83,6 +96,8 @@ export default function NoteEditorPage() {
     setIsDeleting(true);
     try {
       await deleteNote(noteId);
+      // Invalidate cache
+      if (CACHE_KEY) invalidate(CACHE_KEY);
       showSuccess('Deleted', 'Note removed');
       router.push('/notes');
     } catch (error: any) {
