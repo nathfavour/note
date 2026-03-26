@@ -57,6 +57,7 @@ import { getEcosystemUrl } from '@/constants/ecosystem';
 import { getEffectiveDisplayName, getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
+import { useDataNexus } from '@/context/DataNexusContext';
 
 interface SharedNoteClientProps {
    noteId: string;
@@ -276,18 +277,38 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCopied, setIsCopied] = React.useState(false);
   const { showSuccess, showError } = useToast();
+  const { fetchOptimized, setCachedData, getCachedData } = useDataNexus();
 
-  const fetchSharedNote = useCallback(async () => {
-    setIsLoadingNote(true);
+  const CACHE_KEY = useMemo(() => `public_note_${noteId}`, [noteId]);
+  const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days aggressive cache
+
+  const fetchSharedNote = useCallback(async (forceRefresh: boolean = false) => {
+    if (!forceRefresh) {
+      // Try to get from cache first for instant UI
+      const cached = getCachedData<Notes>(CACHE_KEY);
+      if (cached) {
+          setVerifiedNote(cached);
+          setIsLoadingNote(false);
+          // Even if cached, we'll do a background fetch via fetchOptimized to ensure we're up to date
+      }
+    } else {
+      setIsLoadingNote(true);
+    }
+
     setError(null);
     try {
-      const res = await fetch(`/api/shared/${noteId}`);
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(payload.error || 'Failed to load shared note');
-      }
-      const note = await res.json();
-      
+      const fetcher = async () => {
+        const res = await fetch(`/api/shared/${noteId}`);
+        if (!res.ok) {
+          const payload = await res.json().catch(() => ({}));
+          throw new Error(payload.error || 'Failed to load shared note');
+        }
+        return await res.json();
+      };
+
+      // Use fetchOptimized with a very long TTL
+      const note = await fetchOptimized(CACHE_KEY, fetcher, SHARED_NOTE_TTL);
+
       if (note.metadata) {
         try {
           const meta = JSON.parse(note.metadata);
@@ -328,15 +349,46 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId]);
+  }, [noteId, CACHE_KEY, fetchOptimized, getCachedData, SHARED_NOTE_TTL]);
 
   useEffect(() => {
     fetchSharedNote();
   }, [fetchSharedNote]);
 
-  // Check if note is already duplicated in user collection
+  // Realtime subscription for aggressive live updates
   useEffect(() => {
-    if (!isAuthenticated || !verifiedNote || !user) return;
+    if (!noteId) return;
+
+    const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_TABLE_ID_NOTES}.documents.${noteId}`;
+
+    const sub = realtime.subscribe(channel, (response) => {
+      const payload = response.payload as Notes;
+      const isUpdate = response.events.some(e => e.endsWith('.update'));
+      const isDelete = response.events.some(e => e.endsWith('.delete'));
+
+      if (isUpdate) {
+        // Aggressively update local state and cache
+        setVerifiedNote(payload);
+        setCachedData(CACHE_KEY, payload);
+      } else if (isDelete) {
+        setError('This note has been deleted by the owner.');
+        setVerifiedNote(null);
+        // Invalidate cache
+        setCachedData(CACHE_KEY, null);
+      }
+    });
+
+    return () => {
+      if (typeof sub === 'function') {
+        sub();
+      } else if (sub && typeof (sub as any).unsubscribe === 'function') {
+        (sub as any).unsubscribe();
+      }
+    };
+  }, [noteId, CACHE_KEY, setCachedData]);
+
+  // Check if note is already duplicated in user collection
+  useEffect(() => {    if (!isAuthenticated || !verifiedNote || !user) return;
 
     const checkDuplicate = async () => {
       try {
