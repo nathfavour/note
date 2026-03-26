@@ -277,7 +277,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCopied, setIsCopied] = React.useState(false);
   const { showSuccess, showError } = useToast();
-  const { fetchOptimized, setCachedData, getCachedData } = useDataNexus();
+  const { setCachedData, getCachedData } = useDataNexus();
 
   const CACHE_KEY = useMemo(() => `public_note_${noteId}`, [noteId]);
   const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days standard
@@ -394,7 +394,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId, CACHE_KEY, fetchOptimized, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id]);
+  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id]);
 
   useEffect(() => {
     fetchSharedNote();
@@ -509,7 +509,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           delete metadata.isGhost;
           delete metadata.expiresAt;
           delete metadata.guestId;
-        } catch (e) {}
+        } catch (_e) {}
       }
       
       // Store origin ID to prevent re-duplication and track provenance
