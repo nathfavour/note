@@ -30,7 +30,7 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
     // Active request tracking for deduplication
     const activeRequests = useRef<Map<string, Promise<any>>>(new Map());
 
-    const getCachedData = useCallback(<T>(key: string, ttl: number = DEFAULT_TTL): T | null => {
+    const getCachedData = useCallback(function<T>(key: string, ttl: number = DEFAULT_TTL): T | null {
         // 1. Check memory cache first
         const memoryEntry = memoryCache.current.get(key);
         const now = Date.now();
@@ -51,15 +51,15 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
                         return entry.data;
                     }
                 }
-            } catch (e) {
-                console.warn(`[Nexus] Cache retrieval error for ${key}`, e);
+            } catch (_e) {
+                console.warn(`[Nexus] Cache retrieval error for ${key}`);
             }
         }
 
         return null;
     }, []);
 
-    const setCachedData = useCallback(<T>(key: string, data: T, ttl?: number) => {
+    const setCachedData = useCallback(function<T>(key: string, data: T, _ttl?: number) {
         const entry: CacheEntry<T> = {
             data,
             timestamp: Date.now()
@@ -72,8 +72,8 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
             try {
                 localStorage.setItem(`nexus_${key}`, JSON.stringify(entry));
-            } catch (e) {
-                console.warn(`[Nexus] Persist error for ${key}`, e);
+            } catch (_e) {
+                console.warn(`[Nexus] Persist error for ${key}`);
             }
         }
     }, []);
@@ -85,11 +85,11 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const fetchOptimized = useCallback(async <T>(
+    const fetchOptimized = useCallback(async function<T>(
         key: string, 
         fetcher: () => Promise<T>, 
         ttl: number = DEFAULT_TTL
-    ): Promise<T> => {
+    ): Promise<T> {
         // 1. Check if we already have valid data
         const cached = getCachedData<T>(key, ttl);
         if (cached) return cached;

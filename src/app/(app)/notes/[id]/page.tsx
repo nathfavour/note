@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getNote, updateNote, deleteNote } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite';
