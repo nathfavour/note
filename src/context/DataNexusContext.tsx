@@ -15,7 +15,7 @@ interface CacheEntry<T> {
 
 interface DataNexusContextType {
     getCachedData: <T>(key: string, ttl?: number) => T | null;
-    setCachedData: <T>(key: string, data: T) => void;
+    setCachedData: <T>(key: string, data: T, ttl?: number) => void;
     fetchOptimized: <T>(key: string, fetcher: () => Promise<T>, ttl?: number) => Promise<T>;
     invalidate: (key: string) => void;
 }
@@ -59,7 +59,7 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
         return null;
     }, []);
 
-    const setCachedData = useCallback(<T>(key: string, data: T) => {
+    const setCachedData = useCallback(<T>(key: string, data: T, ttl?: number) => {
         const entry: CacheEntry<T> = {
             data,
             timestamp: Date.now()
@@ -102,7 +102,7 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
         const request = (async () => {
             try {
                 const data = await fetcher();
-                setCachedData(key, data);
+                setCachedData(key, data, ttl);
                 return data;
             } finally {
                 // Cleanup active request

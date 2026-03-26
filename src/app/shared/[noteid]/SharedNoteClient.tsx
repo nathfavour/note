@@ -280,16 +280,59 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const { fetchOptimized, setCachedData, getCachedData } = useDataNexus();
 
   const CACHE_KEY = useMemo(() => `public_note_${noteId}`, [noteId]);
-  const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days aggressive cache
+  const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days standard
+  const GHOST_NOTE_TTL = 1000 * 60 * 60 * 24 * 30; // 30 days "infinite" for ghosts
 
   const fetchSharedNote = useCallback(async (forceRefresh: boolean = false) => {
     if (!forceRefresh) {
-      // Try to get from cache first for instant UI
+      // 1. Owner Detection: Check if we already have this note in our private notes cache
+      if (isAuthenticated && user?.$id) {
+        const privateCached = getCachedData<Notes>(`note_${noteId}`);
+        if (privateCached && (privateCached.userId === user.$id || (privateCached as any).owner_id === user.$id)) {
+          setVerifiedNote(privateCached);
+          setIsLoadingNote(false);
+          // If we are the owner, we definitely have the latest state (via Realtime in NotesContext)
+          return; 
+        }
+      }
+
+      // 2. Check DataNexus public cache
       const cached = getCachedData<Notes>(CACHE_KEY);
       if (cached) {
           setVerifiedNote(cached);
           setIsLoadingNote(false);
-          // Even if cached, we'll do a background fetch via fetchOptimized to ensure we're up to date
+          // If it's a ghost note, we're mathematically sure it hasn't changed
+          try {
+            const meta = JSON.parse(cached.metadata || '{}');
+            if (meta.isGhost) return; // Skip background refresh for ghosts
+          } catch(e) {}
+      }
+
+      // 3. Spark Detection: Check if we have this in our local ghost history for instant title/meta
+      if (!cached && typeof window !== 'undefined') {
+        try {
+          const history = localStorage.getItem('kylrix_ghost_notes_v2');
+          if (history) {
+            const parsed = JSON.parse(history);
+            const spark = parsed.find((n: any) => n.id === noteId);
+            if (spark) {
+              // Provide instant partial UI from spark metadata while fetching content
+              setVerifiedNote({
+                $id: spark.id,
+                title: spark.title,
+                content: '', // Still need to fetch full content
+                createdAt: spark.createdAt,
+                updatedAt: spark.createdAt,
+                metadata: JSON.stringify({ isGhost: true, expiresAt: spark.expiresAt }),
+                userId: null,
+                isPublic: true,
+                tags: [],
+                format: 'markdown'
+              } as any);
+              setIsLoadingNote(false);
+            }
+          }
+        } catch (e) {}
       }
     } else {
       setIsLoadingNote(true);
@@ -306,27 +349,29 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         return await res.json();
       };
 
-      // Use fetchOptimized with a very long TTL
-      const note = await fetchOptimized(CACHE_KEY, fetcher, SHARED_NOTE_TTL);
+      // Perform fetch
+      const note = await fetcher();
 
-      if (note.metadata) {
-        try {
-          const meta = JSON.parse(note.metadata);
-          if (meta.isGhost && meta.expiresAt) {
-            const expiryDate = new Date(meta.expiresAt);
-            if (expiryDate < new Date()) {
-              throw new Error('This temporary note has expired after 7 days and is no longer available.');
-            }
+      // Determine TTL: Ghosts are immutable
+      let ttl = SHARED_NOTE_TTL;
+      try {
+        const meta = JSON.parse(note.metadata || '{}');
+        if (meta.isGhost) {
+          ttl = GHOST_NOTE_TTL;
+          // Verify expiry
+          if (meta.expiresAt && new Date(meta.expiresAt) < new Date()) {
+             throw new Error('This temporary note has expired after 7 days and is no longer available.');
           }
-        } catch (e: any) {
-          if (e.message.includes('expired')) throw e;
         }
+      } catch (e: any) {
+        if (e.message.includes('expired')) throw e;
       }
 
+      // Update DataNexus with appropriate TTL
+      setCachedData(CACHE_KEY, note, ttl);
       setVerifiedNote(note);
 
-      if (note.userId) {
-        try {
+      if (note.userId) {        try {
           const profileRes = await fetch('/api/shared/profiles', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

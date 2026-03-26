@@ -31,9 +31,7 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
             ml: {
               md: isCollapsed ? '80px' : '280px' // Match Navigation.tsx widths exactly
             },
-            mr: {
-              md: isDynamicSidebarOpen ? { md: '28rem', lg: '32rem' } : 0
-            }
+            mr: isDynamicSidebarOpen ? { md: '28rem', lg: '32rem' } : 0
           }}
         >
           {/* Content wrapper with proper padding */}

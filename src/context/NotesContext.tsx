@@ -71,12 +71,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         hasMore: boolean;
       }>(INITIAL_NOTES_CACHE_KEY);
 
-      if (cachedPinned) setPinnedIds(cachedPinned);
-      if (cachedNotes) {
+      if (cachedPinned && Array.isArray(cachedPinned)) setPinnedIds(cachedPinned);
+      if (cachedNotes && Array.isArray(cachedNotes.notes)) {
         setNotes(cachedNotes.notes);
-        setTotalNotes(cachedNotes.totalNotes);
-        setCursor(cachedNotes.cursor);
-        setHasMore(cachedNotes.hasMore);
+        setTotalNotes(cachedNotes.totalNotes || 0);
+        setCursor(cachedNotes.cursor || null);
+        setHasMore(cachedNotes.hasMore ?? true);
         setIsLoading(false);
       }
     }
@@ -118,7 +118,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       // Fetch pinned IDs with optimization
       if (reset && PINNED_CACHE_KEY) {
         const pIds = await fetchOptimized(PINNED_CACHE_KEY, getPinnedNoteIds);
-        setPinnedIds(pIds);
+        setPinnedIds(pIds || []);
       }
 
       // If we are resetting, we can use fetchOptimized for the first page
@@ -134,15 +134,15 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         res = optimizedRes;
         
         // Update other states based on this initial fetch
-        const batch = res.documents as Notes[];
+        const batch = (res?.documents || []) as Notes[];
         setNotes(batch);
-        setTotalNotes(res.total || 0);
-        setHasMore(!!res.hasMore);
-        setCursor(res.nextCursor || null);
+        setTotalNotes(res?.total || 0);
+        setHasMore(!!res?.hasMore);
+        setCursor(res?.nextCursor || null);
 
         // Also cache individual notes for NoteEditorPage
         batch.forEach(note => {
-          setCachedData(`note_${note.$id}`, note);
+          if (note?.$id) setCachedData(`note_${note.$id}`, note);
         });
 
       } else {
@@ -153,18 +153,19 @@ export function NotesProvider({ children }: { children: ReactNode }) {
           userId: user?.$id,
         });
 
-        const batch = res.documents as Notes[];
+        const batch = (res?.documents || []) as Notes[];
 
         setNotes(prev => {
           if (reset) return batch;
-          const existingIds = new Set(prev.map(n => n.$id));
+          const safePrev = Array.isArray(prev) ? prev : [];
+          const existingIds = new Set(safePrev.map(n => n.$id));
           const newOnes = batch.filter(n => !existingIds.has(n.$id));
-          return [...prev, ...newOnes];
+          return [...safePrev, ...newOnes];
         });
 
-        setTotalNotes(res.total || 0);
-        setHasMore(!!res.hasMore);
-        if (res.nextCursor) {
+        setTotalNotes(res?.total || 0);
+        setHasMore(!!res?.hasMore);
+        if (res?.nextCursor) {
           setCursor(res.nextCursor);
         } else if (reset) {
           setCursor(null);
@@ -174,9 +175,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         if (reset && INITIAL_NOTES_CACHE_KEY) {
             setCachedData(INITIAL_NOTES_CACHE_KEY, {
                 notes: batch,
-                totalNotes: res.total || 0,
-                cursor: res.nextCursor || null,
-                hasMore: !!res.hasMore
+                totalNotes: res?.total || 0,
+                cursor: res?.nextCursor || null,
+                hasMore: !!res?.hasMore
             });
         }
       }
