@@ -9,7 +9,8 @@ import {
   LocalOffer as TagIcon, 
   ArrowForward as ArrowRightIcon,
   Check as CheckIcon,
-  ContentCopy as CopyIcon
+  ContentCopy as CopyIcon,
+  LibraryAdd as DuplicateIcon
 } from '@mui/icons-material';
 import { 
   LayoutGrid, 
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
+import { createNote, listNotes } from '@/lib/appwrite';
+import { useToast } from '@/components/ui/Toast';
 import {
   Box,
   Typography,
@@ -262,8 +265,11 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingNote, setIsLoadingNote] = useState(true);
-  const { isAuthenticated, isLoading } = useAuth();
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [alreadyDuplicated, setAlreadyDuplicated] = useState(false);
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [isCopied, setIsCopied] = React.useState(false);
+  const { showSuccess, showError } = useToast();
 
   const fetchSharedNote = useCallback(async () => {
     setIsLoadingNote(true);
@@ -322,6 +328,28 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     fetchSharedNote();
   }, [fetchSharedNote]);
 
+  // Check if note is already duplicated in user collection
+  useEffect(() => {
+    if (!isAuthenticated || !verifiedNote || !user) return;
+
+    const checkDuplicate = async () => {
+      try {
+        // Since metadata is encrypted, we fetch recent notes and check in memory
+        const res = await listNotes([], 100);
+        const duplicated = res.documents.some(n => {
+          try {
+            const meta = JSON.parse(n.metadata || '{}');
+            return meta.originId === verifiedNote.$id;
+          } catch (e) { return false; }
+        });
+        setAlreadyDuplicated(duplicated);
+      } catch (e) {
+        console.warn('Failed to check for existing duplication', e);
+      }
+    };
+    checkDuplicate();
+  }, [isAuthenticated, verifiedNote, user]);
+
   if (!verifiedNote) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
@@ -365,6 +393,46 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const handleDuplicate = async () => {
+    if (!verifiedNote || isDuplicating) return;
+    
+    setIsDuplicating(true);
+    try {
+      // Prepare duplicate data
+      let metadata: any = {};
+      if (verifiedNote.metadata) {
+        try {
+          metadata = JSON.parse(verifiedNote.metadata);
+          // Strip ghost metadata
+          delete metadata.isGhost;
+          delete metadata.expiresAt;
+          delete metadata.guestId;
+        } catch (e) {}
+      }
+      
+      // Store origin ID to prevent re-duplication and track provenance
+      metadata.originId = verifiedNote.$id;
+
+      const newNote = await createNote({
+        title: `${verifiedNote.title} (Duplicate)`,
+        content: verifiedNote.content,
+        format: verifiedNote.format,
+        tags: verifiedNote.tags,
+        isPublic: true, // Public by default
+        metadata: JSON.stringify(metadata)
+      });
+
+      if (newNote) {
+        showSuccess('Note Duplicated', 'This note has been added to your collection.');
+        setAlreadyDuplicated(true);
+      }
+    } catch (err: any) {
+      showError('Duplication Failed', err.message || 'Failed to duplicate note.');
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -387,19 +455,87 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     >
       <Box sx={{ p: { xs: 4, md: 6 }, borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
         <Stack spacing={3}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
-              fontWeight: 900, 
-              fontFamily: 'var(--font-clash)', 
-              lineHeight: 1.1,
-              background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            {verifiedNote.title || 'Untitled Note'}
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 3 }}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                fontFamily: 'var(--font-clash)', 
+                lineHeight: 1.1,
+                background: 'linear-gradient(to bottom, #FFF 0%, rgba(255,255,255,0.7) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
+              {verifiedNote.title || 'Untitled Note'}
+            </Typography>
+
+            {/* Duplicate Button Logic */}
+            {(!user || user.$id !== verifiedNote.userId) && (
+              <Box>
+                {isAuthenticated ? (
+                  alreadyDuplicated ? (
+                    <Chip 
+                      icon={<CheckIcon sx={{ color: '#10B981 !important' }} />} 
+                      label="Note Duplicated" 
+                      sx={{ 
+                        borderRadius: '12px', 
+                        bgcolor: 'rgba(16, 185, 129, 0.1)', 
+                        color: '#10B981',
+                        fontWeight: 800,
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                        height: 44,
+                        px: 1
+                      }} 
+                    />
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={handleDuplicate}
+                      disabled={isDuplicating}
+                      startIcon={isDuplicating ? <CircularProgress size={16} color="inherit" /> : <DuplicateIcon />}
+                      sx={{
+                        borderRadius: '14px',
+                        bgcolor: '#6366F1',
+                        color: '#000',
+                        fontWeight: 800,
+                        textTransform: 'none',
+                        px: 3,
+                        height: 44,
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 8px 20px rgba(99, 102, 241, 0.15)',
+                        '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+                      }}
+                    >
+                      {isDuplicating ? 'Duplicating...' : 'Duplicate to My Collection'}
+                    </Button>
+                  )
+                ) : (
+                  <Tooltip title="Login to duplicate note into your collection">
+                    <Button
+                      component={Link}
+                      href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin + window.location.pathname) : ''}`}
+                      variant="outlined"
+                      startIcon={<DuplicateIcon />}
+                      sx={{
+                        borderRadius: '14px',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        px: 3,
+                        height: 44,
+                        whiteSpace: 'nowrap',
+                        '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.03)' }
+                      }}
+                    >
+                      Login to Duplicate
+                    </Button>
+                  </Tooltip>
+                )}
+              </Box>
+            )}
+          </Box>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255, 255, 255, 0.4)' }}>
