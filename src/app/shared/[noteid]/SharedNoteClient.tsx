@@ -305,7 +305,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           try {
             const meta = JSON.parse(cached.metadata || '{}');
             if (meta.isGhost) return; // Skip background refresh for ghosts
-          } catch(e) {}
+          } catch(_e) {}
       }
 
       // 3. Spark Detection: Check if we have this in our local ghost history for instant title/meta
@@ -332,7 +332,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               setIsLoadingNote(false);
             }
           }
-        } catch (e) {}
+        } catch (_e) {}
       }
     } else {
       setIsLoadingNote(true);
@@ -363,8 +363,8 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
              throw new Error('This temporary note has expired after 7 days and is no longer available.');
           }
         }
-      } catch (e: any) {
-        if (e.message.includes('expired')) throw e;
+      } catch (_e: any) {
+        if (_e.message.includes('expired')) throw _e;
       }
 
       // Update DataNexus with appropriate TTL
@@ -394,7 +394,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId, CACHE_KEY, fetchOptimized, getCachedData, SHARED_NOTE_TTL]);
+  }, [noteId, CACHE_KEY, fetchOptimized, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id]);
 
   useEffect(() => {
     fetchSharedNote();
@@ -441,13 +441,12 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         const res = await listNotes([], 100);
         const duplicated = res.documents.some(n => {
           try {
-            const meta = JSON.parse(n.metadata || '{}');
-            return meta.originId === verifiedNote.$id;
-          } catch (e) { return false; }
-        });
+          const meta = JSON.parse(n.metadata || '{}');
+          return meta.originId === verifiedNote.$id;
+          } catch (_e) { return false; }        });
         setAlreadyDuplicated(duplicated);
-      } catch (e) {
-        console.warn('Failed to check for existing duplication', e);
+      } catch (_e) {
+        console.warn('Failed to check for existing duplication', _e);
       }
     };
     checkDuplicate();
