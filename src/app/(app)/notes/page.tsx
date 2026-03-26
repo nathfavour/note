@@ -21,6 +21,7 @@ import {
   Login as ArrowRightOnRectangleIcon,
   PushPin as PinIcon,
   Brush as PencilIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
@@ -42,9 +43,21 @@ export default function NotesPage() {
     loadMore, 
     upsertNote, 
     removeNote,
-    isPinned
+    isPinned,
+    refetchNotes
   } = useNotes();
   const { openOverlay } = useOverlay();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refetchNotes();
+    } finally {
+      // Small delay for visual feedback if it's too fast
+      setTimeout(() => setIsRefreshing(false), 600);
+    }
+  }, [refetchNotes]);
 
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen, openSidebar, activeContentKey } = useDynamicSidebar();
@@ -293,6 +306,31 @@ export default function NotesPage() {
           </Typography>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <IconButton 
+              onClick={handleManualRefresh} 
+              {...sidebarIgnoreProps} 
+              sx={{ 
+                color: isRefreshing ? 'secondary.main' : 'text.secondary',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                },
+                transition: 'all 0.3s ease',
+                '& svg': {
+                  animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  }
+                }
+              }}
+              disabled={isRefreshing}
+            >
+              <RefreshIcon />
+            </IconButton>
+            <IconButton 
               onClick={handleCreateDoodleClick} 
               {...sidebarIgnoreProps} 
               sx={{ 
@@ -387,6 +425,31 @@ export default function NotesPage() {
             </Typography>
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton
+              onClick={handleManualRefresh}
+              {...sidebarIgnoreProps}
+              sx={{ 
+                color: isRefreshing ? 'secondary.main' : 'text.secondary',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                },
+                transition: 'all 0.3s ease',
+                '& svg': {
+                  animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  }
+                }
+              }}
+              disabled={isRefreshing}
+            >
+              <RefreshIcon />
+            </IconButton>
             <IconButton
               onClick={handleCreateDoodleClick}
               {...sidebarIgnoreProps}
