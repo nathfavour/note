@@ -273,7 +273,8 @@ function SharedNoteHeader() {
 
 export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const params = useParams();
-  const key = params.key as string;
+  const rawKey = params.key;
+  const key = Array.isArray(rawKey) ? rawKey.join('/') : (rawKey as string);
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
   const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -310,8 +311,14 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           try {
             const meta = JSON.parse(finalNote.metadata || '{}');
             if (meta.isEncrypted && key) {
+              const restoreStandardBase64 = (str: string) => {
+                let res = str.replace(/-/g, '+').replace(/_/g, '/');
+                while (res.length % 4) res += '=';
+                return res;
+              };
+
               if (meta.encryptionVersion === 'T4') {
-                const keyBuffer = Buffer.from(key, 'base64');
+                const keyBuffer = Buffer.from(restoreStandardBase64(key), 'base64');
                 const cryptoKey = await crypto.subtle.importKey(
                   'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                 );
@@ -387,9 +394,15 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         // HANDLE DECRYPTION
         if (meta.isEncrypted) {
             if (key) {
+                const restoreStandardBase64 = (str: string) => {
+                    let res = str.replace(/-/g, '+').replace(/_/g, '/');
+                    while (res.length % 4) res += '=';
+                    return res;
+                };
+
                 try {
                     if (meta.encryptionVersion === 'T4') {
-                        const keyBuffer = Buffer.from(key, 'base64');
+                        const keyBuffer = Buffer.from(restoreStandardBase64(key), 'base64');
                         const cryptoKey = await crypto.subtle.importKey(
                           'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                         );
