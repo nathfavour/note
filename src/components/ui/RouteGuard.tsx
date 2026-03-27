@@ -17,7 +17,7 @@ const PUBLIC_ROUTES = [
   '/verify'
 ];
 
-const SHARED_NOTE_PATTERN = /^\/shared\/[^\/]+$/;
+const SHARED_NOTE_PATTERN = /^\/shared\/.+$/;
 
 function isPublicRoute(path: string): boolean {
   return PUBLIC_ROUTES.includes(path) || SHARED_NOTE_PATTERN.test(path);

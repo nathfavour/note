@@ -311,14 +311,8 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           try {
             const meta = JSON.parse(finalNote.metadata || '{}');
             if (meta.isEncrypted && key) {
-              const restoreStandardBase64 = (str: string) => {
-                let res = str.replace(/-/g, '+').replace(/_/g, '/');
-                while (res.length % 4) res += '=';
-                return res;
-              };
-
               if (meta.encryptionVersion === 'T4') {
-                const keyBuffer = Buffer.from(restoreStandardBase64(key), 'base64');
+                const keyBuffer = Buffer.from(key, 'base64');
                 const cryptoKey = await crypto.subtle.importKey(
                   'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                 );
@@ -394,15 +388,9 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         // HANDLE DECRYPTION
         if (meta.isEncrypted) {
             if (key) {
-                const restoreStandardBase64 = (str: string) => {
-                    let res = str.replace(/-/g, '+').replace(/_/g, '/');
-                    while (res.length % 4) res += '=';
-                    return res;
-                };
-
                 try {
                     if (meta.encryptionVersion === 'T4') {
-                        const keyBuffer = Buffer.from(restoreStandardBase64(key), 'base64');
+                        const keyBuffer = Buffer.from(key, 'base64');
                         const cryptoKey = await crypto.subtle.importKey(
                           'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                         );
