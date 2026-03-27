@@ -3,15 +3,13 @@ import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12; // GCM recommended IV length
-const AUTH_TAG_LENGTH = 16;
 
 /**
- * Encrypts a string using a randomly generated key.
+ * Encrypts a string using a provided or randomly generated key.
  * Returns the encrypted data (base64) and the key (base64).
- * The encrypted data includes the IV and Auth Tag.
  */
-export async function encryptGhostData(text: string): Promise<{ encrypted: string; key: string }> {
-    const key = randomBytes(32);
+export async function encryptGhostData(text: string, providedKey?: string): Promise<{ encrypted: string; key: string }> {
+    const key = providedKey ? Buffer.from(providedKey, 'base64') : randomBytes(32);
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv(ALGORITHM, key, iv);
     

@@ -115,13 +115,14 @@ export class AppwriteService {
   /**
    * Create a Ghost Note (Anonymous)
    */
-  static async createGhostNote(data: { title: string; content: string; format?: string; ghostSecret: string; expiresAt?: string }): Promise<any> {
+  static async createGhostNote(data: { title: string; content: string; format?: string; ghostSecret: string; expiresAt?: string; isEncrypted?: boolean }): Promise<any> {
     const expiresAt = data.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const metadata = JSON.stringify({
       isGhost: true,
       ghostSecret: data.ghostSecret,
       expiresAt: expiresAt,
-      version: 'v2'
+      version: 'v2',
+      isEncrypted: data.isEncrypted || false
     });
 
     const noteData = {

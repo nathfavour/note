@@ -46,7 +46,7 @@ import {
     RefreshCcw 
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
-import { encryptGhostData } from '@/lib/encryption/ghost-crypto';
+import { encryptGhostData, decryptGhostData } from '@/lib/encryption/ghost-crypto';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/components/ui/AuthContext';
 import { Button } from '@/components/ui/Button';
@@ -66,6 +66,7 @@ interface GhostNoteRef {
     title: string;
     createdAt: string;
     expiresAt: string;
+    decryptionKey?: string;
 }
 
 const LIFESPAN_OPTIONS = [
@@ -204,14 +205,27 @@ export const GhostEditor = () => {
         try {
             const res = await fetch(`/api/shared/${note.id}`);
             if (res.ok) {
-                // const data = await res.json();
+                const data = await res.json();
                 
+                let displayTitle = note.title;
+                let displayContent = data.content;
+
+                if (note.decryptionKey) {
+                    try {
+                        displayTitle = await decryptGhostData(data.title, note.decryptionKey);
+                        displayContent = await decryptGhostData(data.content, note.decryptionKey);
+                    } catch (e) {
+                        console.error("Decryption failed", e);
+                        toast.error("Failed to decrypt note content. Key might be invalid.");
+                    }
+                }
+
                 // Update sidebar with actual content
                 openSidebar(
                     <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <Stack spacing={1}>
                             <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
-                                {note.title}
+                                {displayTitle}
                             </Typography>
                             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
                                 GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
@@ -222,7 +236,10 @@ export const GhostEditor = () => {
                             <Button
                                 size="small"
                                 variant="outlined"
-                                onClick={() => handleCopyFullContent(data.content)}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(displayContent);
+                                    toast.success("Content copied");
+                                }}
                                 startIcon={<CopyIcon size={16} />}
                                 sx={{ 
                                     flex: 1,
@@ -242,7 +259,12 @@ export const GhostEditor = () => {
                                 size="small"
                                 variant="contained"
                                 color="secondary"
-                                onClick={() => handleRecreate(data.content, note.title)}
+                                onClick={() => {
+                                    setTitle(displayTitle);
+                                    setContent(displayContent);
+                                    closeSidebar();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
                                 startIcon={<RefreshCcw size={16} />}
                                 sx={{ flex: 1, borderRadius: '12px', fontWeight: 800 }}
                             >
@@ -257,6 +279,36 @@ export const GhostEditor = () => {
                                 color: 'rgba(255, 255, 255, 0.8)',
                                 fontFamily: 'var(--font-satoshi)',
                                 lineHeight: 1.8,
+                                fontSize: '0.95rem',
+                                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                                p: 3,
+                                borderRadius: '16px',
+                                border: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}
+                        >
+                            {displayContent}
+                        </Typography>
+
+                        <Button 
+                            fullWidth 
+                            variant="ghost" 
+                            onClick={() => window.open(`/shared/${note.id}${note.decryptionKey ? `/${note.decryptionKey}` : ''}`, '_blank')}
+                            startIcon={<ExternalLink size={16} />}
+                            sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.4)', '&:hover': { color: 'white' } }}
+                        >
+                            OPEN PUBLIC LINK
+                        </Button>
+                    </Box>,
+                    note.id
+                );
+            } else {
+                toast.error("Failed to fetch note. It might have expired.");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("An error occurred while fetching the note.");
+        }
+    };
                                 fontSize: '1.05rem',
                                 borderTop: '1px solid rgba(255, 255, 255, 0.05)',
                                 pt: 4
@@ -430,15 +482,21 @@ export const GhostEditor = () => {
             const finalTitle = title.trim();
             const expiresAt = new Date(Date.now() + lifespanMs).toISOString();
             
+            // ENCRYPT GHOST NOTE
+            const { encrypted: encTitle, key: noteKey } = await encryptGhostData(finalTitle);
+            const { encrypted: encContent } = await encryptGhostData(content.trim(), noteKey);
+            
             const note = await AppwriteService.createGhostNote({
-                title: finalTitle,
-                content: content.trim(),
+                title: encTitle,
+                content: encContent,
                 ghostSecret: secret,
-                expiresAt: expiresAt
+                expiresAt: expiresAt,
+                isEncrypted: true
             });
 
             if (note) {
-                const url = `${window.location.origin}/shared/${note.$id}`;
+                // URI format: /shared/[id]/[key]
+                const url = `${window.location.origin}/shared/${note.$id}/${noteKey}`;
                 const copied = await copyToClipboard(url);
                 
                 if (copied) {
@@ -449,11 +507,12 @@ export const GhostEditor = () => {
                 }
 
                 // Update history
-                const newRef = { 
+                const newRef: GhostNoteRef = { 
                     id: note.$id, 
-                    title: finalTitle, 
+                    title: finalTitle, // Plain title for history
                     createdAt: new Date().toISOString(),
-                    expiresAt: expiresAt
+                    expiresAt: expiresAt,
+                    decryptionKey: noteKey
                 };
                 const updatedHistory = [newRef, ...prevNotes].slice(0, 10);
                 saveHistory(updatedHistory);

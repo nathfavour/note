@@ -58,6 +58,8 @@ import { getEffectiveDisplayName, getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 import { useDataNexus } from '@/context/DataNexusContext';
+import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
+import { useParams } from 'next/navigation';
 
 interface SharedNoteClientProps {
    noteId: string;
@@ -268,6 +270,8 @@ function SharedNoteHeader() {
 }
 
 export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
+  const params = useParams();
+  const key = params.key as string;
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
   const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -299,7 +303,22 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       // 2. Check DataNexus public cache
       const cached = getCachedData<Notes>(CACHE_KEY);
       if (cached) {
-          setVerifiedNote(cached);
+          // If encrypted, we need to decrypt even if cached (cache might be raw)
+          // Or we cache the decrypted version. For security, let's cache raw and decrypt on fly, 
+          // or cache decrypted if we have the key.
+          
+          let finalNote = { ...cached };
+          try {
+            const meta = JSON.parse(finalNote.metadata || '{}');
+            if (meta.isEncrypted && key) {
+              finalNote.title = await decryptGhostData(finalNote.title, key);
+              finalNote.content = await decryptGhostData(finalNote.content, key);
+            }
+          } catch(_e) {
+            console.error("Cache decryption failed", _e);
+          }
+
+          setVerifiedNote(finalNote);
           setIsLoadingNote(false);
           // If it's a ghost note, we're mathematically sure it hasn't changed
           try {
@@ -323,7 +342,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 content: '', // Still need to fetch full content
                 createdAt: spark.createdAt,
                 updatedAt: spark.createdAt,
-                metadata: JSON.stringify({ isGhost: true, expiresAt: spark.expiresAt }),
+                metadata: JSON.stringify({ isGhost: true, expiresAt: spark.expiresAt, isEncrypted: !!spark.decryptionKey }),
                 userId: null,
                 isPublic: true,
                 tags: [],
@@ -350,12 +369,31 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       };
 
       // Perform fetch
-      const note = await fetcher();
+      let note = await fetcher();
 
       // Determine TTL: Ghosts are immutable
       let ttl = SHARED_NOTE_TTL;
       try {
         const meta = JSON.parse(note.metadata || '{}');
+        
+        // HANDLE DECRYPTION
+        if (meta.isEncrypted) {
+            if (key) {
+                try {
+                    note.title = await decryptGhostData(note.title, key);
+                    note.content = await decryptGhostData(note.content, key);
+                } catch (decErr) {
+                    console.error("Decryption failed", decErr);
+                    throw new Error("This note is encrypted and the provided key is invalid.");
+                }
+            } else {
+                // No key provided for an encrypted note
+                // We show a placeholder or error
+                note.title = "🔒 Encrypted Ghost Note";
+                note.content = "This note is encrypted and requires a valid decryption key in the URL to view its contents.";
+            }
+        }
+
         if (meta.isGhost) {
           ttl = GHOST_NOTE_TTL;
           // Verify expiry
@@ -364,7 +402,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
           }
         }
       } catch (_e: any) {
-        if (_e.message.includes('expired')) throw _e;
+        if (_e.message.includes('expired') || _e.message.includes('encrypted')) throw _e;
       }
 
       // Update DataNexus with appropriate TTL
