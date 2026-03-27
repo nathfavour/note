@@ -94,6 +94,7 @@ export function NoteDetailSidebar({
   const [format, setFormat] = useState<'text' | 'doodle'>(note.format as 'text' | 'doodle' || 'text');
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
   const [isPublic, setIsPublic] = useState(note.isPublic);
+  const [lastT4Key, setLastT4Key] = useState<string | null>(null);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
   const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
@@ -229,8 +230,7 @@ export function NoteDetailSidebar({
 
 
   useEffect(() => {
-    const noteIdChanged = note.$id !== prevNoteIdRef.current;
-    if (!noteIdChanged) return;
+    if (isEditing) return;
     prevNoteIdRef.current = note.$id;
     setTitle(note.title || '');
     setContent(note.content || '');
@@ -239,7 +239,7 @@ export function NoteDetailSidebar({
     setIsPublic(note.isPublic);
     setIsEditingTitle(false);
     setIsEditingContent(false);
-  }, [note.$id, note.title, note.content, note.format, note.tags, note.isPublic]);
+  }, [note.$id, note.title, note.content, note.format, note.tags, note.isPublic, isEditing]);
 
   const normalizedTags = useMemo(() => {
     return tags
@@ -463,9 +463,20 @@ export function NoteDetailSidebar({
   };
 
   const handleCopyShareLink = () => {
-    const shareUrl = `${window.location.origin}/shared/${note.$id}`;
+    let isEncrypted = false;
+    try {
+      const meta = JSON.parse(note.metadata || '{}');
+      isEncrypted = meta.encryptionVersion === 'T4';
+    } catch {}
+
+    const shareUrl = getShareableUrl(note.$id, lastT4Key || undefined);
     navigator.clipboard.writeText(shareUrl);
-    showSuccess('Share link copied to clipboard');
+    
+    if (isEncrypted && !lastT4Key) {
+      showSuccess('Base link copied', 'Note is encrypted. Re-toggle visibility to get a fresh link with key.');
+    } else {
+      showSuccess('Share link copied to clipboard');
+    }
   };
 
   const handleCancel = () => {
@@ -522,6 +533,7 @@ export function NoteDetailSidebar({
                     const updated = await toggleNoteVisibility(note.$id);
                     if (updated) {
                       setIsPublic(updated.isPublic);
+                      setLastT4Key(updated.decryptionKey || null);
                       onUpdate(updated);
                       showSuccess(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
                       if (updated.isPublic && updated.decryptionKey) {

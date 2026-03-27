@@ -316,7 +316,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 const cryptoKey = await crypto.subtle.importKey(
                   'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                 );
-                finalNote.title = await ecosystemSecurity.decryptWithKey(finalNote.title || '', cryptoKey);
+                finalNote.title = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || finalNote.title || '', cryptoKey);
                 finalNote.content = await ecosystemSecurity.decryptWithKey(finalNote.content || '', cryptoKey);
               } else {
                 finalNote.title = await decryptGhostData(finalNote.title || '', key);
@@ -394,7 +394,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                         const cryptoKey = await crypto.subtle.importKey(
                           'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                         );
-                        note.title = await ecosystemSecurity.decryptWithKey(note.title || '', cryptoKey);
+                        note.title = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || note.title || '', cryptoKey);
                         note.content = await ecosystemSecurity.decryptWithKey(note.content || '', cryptoKey);
                     } else {
                         note.title = await decryptGhostData(note.title || '', key);

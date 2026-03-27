@@ -158,14 +158,14 @@ export class EcosystemSecurity {
     const PW_DB = "passwordManagerDb";
     const IDENTITIES_TABLE = "identities";
     const CHAT_DB = "chat";
-    const CHAT_USERS_TABLE = "users";
+    const CHAT_USERS_TABLE = "profiles";
 
     try {
-      // 1. Check if identity exists - use 'public_notes' label
+      // 1. Check if identity exists - use unencrypted 'identityType' for querying
       const identities = await databases.listDocuments(
         PW_DB,
         IDENTITIES_TABLE,
-        [Query.equal("userId", userId), Query.equal("label", "public_notes")]
+        [Query.equal("userId", userId), Query.equal("identityType", "public_notes")]
       );
 
 
@@ -224,7 +224,7 @@ export class EcosystemSecurity {
         // 4. Store in identities
         await databases.createDocument(PW_DB, IDENTITIES_TABLE, ID.unique(), {
           userId,
-          identityType: "e2e",
+          identityType: "public_notes",
           label: "public_notes",
           publicKey: publicKeyBase64,
           credentialId: wrappedPrivateKey,
@@ -248,11 +248,12 @@ export class EcosystemSecurity {
           { publicKey: publicKeyBase64 }
         );
       } else {
+        const currentUser = await account.get();
         await databases.createDocument(CHAT_DB, CHAT_USERS_TABLE, ID.unique(), {
           userId,
+          username: (currentUser.email ? currentUser.email.split('@')[0] : 'user') + "_" + userId.slice(0, 4),
           publicKey: publicKeyBase64,
-          isOnline: false,
-          lastSeen: new Date().toISOString(),
+          status: "online",
         });
       }
 

@@ -2739,6 +2739,42 @@ export function getShareableUrl(noteId: string, key?: string): string {
   return `${baseUrl}/shared/${noteId}${key ? `/${key}` : ''}`;
 }
 
+async function loadT4NoteKey(noteId: string, ownerId: string): Promise<CryptoKey> {
+  const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
+  const keyMappingRes = await databases.listDocuments(
+    APPWRITE_CONFIG.DATABASES.VAULT,
+    'key_mapping',
+    [
+      Query.equal('resourceType', 'note'),
+      Query.equal('resourceId', noteId),
+      Query.equal('grantee', `user:${ownerId}`),
+      Query.limit(1),
+    ] as any
+  );
+
+  const mapping = keyMappingRes.documents[0] as any;
+  if (!mapping?.wrappedKey) {
+    throw new Error('Missing encryption key mapping for this note');
+  }
+
+  return await ecosystemSecurity.unwrapKeyForIdentity(mapping.wrappedKey, ownerPublicKey);
+}
+
+function stripT4Metadata(metadata: string | undefined | null): string {
+  let parsed: Record<string, any> = {};
+  try {
+    parsed = metadata ? JSON.parse(metadata) : {};
+  } catch {
+    parsed = {};
+  }
+
+  delete parsed.isEncrypted;
+  delete parsed.encryptionVersion;
+  delete parsed.encryptedTitle;
+
+  return JSON.stringify(parsed);
+}
+
 async function syncNoteVisibilityChildren(noteId: string, ownerId: string, isPublic: boolean) {
   try {
     const commentsRes = await databases.listDocuments(
@@ -2872,7 +2908,10 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
         // 2. Generate new symmetric key for this resource
         const symmetricKey = await ecosystemSecurity.generateRandomMEK();
         const rawSymmetricKey = await crypto.subtle.exportKey('raw', symmetricKey);
-        decryptionKey = btoa(String.fromCharCode(...new Uint8Array(rawSymmetricKey)));
+        const standardBase64 = btoa(String.fromCharCode(...new Uint8Array(rawSymmetricKey)));
+        
+        // Make key URL-safe
+        decryptionKey = standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
         // 3. Encrypt content and title
         const encryptedTitle = await ecosystemSecurity.encryptWithKey(note.title || '', symmetricKey);
@@ -2882,42 +2921,84 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
         const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
         const wrappedKey = await ecosystemSecurity.wrapKeyForIdentity(symmetricKey, ownerPublicKey);
 
-        // 5. Store in key_mapping
-        await databases.createDocument(
+        // 5. Store in key_mapping (Safe Upsert)
+        const existingMappings = await databases.listDocuments(
             APPWRITE_CONFIG.DATABASES.VAULT,
             'key_mapping',
-            ID.unique(),
-            {
-                resourceId: note.$id,
-                resourceType: 'note',
-                grantee: `user:${ownerId}`,
-                wrappedKey: wrappedKey,
-                metadata: JSON.stringify({ algorithm: 'AES-GCM', version: 'T4' })
-            },
             [
-                Permission.read(Role.user(ownerId)),
-                Permission.update(Role.user(ownerId)),
-                Permission.delete(Role.user(ownerId))
+                Query.equal('resourceType', 'note'),
+                Query.equal('resourceId', note.$id),
+                Query.equal('grantee', `user:${ownerId}`)
             ]
         );
 
+        const mappingData = {
+            resourceId: note.$id,
+            resourceType: 'note',
+            grantee: `user:${ownerId}`,
+            wrappedKey: wrappedKey,
+            metadata: JSON.stringify({ algorithm: 'AES-GCM', version: 'T4' })
+        };
+
+        const mappingPermissions = [
+            Permission.read(Role.user(ownerId)),
+            Permission.update(Role.user(ownerId)),
+            Permission.delete(Role.user(ownerId))
+        ];
+
+        if (existingMappings.total > 0) {
+            await databases.updateDocument(
+                APPWRITE_CONFIG.DATABASES.VAULT,
+                'key_mapping',
+                existingMappings.documents[0].$id,
+                mappingData,
+                mappingPermissions
+            );
+        } else {
+            await databases.createDocument(
+                APPWRITE_CONFIG.DATABASES.VAULT,
+                'key_mapping',
+                ID.unique(),
+                mappingData,
+                mappingPermissions
+            );
+        }
+
         // 6. Update payload with ciphertext and T4 metadata
+        // Note: encryptedTitle often exceeds 256 chars (DB limit), 
+        // so we store a placeholder in the 'title' column and the real encrypted title in 'metadata'.
         let meta = {};
         try { meta = JSON.parse(note.metadata || '{}'); } catch(e) {}
-        updatePayload.title = encryptedTitle;
+        
+        updatePayload.title = '🔒 Encrypted Note';
         updatePayload.content = encryptedContent;
         updatePayload.metadata = JSON.stringify({
             ...meta,
             isGhost: false,
             isEncrypted: true,
-            encryptionVersion: 'T4'
+            encryptionVersion: 'T4',
+            encryptedTitle: encryptedTitle
         });
     } else {
-        // If taking private, we should ideally decrypt it back. 
-        // But for T4 safety, we assume if it's private, owner has access to key_mapping.
-        // However, user might expect plaintext back in DB. 
-        // For now, let's keep it encrypted in DB as a security feature, or decrypt if key available.
-        // Simplified: just toggle isPublic. Owner always decrypts client-side.
+        // Restore plaintext storage when moving back to private.
+        if (!ecosystemSecurity.status.isUnlocked) {
+            throw new Error('VAULT_LOCKED');
+        }
+
+        const meta = (() => {
+          try { return JSON.parse(note.metadata || '{}'); } catch { return {}; }
+        })();
+
+        if (meta.isEncrypted || meta.encryptionVersion === 'T4') {
+          const symmetricKey = await loadT4NoteKey(note.$id, ownerId);
+          const plaintextTitle = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || '', symmetricKey);
+          const plaintextContent = await ecosystemSecurity.decryptWithKey(note.content || '', symmetricKey);
+
+          updatePayload.title = plaintextTitle;
+          updatePayload.content = plaintextContent;
+        }
+
+        updatePayload.metadata = stripT4Metadata(note.metadata);
     }
 
     const permissions = [

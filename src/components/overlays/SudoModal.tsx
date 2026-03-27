@@ -69,24 +69,13 @@ export function SudoModal({
             try {
                 // Sudo Hook: Ensure E2E Identity is created and published upon successful MasterPass unlock
                 console.log("[Note] Synchronizing Identity...");
+                // Note: ensureE2EIdentity returns a promise but we don't necessarily need to await it for UI to proceed
+                // if we are confident in the unlock. But for public notes we NEED it.
                 await ecosystemSecurity.ensureE2EIdentity(user.$id);
 
                 if (intent === "reset") {
                     onSuccess();
                     return;
-                }
-
-                // Passkey Incentive
-                const entries = await AppwriteService.listKeychainEntries(user.$id);
-                const hasPasskey = entries.some((e: any) => e.type === 'passkey');
-
-                if (!hasPasskey) {
-                    const skipTimestamp = localStorage.getItem(`passkey_skip_${user.$id}`);
-                    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-                    if (!skipTimestamp || (Date.now() - parseInt(skipTimestamp)) > sevenDays) {
-                        setShowPasskeyIncentive(true);
-                        return;
-                    }
                 }
             } catch (e) {
                 console.error("[Note] Failed to sync identity on unlock", e);
