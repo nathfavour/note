@@ -114,7 +114,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     return () => {
       if (typeof unsub === 'function') {
-        unsub();
+        (unsub as any)();
       } else if (unsub && typeof (unsub as any).unsubscribe === 'function') {
         (unsub as any).unsubscribe();
       }

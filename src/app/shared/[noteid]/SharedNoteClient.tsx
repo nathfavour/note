@@ -46,9 +46,10 @@ import {
   Tooltip,
   ListItemIcon,
   ListItemText,
-  alpha
+  alpha,
+  Link as MuiLink
 } from '@mui/material';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import CommentsSection from '@/app/(app)/notes/Comments';
 import NoteReactions from '@/app/(app)/notes/NoteReactions';
 
@@ -58,6 +59,7 @@ import { getEffectiveDisplayName, getUserProfilePicId } from '@/lib/utils';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 import { useDataNexus } from '@/context/DataNexusContext';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
 import { useParams } from 'next/navigation';
 
@@ -135,7 +137,7 @@ function SharedNoteHeader() {
             fontWeight: 900,
             letterSpacing: '-0.04em'
           }}
-          component={Link}
+          component={NextLink}
           href="/"
         />
 
@@ -222,11 +224,11 @@ function SharedNoteHeader() {
                 </Box>
                 <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
                 <Box sx={{ py: 0.5 }}>
-                  <MenuItem component={Link} href="/notes" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
+                  <MenuItem component={NextLink} href="/notes" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
                     <ListItemIcon sx={{ minWidth: 40 }}><LayoutGrid size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
                     <ListItemText primary="My Dashboard" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
                   </MenuItem>
-                  <MenuItem component={Link} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
+                  <MenuItem component={NextLink} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
                     <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
                     <ListItemText primary="Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
                   </MenuItem>
@@ -303,16 +305,22 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       // 2. Check DataNexus public cache
       const cached = getCachedData<Notes>(CACHE_KEY);
       if (cached) {
-          // If encrypted, we need to decrypt even if cached (cache might be raw)
-          // Or we cache the decrypted version. For security, let's cache raw and decrypt on fly, 
-          // or cache decrypted if we have the key.
-          
-          let finalNote = { ...cached };
+          // If encrypted, we need to decrypt even if cached
+          const finalNote = { ...cached };
           try {
             const meta = JSON.parse(finalNote.metadata || '{}');
             if (meta.isEncrypted && key) {
-              finalNote.title = await decryptGhostData(finalNote.title, key);
-              finalNote.content = await decryptGhostData(finalNote.content, key);
+              if (meta.encryptionVersion === 'T4') {
+                const keyBuffer = Buffer.from(key, 'base64');
+                const cryptoKey = await crypto.subtle.importKey(
+                  'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
+                );
+                finalNote.title = await ecosystemSecurity.decryptWithKey(finalNote.title || '', cryptoKey);
+                finalNote.content = await ecosystemSecurity.decryptWithKey(finalNote.content || '', cryptoKey);
+              } else {
+                finalNote.title = await decryptGhostData(finalNote.title || '', key);
+                finalNote.content = await decryptGhostData(finalNote.content || '', key);
+              }
             }
           } catch(_e) {
             console.error("Cache decryption failed", _e);
@@ -369,7 +377,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
       };
 
       // Perform fetch
-      let note = await fetcher();
+      const note = await fetcher();
 
       // Determine TTL: Ghosts are immutable
       let ttl = SHARED_NOTE_TTL;
@@ -380,16 +388,24 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
         if (meta.isEncrypted) {
             if (key) {
                 try {
-                    note.title = await decryptGhostData(note.title, key);
-                    note.content = await decryptGhostData(note.content, key);
+                    if (meta.encryptionVersion === 'T4') {
+                        const keyBuffer = Buffer.from(key, 'base64');
+                        const cryptoKey = await crypto.subtle.importKey(
+                          'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
+                        );
+                        note.title = await ecosystemSecurity.decryptWithKey(note.title || '', cryptoKey);
+                        note.content = await ecosystemSecurity.decryptWithKey(note.content || '', cryptoKey);
+                    } else {
+                        note.title = await decryptGhostData(note.title || '', key);
+                        note.content = await decryptGhostData(note.content || '', key);
+                    }
                 } catch (decErr) {
                     console.error("Decryption failed", decErr);
                     throw new Error("This note is encrypted and the provided key is invalid.");
                 }
             } else {
                 // No key provided for an encrypted note
-                // We show a placeholder or error
-                note.title = "🔒 Encrypted Ghost Note";
+                note.title = "🔒 Encrypted Note";
                 note.content = "This note is encrypted and requires a valid decryption key in the URL to view its contents.";
             }
         }
@@ -432,7 +448,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id]);
+  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id, key]);
 
   useEffect(() => {
     fetchSharedNote();
@@ -463,7 +479,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
     return () => {
       if (typeof sub === 'function') {
-        sub();
+        (sub as any)();
       } else if (sub && typeof (sub as any).unsubscribe === 'function') {
         (sub as any).unsubscribe();
       }
@@ -502,7 +518,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 3 }}>{error}</Typography>
               <Button
                 variant="contained"
-                onClick={fetchSharedNote}
+                onClick={() => fetchSharedNote(true)}
                 sx={{ 
                   borderRadius: '12px',
                   bgcolor: '#6366F1',
@@ -653,7 +669,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 ) : (
                   <Tooltip title="Login to duplicate note into your collection">
                     <Button
-                      component={Link}
+                      component={MuiLink}
                       href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin + window.location.pathname) : ''}`}
                       variant="outlined"
                       startIcon={<DuplicateIcon />}
@@ -689,7 +705,8 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>Public Note</Typography>
             </Box>
             {authorProfile && (
-              <Link 
+              <MuiLink 
+                component={NextLink}
                 href={authorProfile.username ? `${getEcosystemUrl('connect')}/u/${authorProfile.username}` : '#'} 
                 target="_blank"
                 sx={{ 
@@ -719,7 +736,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 <Typography variant="caption" sx={{ fontWeight: 800, color: '#6366F1', fontFamily: 'var(--font-satoshi)' }}>
                   {authorProfile.username ? `@${authorProfile.username}` : getEffectiveDisplayName(authorProfile)}
                 </Typography>
-              </Link>
+              </MuiLink>
             )}
           </Box>
 
@@ -818,7 +835,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 Check out all your notes and continue organizing your thoughts.
               </Typography>
               <Button
-                component={Link}
+                component={NextLink}
                 href="/notes"
                 variant="contained"
                 size="large"
@@ -867,14 +884,14 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
                 fontWeight: 900,
                 letterSpacing: '-0.04em'
               }}
-              component={Link}
+              component={MuiLink}
               href="/"
             />
           </Box>
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}>
-            <Button component={Link} href="/" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, textTransform: 'none' }}>Home</Button>
+            <Button component={NextLink} href="/" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, textTransform: 'none' }}>Home</Button>
             <Button 
-              component={Link} 
+              component={NextLink}
               href="/" 
               variant="contained" 
               sx={{ 
@@ -899,7 +916,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               Organize unlimited notes, AI insights & secure sharing.
             </Typography>
             <Button 
-              component={Link} 
+              component={NextLink}
               href="/" 
               endIcon={<ArrowRightIcon />}
               sx={{ fontWeight: 800, color: '#6366F1', textTransform: 'none' }}
@@ -938,7 +955,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               Join thousands of users who trust Kylrix Note to capture, organize, and share their thoughts.
             </Typography>
             <Button
-              component={Link}
+              component={MuiLink}
               href="/"
               variant="contained"
               size="large"

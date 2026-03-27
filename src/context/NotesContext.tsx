@@ -297,7 +297,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     
     return () => {
       if (typeof sub === 'function') {
-        sub();
+        (sub as any)();
       } else if (sub && typeof (sub as any).unsubscribe === 'function') {
         (sub as any).unsubscribe();
       }

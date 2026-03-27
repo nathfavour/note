@@ -28,8 +28,9 @@ import {
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import { updateNote, createNote, toggleNoteVisibility, createTaskFromNote } from '@/lib/appwrite';
+import { updateNote, createNote, toggleNoteVisibility, createTaskFromNote, getShareableUrl } from '@/lib/appwrite';
 import { useToast } from './Toast';
+import { useSudo } from '@/context/SudoContext';
 import { useAuth } from './AuthContext';
 import { generateAIAction } from '@/lib/ai-actions';
 import {
@@ -50,6 +51,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   const { openSidebar } = useDynamicSidebar();
   const { isPinned, pinNote, unpinNote, upsertNote } = useNotes();
   const { user } = useAuth();
+  const { promptSudo } = useSudo();
   const { showSuccess, showError, showInfo } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
@@ -139,24 +141,48 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   };
 
   const handleTogglePublic = async () => {
-    try {
-      const updated = await toggleNoteVisibility(note.$id);
-      if (updated) {
-        upsertNote(updated);
-        showSuccess(updated.isPublic ? 'Note made public' : 'Note made private');
-      } else {
-        throw new Error('Failed to update visibility');
+    const handleToggle = async () => {
+      try {
+        const updated = await toggleNoteVisibility(note.$id);
+        if (updated) {
+          upsertNote(updated);
+          showSuccess(updated.isPublic ? 'Note made public' : 'Note made private');
+          if (updated.isPublic && updated.decryptionKey) {
+            const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+            navigator.clipboard.writeText(shareUrl);
+            showSuccess('Link Copied', 'Encrypted public link is on your clipboard.');
+          }
+        } else {
+          throw new Error('Failed to update visibility');
+        }
+      } catch (err: any) {
+        if (err.message === 'VAULT_LOCKED') {
+          showError('Vault Locked', 'Unlock vault to encrypt note for public sharing.');
+          const unlocked = await promptSudo();
+          if (unlocked) handleToggle();
+        } else {
+          showError(err.message || 'Failed to update visibility');
+        }
       }
-    } catch (err: any) {
-      showError(err.message || 'Failed to update visibility');
-    }
+    };
+    handleToggle();
   };
 
   const handleCopyShareLink = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const shareUrl = `${window.location.origin}/shared/${note.$id}`;
+    let isEncrypted = false;
+    try {
+      const meta = JSON.parse(note.metadata || '{}');
+      isEncrypted = meta.isEncrypted;
+    } catch(_e) {}
+
+    const shareUrl = getShareableUrl(note.$id);
     navigator.clipboard.writeText(shareUrl);
-    showSuccess('Share link copied to clipboard');
+    if (isEncrypted) {
+      showSuccess('Base link copied', 'Note is encrypted. Use public link with key for others to view.');
+    } else {
+      showSuccess('Share link copied to clipboard');
+    }
   };
 
   // Render doodle preview on canvas

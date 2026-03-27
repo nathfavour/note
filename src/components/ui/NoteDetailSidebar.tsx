@@ -40,10 +40,11 @@ import {
 } from '@mui/icons-material';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
+import { useSudo } from '@/context/SudoContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, getShareableUrl } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import {
   PlaylistAddCheck as TaskIcon,
@@ -184,6 +185,7 @@ export function NoteDetailSidebar({
   const prevNoteIdRef = useRef(note.$id);
 
   const { showSuccess, showError } = useToast();
+  const { promptSudo } = useSudo();
   const router = useRouter();
   const { closeSidebar } = useDynamicSidebar();
   const { isPinned, pinNote, unpinNote } = useNotes();
@@ -515,16 +517,30 @@ export function NoteDetailSidebar({
           <Tooltip title={isPublic ? "Make private" : "Make public"}>
             <IconButton
               onClick={async () => {
-                const newStatus = !isPublic;
-                setIsPublic(newStatus); // Optimistic update
-                try {
-                  const updated = await updateNote(note.$id, { isPublic: newStatus });
-                  onUpdate(updated);
-                  showSuccess(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
-                } catch (err: any) {
-                  setIsPublic(!newStatus); // Rollback
-                  showError('Failed to update visibility', err.message);
-                }
+                const handleToggle = async () => {
+                  try {
+                    const updated = await toggleNoteVisibility(note.$id);
+                    if (updated) {
+                      setIsPublic(updated.isPublic);
+                      onUpdate(updated);
+                      showSuccess(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
+                      if (updated.isPublic && updated.decryptionKey) {
+                        const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+                        navigator.clipboard.writeText(shareUrl);
+                        showSuccess('Link Copied', 'Encrypted public link is on your clipboard.');
+                      }
+                    }
+                  } catch (err: any) {
+                    if (err.message === 'VAULT_LOCKED') {
+                      showError('Vault Locked', 'You must unlock your vault to encrypt this note.');
+                      const unlocked = await promptSudo();
+                      if (unlocked) handleToggle();
+                    } else {
+                      showError('Toggle Failed', err.message || 'Failed to update visibility.');
+                    }
+                  }
+                };
+                handleToggle();
               }}
               sx={{
                 color: isPublic ? theme.palette.primary.main : theme.palette.text.secondary,

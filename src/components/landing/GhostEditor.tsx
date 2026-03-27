@@ -164,25 +164,6 @@ export const GhostEditor = () => {
     const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    const handleRecreate = (content: string, noteTitle?: string) => {
-        if (!content) return;
-        setTitle(noteTitle || '');
-        setContent(content);
-        setIsViewingFull(false);
-        setIsTitleManuallyEdited(true);
-        closeSidebar();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        toast.success("Note populated in editor");
-    };
-
-    const handleCopyFullContent = async (content: string) => {
-        if (!content) return;
-        const copied = await copyToClipboard(content);
-        if (copied) {
-            toast.success("Content copied");
-        }
-    };
-
     const handleViewNote = async (note: GhostNoteRef) => {
         // Open sidebar with a loading state
         openSidebar(
@@ -291,7 +272,7 @@ export const GhostEditor = () => {
 
                         <Button 
                             fullWidth 
-                            variant="ghost" 
+                            variant="text" 
                             onClick={() => window.open(`/shared/${note.id}${note.decryptionKey ? `/${note.decryptionKey}` : ''}`, '_blank')}
                             startIcon={<ExternalLink size={16} />}
                             sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.4)', '&:hover': { color: 'white' } }}
@@ -309,23 +290,7 @@ export const GhostEditor = () => {
             toast.error("An error occurred while fetching the note.");
         }
     };
-                                fontSize: '1.05rem',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                                pt: 4
-                            }}
-                        >
-                            {data.content || "Note content is empty."}
-                        </Typography>
-                    </Box>,
-                    note.id
-                );
-            } else {
-                toast.error("Could not fetch note content");
-            }
-        } catch (_e) {
-            toast.error("Failed to load note");
-        }
-    };
+
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number;
         mouseY: number;
@@ -611,8 +576,8 @@ export const GhostEditor = () => {
                         </Typography>
                     </Box>
                     <Button 
-                        size="sm" 
-                        variant="ghost"
+                        size="small" 
+                        variant="text"
                         onClick={() => openIDMWindow()}
                         sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}
                     >
@@ -623,7 +588,7 @@ export const GhostEditor = () => {
 
             <Grid container spacing={4}>
                 {/* Main Editor */}
-                <Grid item xs={12} lg={hasHistory ? 8 : 12}>
+                <Grid size={{ xs: 12, lg: hasHistory ? 8 : 12 }}>
                     <Paper sx={{ 
                         p: 0, 
                         borderRadius: '32px', 
@@ -880,7 +845,7 @@ export const GhostEditor = () => {
 
                 {/* Sidebar History */}
                 {hasHistory && (
-                    <Grid item xs={12} lg={4}>
+                    <Grid size={{ xs: 12, lg: 4 }}>
                         <Paper sx={{ 
                             p: 3, 
                             borderRadius: '32px', 
@@ -1008,8 +973,8 @@ export const GhostEditor = () => {
                                                         </Typography>
                                                             <Button 
                                                                 fullWidth
-                                                                size="sm"
-                                                                variant="ghost"
+                                                                size="small"
+                                                                variant="text"
                                                                 onClick={() => handleViewNote(note)}
                                                                 sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5, mb: 0.5 }}
                                                             >
@@ -1017,8 +982,8 @@ export const GhostEditor = () => {
                                                             </Button>
                                                             <Button 
                                                                 fullWidth
-                                                                size="sm"
-                                                                variant="ghost"
+                                                                size="small"
+                                                                variant="text"
                                                                 onClick={() => openIDMWindow()}
                                                                 sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5 }}
                                                             >
@@ -1088,7 +1053,7 @@ export const GhostEditor = () => {
                                     </Typography>
                                     <Button 
                                         fullWidth
-                                        size="sm"
+                                        size="small"
                                         onClick={() => openIDMWindow()}
                                         variant="contained"
                                         color="secondary"
@@ -1140,7 +1105,7 @@ export const GhostEditor = () => {
                         >
                             <Grid container spacing={1}>
                                 {LIFESPAN_OPTIONS.map((option) => (
-                                             <Grid item xs={6} key={option.value}>
+                                             <Grid size={{ xs: 6 }} key={option.value}>
                                         <FormControlLabel
                                             value={option.value}
                                             control={<Radio sx={{ color: alpha(theme.palette.text.primary, 0.1), '&.Mui-checked': { color: theme.palette.secondary.main } }} />}

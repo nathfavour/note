@@ -31,7 +31,17 @@ import {
   Search as SearchIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { account, shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing } from '@/lib/appwrite';
+import { 
+  account, 
+  shareNoteWithUser, 
+  shareNoteWithUserId, 
+  getSharedUsers, 
+  removeNoteSharing,
+  toggleNoteVisibility,
+  getShareableUrl,
+  getNote
+} from '@/lib/appwrite';
+import { useSudo } from '@/context/SudoContext';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface ShareNoteModalProps {
@@ -72,6 +82,23 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [updatingCollab, setUpdatingCollab] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
+  const [decryptionKey, setDecryptionKey] = useState<string | null>(null);
+  const { promptSudo } = useSudo();
+
+  useEffect(() => {
+    if (isOpen && noteId) {
+      getNote(noteId).then(note => {
+        if (note) {
+          setIsPublic(!!note.isPublic);
+          try {
+            const meta = JSON.parse(note.metadata || '{}');
+            if (meta.isEncrypted) setDecryptionKey('********'); // Signal it's encrypted
+          } catch(_e) {}
+        }
+      });
+    }
+  }, [isOpen, noteId]);
 
   // Preview maps (userId -> preview URL|null)
   const [resultPreviews, setResultPreviews] = useState<Record<string, string | null>>({});
@@ -589,6 +616,79 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                 </ListItem>
               ))}
             </List>
+          )}
+        </Box>
+
+        <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', fontFamily: 'var(--font-clash)' }}>
+                Public Access
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-satoshi)' }}>
+                Anyone with the link can view {decryptionKey ? 'the encrypted' : 'this'} note.
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={async () => {
+                const handleToggle = async () => {
+                  try {
+                    resetMessages();
+                    const updated = await toggleNoteVisibility(noteId);
+                    if (updated) {
+                      setIsPublic(!!updated.isPublic);
+                      setDecryptionKey(updated.decryptionKey || null);
+                      setSuccessMsg(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
+                    }
+                  } catch (err: any) {
+                    if (err.message === 'VAULT_LOCKED') {
+                      setErrorMsg('Vault Locked: Sudo required to encrypt note.');
+                      const unlocked = await promptSudo();
+                      if (unlocked) handleToggle();
+                    } else {
+                      setErrorMsg(err.message || 'Failed to toggle visibility');
+                    }
+                  }
+                };
+                handleToggle();
+              }}
+              sx={{
+                borderRadius: '8px',
+                borderColor: isPublic ? '#EC4899' : 'rgba(255, 255, 255, 0.1)',
+                color: isPublic ? '#EC4899' : 'rgba(255, 255, 255, 0.6)',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                '&:hover': { borderColor: '#EC4899', bgcolor: alpha('#EC4899', 0.05) }
+              }}
+            >
+              {isPublic ? 'PUBLIC' : 'PRIVATE'}
+            </Button>
+          </Box>
+
+          {isPublic && (
+            <Box sx={{ p: 1.5, bgcolor: '#0A0908', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="caption" sx={{ flex: 1, color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-jetbrains)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {getShareableUrl(noteId, decryptionKey || undefined)}
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => {
+                  navigator.clipboard.writeText(getShareableUrl(noteId, decryptionKey || undefined));
+                  setSuccessMsg('Public link copied!');
+                }}
+                sx={{ 
+                  minWidth: 'auto', 
+                  color: '#EC4899', 
+                  fontWeight: 900, 
+                  fontSize: '0.7rem',
+                  '&:hover': { bgcolor: alpha('#EC4899', 0.1) }
+                }}
+              >
+                COPY LINK
+              </Button>
+            </Box>
           )}
         </Box>
       </DialogContent>

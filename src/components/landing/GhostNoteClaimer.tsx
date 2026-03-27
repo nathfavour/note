@@ -41,7 +41,7 @@ export const GhostNoteClaimer = () => {
                         JSON.stringify({ noteIds, ghostSecret: secret }),
                         false, // async
                         '/', // path
-                        'POST'
+                        'POST' as any
                     );
                     
                     // On success (or at least attempt), we clear local memory to avoid infinite loops

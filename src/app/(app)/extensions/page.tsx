@@ -454,7 +454,7 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
                 border: '1px solid rgba(99, 102, 241, 0.2)'
               }}
             >
-              <ExtensionIcon size={24} />
+              <ExtensionIcon sx={{ fontSize: 24 }} />
             </Box>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '0.01em' }}>

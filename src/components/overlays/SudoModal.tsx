@@ -33,18 +33,24 @@ import { PasskeySetup } from "./PasskeySetup";
 import toast from "react-hot-toast";
 
 interface SudoModalProps {
-    isOpen: boolean;
+    isOpen?: boolean;
+    open?: boolean;
     onSuccess: () => void;
-    onCancel: () => void;
+    onCancel?: () => void;
+    onClose?: () => void;
     intent?: "unlock" | "initialize" | "reset";
 }
 
 export function SudoModal({
-    isOpen,
+    isOpen: _isOpen,
+    open,
     onSuccess,
     onCancel: _onCancel,
+    onClose,
     intent,
 }: SudoModalProps) {
+    const isOpen = _isOpen ?? open ?? false;
+    const onCancel = _onCancel ?? onClose ?? (() => {});
     const { user, logout: _logout } = useAuth();
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -523,7 +529,7 @@ export function SudoModal({
                             {loading ? <CircularProgress size={24} color="inherit" /> : "Verify Identity"}
                         </Button>
 
-                        {hasPasskey && mode !== "passkey" && (
+                        {hasPasskey && (mode as any) !== "passkey" && (
                             <Button
                                 fullWidth
                                 variant="text"
@@ -548,7 +554,7 @@ export function SudoModal({
                             </Button>
                         )}
 
-                        {hasPin && mode !== "pin" && (
+                        {hasPin && (mode as any) !== "pin" && (
                             <Button
                                 fullWidth
                                 variant="text"

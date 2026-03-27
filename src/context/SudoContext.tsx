@@ -12,6 +12,7 @@ interface SudoOptions {
 
 interface SudoContextType {
     requestSudo: (options: SudoOptions) => void;
+    promptSudo: (intent?: "unlock" | "initialize" | "reset") => Promise<boolean>;
     isUnlocked: boolean;
 }
 
@@ -20,6 +21,7 @@ const SudoContext = createContext<SudoContextType | undefined>(undefined);
 export function SudoProvider({ children }: { children: ReactNode }) {
     const [isSudoOpen, setIsSudoOpen] = useState(false);
     const [pendingAction, setPendingAction] = useState<SudoOptions | null>(null);
+    const [sudoPromise, setSudoPromise] = useState<{ resolve: (v: boolean) => void } | null>(null);
 
     const isUnlocked = ecosystemSecurity.status.isUnlocked;
 
@@ -33,13 +35,31 @@ export function SudoProvider({ children }: { children: ReactNode }) {
         setIsSudoOpen(true);
     }, []);
 
+    const promptSudo = useCallback((intent: "unlock" | "initialize" | "reset" = "unlock") => {
+        if (ecosystemSecurity.status.isUnlocked) return Promise.resolve(true);
+
+        return new Promise<boolean>((resolve) => {
+            setSudoPromise({ resolve });
+            setPendingAction({ 
+                intent,
+                onSuccess: () => resolve(true),
+                onCancel: () => resolve(false)
+            });
+            setIsSudoOpen(true);
+        });
+    }, []);
+
     const handleSuccess = useCallback(() => {
         setIsSudoOpen(false);
         if (pendingAction) {
             pendingAction.onSuccess();
             setPendingAction(null);
         }
-    }, [pendingAction]);
+        if (sudoPromise) {
+            sudoPromise.resolve(true);
+            setSudoPromise(null);
+        }
+    }, [pendingAction, sudoPromise]);
 
     const handleCancel = useCallback(() => {
         setIsSudoOpen(false);
@@ -47,10 +67,14 @@ export function SudoProvider({ children }: { children: ReactNode }) {
             pendingAction.onCancel();
         }
         setPendingAction(null);
-    }, [pendingAction]);
+        if (sudoPromise) {
+            sudoPromise.resolve(false);
+            setSudoPromise(null);
+        }
+    }, [pendingAction, sudoPromise]);
 
     return (
-        <SudoContext.Provider value={{ requestSudo, isUnlocked }}>
+        <SudoContext.Provider value={{ requestSudo, promptSudo, isUnlocked }}>
             {children}
             <SudoModal
                 isOpen={isSudoOpen}

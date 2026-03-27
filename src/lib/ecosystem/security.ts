@@ -447,6 +447,93 @@ export class EcosystemSecurity {
   }
 
   /**
+   * T4: Wrap a symmetric key for a specific public identity (X25519)
+   */
+  public async wrapKeyForIdentity(symmetricKey: CryptoKey, recipientPublicKeyBase64: string): Promise<string> {
+    if (!this.identityKeyPair) throw new Error("Identity not initialized");
+
+    const recipientPublicKey = await crypto.subtle.importKey(
+      "spki",
+      new Uint8Array(atob(recipientPublicKeyBase64).split("").map(c => c.charCodeAt(0))),
+      { name: "X25519" },
+      true,
+      []
+    );
+
+    // Derive shared secret
+    const sharedSecret = await crypto.subtle.deriveBits(
+      { name: "X25519", public: recipientPublicKey },
+      this.identityKeyPair.privateKey,
+      256
+    );
+
+    const wrappingKey = await crypto.subtle.importKey(
+      "raw",
+      sharedSecret,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["wrapKey"]
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(EcosystemSecurity.IV_SIZE));
+    const wrappedKey = await crypto.subtle.wrapKey(
+      "raw",
+      symmetricKey,
+      wrappingKey,
+      { name: "AES-GCM", iv }
+    );
+
+    const combined = new Uint8Array(iv.length + wrappedKey.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(wrappedKey), iv.length);
+
+    return btoa(String.fromCharCode(...combined));
+  }
+
+  /**
+   * T4: Unwrap a symmetric key using own identity and sender's public key
+   */
+  public async unwrapKeyForIdentity(wrappedKeyBase64: string, senderPublicKeyBase64: string): Promise<CryptoKey> {
+    if (!this.identityKeyPair) throw new Error("Identity not initialized");
+
+    const senderPublicKey = await crypto.subtle.importKey(
+      "spki",
+      new Uint8Array(atob(senderPublicKeyBase64).split("").map(c => c.charCodeAt(0))),
+      { name: "X25519" },
+      true,
+      []
+    );
+
+    const sharedSecret = await crypto.subtle.deriveBits(
+      { name: "X25519", public: senderPublicKey },
+      this.identityKeyPair.privateKey,
+      256
+    );
+
+    const unwrappingKey = await crypto.subtle.importKey(
+      "raw",
+      sharedSecret,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["unwrapKey"]
+    );
+
+    const combined = new Uint8Array(atob(wrappedKeyBase64).split("").map(c => c.charCodeAt(0)));
+    const iv = combined.slice(0, EcosystemSecurity.IV_SIZE);
+    const ciphertext = combined.slice(EcosystemSecurity.IV_SIZE);
+
+    return await crypto.subtle.unwrapKey(
+      "raw",
+      ciphertext,
+      unwrappingKey,
+      { name: "AES-GCM", iv },
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+  }
+
+  /**
    * Phase 1: Setup PIN Verifier (Disk-Bound)
    * Stores { PinSalt, PinHash } in localStorage.
    */

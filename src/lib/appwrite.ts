@@ -17,6 +17,7 @@ import { TargetType } from '../types/appwrite';
 
 import { APPWRITE_CONFIG } from './appwrite/config';
 import { getEcosystemUrl } from '@/constants/ecosystem';
+import { ecosystemSecurity } from './ecosystem/security';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 export const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
@@ -2731,11 +2732,11 @@ export async function isNoteOwner(note: Notes): Promise<boolean> {
   return false;
 }
 
-export function getShareableUrl(noteId: string): string {
+export function getShareableUrl(noteId: string, key?: string): string {
   const baseUrl = typeof window !== 'undefined' 
     ? window.location.origin 
     : process.env.NEXT_PUBLIC_APP_URI || 'http://localhost:3000';
-  return `${baseUrl}/shared/${noteId}`;
+  return `${baseUrl}/shared/${noteId}${key ? `/${key}` : ''}`;
 }
 
 async function syncNoteVisibilityChildren(noteId: string, ownerId: string, isPublic: boolean) {
@@ -2843,7 +2844,7 @@ async function syncNoteVisibilityChildren(noteId: string, ownerId: string, isPub
   }
 }
 
-export async function toggleNoteVisibility(noteId: string): Promise<Notes | null> {
+export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { decryptionKey?: string }) | null> {
   try {
     const note = await getNote(noteId);
     if (!(await isNoteOwner(note))) throw new Error('Permission denied');
@@ -2852,15 +2853,78 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error('Not authenticated');
 
-    // Robust userId determination for permissions and attribute migration
     const ownerId = note.userId || currentUser.$id;
+    let decryptionKey: string | undefined = undefined;
+    const updatePayload: any = { 
+        isPublic: newIsPublic, 
+        updatedAt: new Date().toISOString(),
+        userId: ownerId,
+        id: note.$id
+    };
+
+    if (newIsPublic) {
+        // T4 ENCRYPTION UPON MAKING PUBLIC
+        // 1. Ensure Vault is unlocked (handled by UI, but we check state)
+        if (!ecosystemSecurity.status.isUnlocked) {
+            throw new Error('VAULT_LOCKED'); // UI will catch this and show SudoModal
+        }
+
+        // 2. Generate new symmetric key for this resource
+        const symmetricKey = await ecosystemSecurity.generateRandomMEK();
+        const rawSymmetricKey = await crypto.subtle.exportKey('raw', symmetricKey);
+        decryptionKey = btoa(String.fromCharCode(...new Uint8Array(rawSymmetricKey)));
+
+        // 3. Encrypt content and title
+        const encryptedTitle = await ecosystemSecurity.encryptWithKey(note.title || '', symmetricKey);
+        const encryptedContent = await ecosystemSecurity.encryptWithKey(note.content || '', symmetricKey);
+
+        // 4. Wrap key for owner identity
+        const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
+        const wrappedKey = await ecosystemSecurity.wrapKeyForIdentity(symmetricKey, ownerPublicKey);
+
+        // 5. Store in key_mapping
+        await databases.createDocument(
+            APPWRITE_CONFIG.DATABASES.VAULT,
+            'key_mapping',
+            ID.unique(),
+            {
+                resourceId: note.$id,
+                resourceType: 'note',
+                grantee: `user:${ownerId}`,
+                wrappedKey: wrappedKey,
+                metadata: JSON.stringify({ algorithm: 'AES-GCM', version: 'T4' })
+            },
+            [
+                Permission.read(Role.user(ownerId)),
+                Permission.update(Role.user(ownerId)),
+                Permission.delete(Role.user(ownerId))
+            ]
+        );
+
+        // 6. Update payload with ciphertext and T4 metadata
+        let meta = {};
+        try { meta = JSON.parse(note.metadata || '{}'); } catch(e) {}
+        updatePayload.title = encryptedTitle;
+        updatePayload.content = encryptedContent;
+        updatePayload.metadata = JSON.stringify({
+            ...meta,
+            isGhost: false,
+            isEncrypted: true,
+            encryptionVersion: 'T4'
+        });
+    } else {
+        // If taking private, we should ideally decrypt it back. 
+        // But for T4 safety, we assume if it's private, owner has access to key_mapping.
+        // However, user might expect plaintext back in DB. 
+        // For now, let's keep it encrypted in DB as a security feature, or decrypt if key available.
+        // Simplified: just toggle isPublic. Owner always decrypts client-side.
+    }
 
     const permissions = [
       Permission.read(Role.user(ownerId)),
       Permission.update(Role.user(ownerId)),
       Permission.delete(Role.user(ownerId))
     ];
-    // If public, allow anyone to read. 
     if (newIsPublic) {
       permissions.push(Permission.read(Role.any()));
     }
@@ -2869,19 +2933,15 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
       APPWRITE_DATABASE_ID,
       APPWRITE_TABLE_ID_NOTES,
       noteId,
-      filterNoteData({ 
-        isPublic: newIsPublic, 
-        updatedAt: new Date().toISOString(),
-        userId: ownerId, // Migrate/ensure userId attribute is set
-        id: note.$id     // Migrate/ensure custom id attribute matches $id
-      }),
+      filterNoteData(updatePayload),
       permissions
     );
     await syncNoteVisibilityChildren(noteId, ownerId, newIsPublic);
-    return updated as unknown as Notes;
+    
+    return { ...(updated as unknown as Notes), decryptionKey };
   } catch (error: any) {
     console.error('toggleNoteVisibility error:', error);
-    return null;
+    throw error;
   }
 }
 

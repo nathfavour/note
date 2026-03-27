@@ -66,7 +66,7 @@ export default function Home() {
             
             <Box>
               <Button 
-                variant="ghost" 
+                variant="text" 
                 onClick={() => openIDMWindow()}
                 isLoading={isAuthenticating}
                 sx={{ 
