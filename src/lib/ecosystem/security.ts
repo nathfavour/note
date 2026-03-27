@@ -161,28 +161,25 @@ export class EcosystemSecurity {
     const CHAT_USERS_TABLE = "users";
 
     try {
-      // 1. Check if identity exists
+      // 1. Check if identity exists - use 'public_notes' label
       const identities = await databases.listDocuments(
         PW_DB,
         IDENTITIES_TABLE,
-        [Query.equal("userId", userId), Query.equal("name", "e2e_connect")]
+        [Query.equal("userId", userId), Query.equal("label", "public_notes")]
       );
+
 
       let publicKeyBase64 = "";
 
       if (identities.total > 0) {
         // 2. Unwrap private key
         const identity = identities.documents[0];
-        const wrappedPrivateKey = identity.wrappedKey;
+        const wrappedPrivateKey = identity.credentialId;
         const privateKeyRaw = await this.decrypt(wrappedPrivateKey);
 
         const privateKey = await crypto.subtle.importKey(
           "pkcs8",
-          new Uint8Array(
-            atob(privateKeyRaw)
-              .split("")
-              .map((c) => c.charCodeAt(0))
-          ),
+          Uint8Array.from(atob(privateKeyRaw), c => c.charCodeAt(0)),
           { name: "X25519" },
           true,
           ["deriveKey", "deriveBits"]
@@ -190,11 +187,7 @@ export class EcosystemSecurity {
 
         const publicKey = await crypto.subtle.importKey(
           "spki",
-          new Uint8Array(
-            atob(identity.publicKey)
-              .split("")
-              .map((c) => c.charCodeAt(0))
-          ),
+          Uint8Array.from(atob(identity.publicKey), c => c.charCodeAt(0)),
           { name: "X25519" },
           true,
           []
@@ -231,10 +224,10 @@ export class EcosystemSecurity {
         // 4. Store in identities
         await databases.createDocument(PW_DB, IDENTITIES_TABLE, ID.unique(), {
           userId,
-          name: "e2e_connect",
+          identityType: "e2e",
+          label: "public_notes",
           publicKey: publicKeyBase64,
-          wrappedKey: wrappedPrivateKey,
-          algorithm: "X25519",
+          credentialId: wrappedPrivateKey,
         });
 
         this.identityKeyPair = keyPair;
