@@ -46,6 +46,7 @@ import {
     RefreshCcw 
 } from 'lucide-react';
 import { AppwriteService } from '@/lib/appwrite';
+import { encryptGhostData } from '@/lib/encryption/ghost-crypto';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/components/ui/AuthContext';
 import { Button } from '@/components/ui/Button';
