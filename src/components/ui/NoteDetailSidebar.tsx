@@ -45,7 +45,7 @@ import { useSudo } from '@/context/SudoContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl, getCurrentPublicNoteDecryptionKey } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl, getCurrentPublicNoteDecryptionKey, getNotePublicState, decryptPublicEncryptedNote } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import {
   PlaylistAddCheck as TaskIcon,
@@ -108,7 +108,7 @@ export function NoteDetailSidebar({
   const [content, setContent] = useState(note.content);
   const [format, setFormat] = useState<'text' | 'doodle'>(note.format as 'text' | 'doodle' || 'text');
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
-  const [isPublic, setIsPublic] = useState(note.isPublic);
+  const [isPublic, setIsPublic] = useState(getNotePublicState(note));
   const [lastT4Key, setLastT4Key] = useState<string | null>(null);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
@@ -127,7 +127,7 @@ export function NoteDetailSidebar({
       return {};
     }
   }, [note.metadata]);
-  const isT4EncryptedPublicNote = !!note.isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
+  const isT4EncryptedPublicNote = !!isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
   
   // Fetch linked tasks from Kylrix Flow
   useEffect(() => {
@@ -207,6 +207,7 @@ export function NoteDetailSidebar({
   const contentIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasEditingRef = useRef(isEditing);
   const prevNoteIdRef = useRef(note.$id);
+  const hasPromptedEncryptedOpenRef = useRef(false);
 
   const { showSuccess, showError } = useToast();
   const { promptSudo } = useSudo();
@@ -269,6 +270,37 @@ export function NoteDetailSidebar({
   }, [isT4EncryptedPublicNote, lastT4Key, note.$id]);
 
   useEffect(() => {
+    if (!isT4EncryptedPublicNote || noteMeta.clientDecrypted || lastT4Key) return;
+    if (hasPromptedEncryptedOpenRef.current) return;
+
+    let cancelled = false;
+    const openEncryptedNote = async () => {
+      if (!ecosystemSecurity.status.isUnlocked) {
+        hasPromptedEncryptedOpenRef.current = true;
+        const unlocked = await promptSudo();
+        if (!unlocked) {
+          hasPromptedEncryptedOpenRef.current = false;
+          return;
+        }
+      }
+
+      const decrypted = await decryptPublicEncryptedNote(note);
+      if (cancelled || !decrypted) return;
+
+      setTitle(decrypted.title || '');
+      setContent(decrypted.content || '');
+      setIsPublic(getNotePublicState(decrypted));
+      onUpdate(decrypted);
+      hasPromptedEncryptedOpenRef.current = false;
+    };
+
+    void openEncryptedNote();
+    return () => {
+      cancelled = true;
+    };
+  }, [isT4EncryptedPublicNote, noteMeta.clientDecrypted, lastT4Key, note, promptSudo, onUpdate]);
+
+  useEffect(() => {
     if (isEditing) return;
     prevNoteIdRef.current = note.$id;
     const sync = async () => {
@@ -292,10 +324,10 @@ export function NoteDetailSidebar({
     sync();
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
-    setIsPublic(note.isPublic);
+    setIsPublic(getNotePublicState(note));
     setIsEditingTitle(false);
     setIsEditingContent(false);
-  }, [note.$id, note.title, note.content, note.format, note.tags, note.isPublic, noteMeta, lastT4Key, isT4EncryptedPublicNote, isEditing]);
+  }, [note, note.$id, note.title, note.content, note.format, note.tags, note.isPublic, noteMeta, lastT4Key, isT4EncryptedPublicNote, isEditing]);
 
   const normalizedTags = useMemo(() => {
     return tags
@@ -382,6 +414,18 @@ export function NoteDetailSidebar({
 
   const saveNote = useCallback(async (candidate: Notes) => {
     if (!candidate.$id) return candidate;
+    let metadata: any = candidate.metadata;
+    if (metadata) {
+      try {
+        const parsed = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+        if (parsed && typeof parsed === 'object') {
+          delete parsed.clientDecrypted;
+          metadata = JSON.stringify(parsed);
+        }
+      } catch {
+        metadata = candidate.metadata;
+      }
+    }
     const payload: Partial<Notes> = {
       title: candidate.title,
       content: candidate.content,
@@ -393,7 +437,7 @@ export function NoteDetailSidebar({
       comments: candidate.comments,
       extensions: candidate.extensions,
       collaborators: candidate.collaborators,
-      metadata: candidate.metadata,
+      metadata,
     };
 
     if (isT4EncryptedPublicNote || (candidate.isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4')) {
@@ -548,8 +592,8 @@ export function NoteDetailSidebar({
   };
 
   const handleCopyShareLink = async () => {
-    const shareUrl = note.isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
-    if (note.isPublic && !shareUrl) {
+    const shareUrl = isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
+    if (isPublic && !shareUrl) {
       showError('Vault Locked', 'Unlock vault to copy the current public link.');
       return;
     }

@@ -72,6 +72,13 @@ const spin = keyframes`
 
 interface SharedNoteClientProps {
    noteId: string;
+   initialKey?: string;
+}
+
+function decodeUrlSafeBase64ToBuffer(key: string): Uint8Array {
+  const normalized = key.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  return Uint8Array.from(Buffer.from(padded, 'base64'));
 }
 
 interface SharedNoteHeaderProps {
@@ -311,10 +318,10 @@ function SharedNoteHeader({ onRefresh, isRefreshing }: SharedNoteHeaderProps) {
   );
 }
 
-export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
+export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClientProps) {
   const params = useParams();
   const rawKey = params.key;
-  const key = Array.isArray(rawKey) ? rawKey.join('/') : (rawKey as string);
+  const key = initialKey || (Array.isArray(rawKey) ? rawKey.join('/') : (rawKey as string));
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
   const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -325,7 +332,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCopied, setIsCopied] = React.useState(false);
   const { showSuccess, showError } = useToast();
-  const { setCachedData, getCachedData } = useDataNexus();
+  const { setCachedData, getCachedData, invalidate } = useDataNexus();
 
   const CACHE_KEY = useMemo(() => `public_note_${noteId}`, [noteId]);
   const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days standard
@@ -353,7 +360,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
             const meta = JSON.parse(finalNote.metadata || '{}');
             if (meta.isEncrypted && key) {
               if (meta.encryptionVersion === 'T4') {
-                const keyBuffer = Buffer.from(key, 'base64');
+                const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
                 const cryptoKey = await crypto.subtle.importKey(
                   'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                 );
@@ -410,10 +417,13 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     setError(null);
     try {
       const fetcher = async () => {
-        const res = await fetch(`/api/shared/${noteId}`);
+        const res = await fetch(`/api/shared/${noteId}`, { cache: 'no-store' });
         if (!res.ok) {
           const payload = await res.json().catch(() => ({}));
-          throw new Error(payload.error || 'Failed to load shared note');
+          const message = payload.error || 'Failed to load shared note';
+          const err: any = new Error(message);
+          err.status = res.status;
+          throw err;
         }
         return await res.json();
       };
@@ -431,7 +441,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
             if (key) {
                 try {
                     if (meta.encryptionVersion === 'T4') {
-                        const keyBuffer = Buffer.from(key, 'base64');
+                        const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
                         const cryptoKey = await crypto.subtle.importKey(
                           'raw', keyBuffer, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
                         );
@@ -487,24 +497,32 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
     } catch (err: any) {
       const message = err?.message || 'An error occurred';
       setError(message);
+      if (forceRefresh && (err?.status === 404 || message.toLowerCase().includes('not found') || message.toLowerCase().includes('not public'))) {
+        setVerifiedNote(null);
+        setAuthorProfile(null);
+        invalidate(CACHE_KEY);
+      }
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id, key]);
+  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id, key, invalidate]);
 
   useEffect(() => {
     fetchSharedNote();
-  }, [fetchSharedNote]);
+  }, [fetchSharedNote, CACHE_KEY, invalidate]);
 
   const handleManualRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
+      invalidate(CACHE_KEY);
+      setError(null);
+      setVerifiedNote(null);
       await fetchSharedNote(true);
     } finally {
       // Small delay for visual feedback
       setTimeout(() => setIsRefreshing(false), 600);
     }
-  }, [fetchSharedNote]);
+  }, [fetchSharedNote, CACHE_KEY, invalidate]);
 
   // Realtime subscription for aggressive live updates
   useEffect(() => {

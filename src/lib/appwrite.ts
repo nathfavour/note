@@ -2711,6 +2711,10 @@ export function isNotePublic(note: Notes): boolean {
   );
 }
 
+export function getNotePublicState(note: Notes): boolean {
+  return typeof note.isPublic === 'boolean' ? note.isPublic : isNotePublic(note);
+}
+
 export async function isNoteOwner(note: Notes): Promise<boolean> {
   const currentUser = await getCurrentUser();
   if (!currentUser) return false;
@@ -2737,6 +2741,33 @@ export function getShareableUrl(noteId: string, key?: string): string {
     ? window.location.origin 
     : process.env.NEXT_PUBLIC_APP_URI || 'http://localhost:3000';
   return `${baseUrl}/shared/${noteId}${key ? `/${key}` : ''}`;
+}
+
+const publicNoteDecryptionKeyCache = new Map<string, string>();
+
+function importUrlSafeAesKey(keyBase64: string): Promise<CryptoKey> {
+  const normalized = keyBase64.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  const raw = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+  return crypto.subtle.importKey(
+    'raw',
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+}
+
+export function cachePublicNoteDecryptionKey(noteId: string, key: string) {
+  publicNoteDecryptionKeyCache.set(noteId, key);
+}
+
+export function getCachedPublicNoteDecryptionKey(noteId: string): string | null {
+  return publicNoteDecryptionKeyCache.get(noteId) || null;
+}
+
+export function invalidatePublicNoteDecryptionKey(noteId: string) {
+  publicNoteDecryptionKeyCache.delete(noteId);
 }
 
 function toUrlSafeBase64(buffer: ArrayBuffer): string {
@@ -2772,6 +2803,50 @@ async function loadT4NoteKey(noteId: string, ownerId: string): Promise<CryptoKey
   }
 
   return await ecosystemSecurity.unwrapKeyForIdentity(mapping.wrappedKey, ownerPublicKey);
+}
+
+export async function decryptPublicEncryptedNote(note: Notes, forceKeyRefresh = false): Promise<Notes | null> {
+  try {
+    const meta = (() => {
+      try { return JSON.parse(note.metadata || '{}'); } catch { return {}; }
+    })();
+
+    if (meta.clientDecrypted) {
+      return note;
+    }
+
+    if (!(note.isPublic || isNotePublic(note)) || !meta.isEncrypted || meta.encryptionVersion !== 'T4') {
+      return note;
+    }
+
+    let keyBase64 = forceKeyRefresh ? null : getCachedPublicNoteDecryptionKey(note.$id);
+    if (!keyBase64) {
+      keyBase64 = await getCurrentPublicNoteDecryptionKey(note.$id);
+      if (!keyBase64) return null;
+    }
+
+    const key = await importUrlSafeAesKey(keyBase64);
+    const decryptedTitle = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || note.title || '', key);
+    const decryptedContent = await ecosystemSecurity.decryptWithKey(note.content || '', key);
+    cachePublicNoteDecryptionKey(note.$id, keyBase64);
+
+    return {
+      ...note,
+      metadata: JSON.stringify({
+        ...meta,
+        clientDecrypted: true,
+      }),
+      title: decryptedTitle,
+      content: decryptedContent,
+    };
+  } catch (error) {
+    if (!forceKeyRefresh) {
+      invalidatePublicNoteDecryptionKey(note.$id);
+      return await decryptPublicEncryptedNote(note, true);
+    }
+    console.error('decryptPublicEncryptedNote failed:', error);
+    return null;
+  }
 }
 
 function stripT4Metadata(metadata: string | undefined | null): string {
@@ -2992,7 +3067,7 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
     const note = await getNote(noteId);
     if (!(await isNoteOwner(note))) throw new Error('Permission denied');
     
-    const newIsPublic = !isNotePublic(note);
+    const newIsPublic = !getNotePublicState(note);
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error('Not authenticated');
 
@@ -3008,6 +3083,7 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
     if (newIsPublic) {
         const prepared = await preparePublicNoteUpdate(note, ownerId, false);
         decryptionKey = prepared.decryptionKey;
+        if (decryptionKey) cachePublicNoteDecryptionKey(noteId, decryptionKey);
         Object.assign(updatePayload, prepared.updatePayload);
     } else {
         // Restore plaintext storage when moving back to private.
@@ -3048,6 +3124,9 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
       permissions
     );
     await syncNoteVisibilityChildren(noteId, ownerId, newIsPublic);
+    if (!newIsPublic) {
+      invalidatePublicNoteDecryptionKey(noteId);
+    }
     
     return { ...(updated as unknown as Notes), decryptionKey };
   } catch (error: any) {
@@ -3082,6 +3161,7 @@ export async function rotatePublicNoteLink(noteId: string): Promise<(Notes & { d
       permissions
     );
     await syncNoteVisibilityChildren(noteId, ownerId, true);
+    if (prepared.decryptionKey) cachePublicNoteDecryptionKey(noteId, prepared.decryptionKey);
     return { ...(updated as unknown as Notes), decryptionKey: prepared.decryptionKey };
   } catch (error: any) {
     console.error('rotatePublicNoteLink error:', error);
@@ -3106,13 +3186,18 @@ export async function getCurrentPublicNoteShareUrl(noteId: string): Promise<stri
 
 export async function getCurrentPublicNoteDecryptionKey(noteId: string): Promise<string | null> {
   try {
+    const cachedKey = getCachedPublicNoteDecryptionKey(noteId);
+    if (cachedKey) return cachedKey;
+
     const note = await getNote(noteId);
     if (!isNotePublic(note)) return null;
     const currentUser = await getCurrentUser();
     if (!currentUser) return null;
     const ownerId = note.userId || currentUser.$id;
     const key = await loadT4NoteKey(noteId, ownerId);
-    return await exportUrlSafeCryptoKey(key);
+    const exported = await exportUrlSafeCryptoKey(key);
+    cachePublicNoteDecryptionKey(noteId, exported);
+    return exported;
   } catch (error) {
     console.error('getCurrentPublicNoteDecryptionKey error:', error);
     return null;

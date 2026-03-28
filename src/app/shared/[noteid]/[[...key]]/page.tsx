@@ -9,6 +9,6 @@ export async function generateMetadata({ params: _params }: { params: Promise<{ 
 }
 
 export default async function SharedNotePage({ params }: { params: Promise<{ noteid: string; key?: string[] }> }) {
-   const { noteid } = await params;
-   return <SharedNoteClient noteId={noteid} />;
+   const { noteid, key } = await params;
+   return <SharedNoteClient noteId={noteid} initialKey={key?.join('/') || undefined} />;
 }

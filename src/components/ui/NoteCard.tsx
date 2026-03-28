@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import { updateNote, createNote, toggleNoteVisibility, rotatePublicNoteLink, createTaskFromNote, getShareableUrl, getCurrentPublicNoteShareUrl } from '@/lib/appwrite';
+import { updateNote, createNote, toggleNoteVisibility, rotatePublicNoteLink, createTaskFromNote, getShareableUrl, getCurrentPublicNoteShareUrl, getNotePublicState } from '@/lib/appwrite';
 import { useToast } from './Toast';
 import { useSudo } from '@/context/SudoContext';
 import { useAuth } from './AuthContext';
@@ -57,6 +57,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
   const [isAIProcessing, setIsAIProcessing] = React.useState(false);
+  const isPublic = getNotePublicState(note);
 
   const isPro = user?.prefs?.subscriptionTier === 'PRO' || 
                 user?.prefs?.subscriptionTier === 'ORG' || 
@@ -171,8 +172,8 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
 
   const handleCopyShareLink = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const shareUrl = note.isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
-    if (note.isPublic && !shareUrl) {
+    const shareUrl = isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
+    if (isPublic && !shareUrl) {
       showError('Vault Locked', 'Unlock vault to copy the current public link.');
       return;
     }
@@ -324,7 +325,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       icon: pinned ? <PinIcon sx={{ fontSize: 18 }} /> : <PinOutlinedIcon sx={{ fontSize: 18 }} />,
       onClick: () => { handlePinToggle(); }
     },
-    ...(note.isPublic ? [{
+    ...(isPublic ? [{
       label: 'Copy Share Link',
       icon: <LinkIcon sx={{ fontSize: 18 }} />,
       onClick: () => { handleCopyShareLink(); }
@@ -334,8 +335,8 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       onClick: () => { handleRotatePublicLink(); }
     }] : []),
     {
-      label: note.isPublic ? 'Make Private' : 'Make Public',
-      icon: note.isPublic ? <PrivateIcon sx={{ fontSize: 18 }} /> : <PublicIcon sx={{ fontSize: 18 }} />,
+      label: isPublic ? 'Make Private' : 'Make Public',
+      icon: isPublic ? <PrivateIcon sx={{ fontSize: 18 }} /> : <PublicIcon sx={{ fontSize: 18 }} />,
       onClick: () => { handleTogglePublic(); }
     },
     {
@@ -472,7 +473,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
               </Typography>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                {note.isPublic && (
+                {isPublic && (
                   <IconButton
                     size="small"
                     onClick={handleCopyShareLink}

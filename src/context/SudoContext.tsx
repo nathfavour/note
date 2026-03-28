@@ -51,6 +51,9 @@ export function SudoProvider({ children }: { children: ReactNode }) {
 
     const handleSuccess = useCallback(() => {
         setIsSudoOpen(false);
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("kylrix:vault-unlocked"));
+        }
         if (pendingAction) {
             pendingAction.onSuccess();
             setPendingAction(null);

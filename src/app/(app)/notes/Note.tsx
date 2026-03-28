@@ -9,6 +9,7 @@ import {
 import { Delete, Share, Lock, LockOpen, MoreVert, Analytics } from '@mui/icons-material';
 import type { Notes } from "@/types/appwrite";
 import { formatNoteUpdatedDate } from '@/lib/date-utils';
+import { isNotePublic } from '@/lib/appwrite';
 import { motion } from "framer-motion";
 const MotionCard = motion(Card);
 
@@ -52,13 +53,14 @@ export default function NoteComponent({
     handleMenuClose();
   };
 
+  const isPublic = isNotePublic(note);
+
   const handleTogglePublic = () => {
-    onTogglePublic?.(note.$id, !note.isPublic);
+    onTogglePublic?.(note.$id, !isPublic);
     handleMenuClose();
   };
 
   // Use only valid properties from Notes type
-  const isPublic = note.isPublic ?? false;
   const isEncrypted = parentEncrypted;
 
   return (
