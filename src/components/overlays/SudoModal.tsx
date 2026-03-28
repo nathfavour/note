@@ -45,12 +45,12 @@ export function SudoModal({
     isOpen: _isOpen,
     open,
     onSuccess,
-    onCancel: _onCancel,
+    onCancel,
     onClose,
     intent,
 }: SudoModalProps) {
     const isOpen = _isOpen ?? open ?? false;
-    const onCancel = _onCancel ?? onClose ?? (() => {});
+    const cancelHandler = onCancel ?? onClose ?? (() => {});
     const { user, logout: _logout } = useAuth();
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -260,7 +260,7 @@ export function SudoModal({
     return (
         <Dialog
             open={isOpen}
-            onClose={() => { }} // Prevent closing by clicking outside
+            onClose={cancelHandler}
             maxWidth="xs"
             fullWidth
             TransitionComponent={Fade}
