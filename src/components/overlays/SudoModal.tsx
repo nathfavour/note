@@ -525,7 +525,6 @@ export function SudoModal({
                                 startIcon={<Fingerprint size={18} />}
                                 onClick={() => {
                                     setMode("passkey");
-                                    handlePasskeyVerify();
                                 }}
                                 sx={{
                                     color: "rgba(255, 255, 255, 0.6)",
