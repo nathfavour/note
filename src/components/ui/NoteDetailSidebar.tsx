@@ -99,16 +99,29 @@ export function NoteDetailSidebar({
 }: NoteDetailSidebarProps) {
 
   const theme = useTheme();
+  const { notes: allNotes, isPinned, pinNote, unpinNote } = useNotes();
+  const liveNote = useMemo(
+    () => allNotes.find((candidate) => candidate.$id === note.$id) || note,
+    [allNotes, note]
+  );
+  const noteMeta = useMemo(() => {
+    try {
+      return JSON.parse(liveNote.metadata || '{}');
+    } catch {
+      return {};
+    }
+  }, [liveNote.metadata]);
+
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingContent, setIsEditingContent] = useState(false);
   const isEditing = isEditingTitle || isEditingContent;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDoodleEditor, setShowDoodleEditor] = useState(false);
-  const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
-  const [format, setFormat] = useState<'text' | 'doodle'>(note.format as 'text' | 'doodle' || 'text');
-  const [tags, setTags] = useState(note.tags?.join(', ') || '');
-  const [isPublic, setIsPublic] = useState(getNotePublicState(note));
+  const [title, setTitle] = useState(liveNote.title);
+  const [content, setContent] = useState(liveNote.content);
+  const [format, setFormat] = useState<'text' | 'doodle'>(liveNote.format as 'text' | 'doodle' || 'text');
+  const [tags, setTags] = useState(liveNote.tags?.join(', ') || '');
+  const [isPublic, setIsPublic] = useState(getNotePublicState(liveNote));
   const [lastT4Key, setLastT4Key] = useState<string | null>(null);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
@@ -120,19 +133,13 @@ export function NoteDetailSidebar({
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const noteMeta = useMemo(() => {
-    try {
-      return JSON.parse(note.metadata || '{}');
-    } catch {
-      return {};
-    }
-  }, [note.metadata]);
+  const isEncryptedNote = !!noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4' && !noteMeta?.clientDecrypted;
   const isT4EncryptedPublicNote = !!isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
   
   // Fetch linked tasks from Kylrix Flow
   useEffect(() => {
     const fetchLinkedTasks = async () => {
-      const taskIds = (note as any).linkedTaskIds || ((note as any).linkedTaskId ? [(note as any).linkedTaskId] : []);
+      const taskIds = (liveNote as any).linkedTaskIds || ((liveNote as any).linkedTaskId ? [(liveNote as any).linkedTaskId] : []);
       if (!taskIds || taskIds.length === 0) {
         setLinkedTasks([]);
         return;
@@ -151,12 +158,12 @@ export function NoteDetailSidebar({
 
     fetchLinkedTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note.$id, (note as any).linkedTaskIds, (note as any).linkedTaskId]);
+  }, [liveNote.$id, (liveNote as any).linkedTaskIds, (liveNote as any).linkedTaskId]);
 
   // Fetch linked events from Kylrix Flow
   useEffect(() => {
     const fetchLinkedEvents = async () => {
-      const eventIds = (note as any).linkedEventIds || ((note as any).linkedEventId ? [(note as any).linkedEventId] : []);
+      const eventIds = (liveNote as any).linkedEventIds || ((liveNote as any).linkedEventId ? [(liveNote as any).linkedEventId] : []);
       if (!eventIds || eventIds.length === 0) {
         setLinkedEvents([]);
         return;
@@ -175,12 +182,12 @@ export function NoteDetailSidebar({
 
     fetchLinkedEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note.$id, (note as any).linkedEventIds, (note as any).linkedEventId]);
+  }, [liveNote.$id, (liveNote as any).linkedEventIds, (liveNote as any).linkedEventId]);
 
   // Fetch linked secrets from Kylrix Vault
   useEffect(() => {
     const fetchLinkedSecrets = async () => {
-      const secretIds = (note as any).linkedCredentialIds || ((note as any).linkedCredentialId ? [(note as any).linkedCredentialId] : []);
+      const secretIds = (liveNote as any).linkedCredentialIds || ((liveNote as any).linkedCredentialId ? [(liveNote as any).linkedCredentialId] : []);
       if (!secretIds || secretIds.length === 0) {
         setLinkedSecrets([]);
         return;
@@ -199,31 +206,30 @@ export function NoteDetailSidebar({
 
     fetchLinkedSecrets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note.$id, (note as any).linkedCredentialIds, (note as any).linkedCredentialId]);
+  }, [liveNote.$id, (liveNote as any).linkedCredentialIds, (liveNote as any).linkedCredentialId]);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const titleContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const titleIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contentIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasEditingRef = useRef(isEditing);
-  const prevNoteIdRef = useRef(note.$id);
+  const prevNoteIdRef = useRef(liveNote.$id);
   const hasPromptedEncryptedOpenRef = useRef(false);
 
   const { showSuccess, showError } = useToast();
   const { promptSudo } = useSudo();
   const router = useRouter();
   const { closeSidebar } = useDynamicSidebar();
-  const { isPinned, pinNote, unpinNote } = useNotes();
 
-  const pinned = isPinned(note.$id);
+  const pinned = isPinned(liveNote.$id);
 
   const handlePinToggle = async () => {
     try {
       if (pinned) {
-        await unpinNote(note.$id);
+        await unpinNote(liveNote.$id);
         showSuccess('Note unpinned');
       } else {
-        await pinNote(note.$id);
+        await pinNote(liveNote.$id);
         showSuccess('Note pinned');
       }
     } catch (err: any) {
@@ -233,15 +239,15 @@ export function NoteDetailSidebar({
   };
 
   const handleOpenFullPage = () => {
-    if (!note.$id) return;
+    if (!liveNote.$id) return;
     closeSidebar();
-    router.push(`/notes/${note.$id}`);
+    router.push(`/notes/${liveNote.$id}`);
   };
 
   useEffect(() => {
-    if (note.attachments && Array.isArray(note.attachments)) {
+    if (liveNote.attachments && Array.isArray(liveNote.attachments)) {
       try {
-        const parsed = note.attachments.map((a: any) => (typeof a === 'string' ? JSON.parse(a) : a));
+        const parsed = liveNote.attachments.map((a: any) => (typeof a === 'string' ? JSON.parse(a) : a));
         setCurrentAttachments(parsed);
       } catch (err: any) {
         console.error('Error parsing attachments:', err);
@@ -250,14 +256,14 @@ export function NoteDetailSidebar({
     } else {
       setCurrentAttachments([]);
     }
-  }, [note.$id, note.attachments]);
+  }, [liveNote.$id, liveNote.attachments]);
 
   useEffect(() => {
     if (!isT4EncryptedPublicNote || lastT4Key) return;
 
     let cancelled = false;
     const loadKey = async () => {
-      const key = await getCurrentPublicNoteDecryptionKey(note.$id);
+      const key = await getCurrentPublicNoteDecryptionKey(liveNote.$id);
       if (!cancelled && key) {
         setLastT4Key(key);
       }
@@ -267,7 +273,7 @@ export function NoteDetailSidebar({
     return () => {
       cancelled = true;
     };
-  }, [isT4EncryptedPublicNote, lastT4Key, note.$id]);
+  }, [isT4EncryptedPublicNote, lastT4Key, liveNote.$id]);
 
   useEffect(() => {
     if (!isT4EncryptedPublicNote || noteMeta.clientDecrypted || lastT4Key) return;
@@ -284,7 +290,7 @@ export function NoteDetailSidebar({
         }
       }
 
-      const decrypted = await decryptPublicEncryptedNote(note);
+      const decrypted = await decryptPublicEncryptedNote(liveNote);
       if (cancelled || !decrypted) return;
 
       setTitle(decrypted.title || '');
@@ -298,17 +304,17 @@ export function NoteDetailSidebar({
     return () => {
       cancelled = true;
     };
-  }, [isT4EncryptedPublicNote, noteMeta.clientDecrypted, lastT4Key, note, promptSudo, onUpdate]);
+  }, [isT4EncryptedPublicNote, noteMeta.clientDecrypted, lastT4Key, liveNote, promptSudo, onUpdate]);
 
   useEffect(() => {
     if (isEditing) return;
-    prevNoteIdRef.current = note.$id;
+    prevNoteIdRef.current = liveNote.$id;
     const sync = async () => {
       if (isT4EncryptedPublicNote && lastT4Key) {
         try {
           const key = await importUrlSafeAesKey(lastT4Key);
-          const decryptedTitle = await ecosystemSecurity.decryptWithKey(noteMeta.encryptedTitle || note.title || '', key);
-          const decryptedContent = await ecosystemSecurity.decryptWithKey(note.content || '', key);
+          const decryptedTitle = await ecosystemSecurity.decryptWithKey(noteMeta.encryptedTitle || liveNote.title || '', key);
+          const decryptedContent = await ecosystemSecurity.decryptWithKey(liveNote.content || '', key);
           setTitle(decryptedTitle);
           setContent(decryptedContent);
           return;
@@ -317,17 +323,17 @@ export function NoteDetailSidebar({
         }
       }
 
-      setTitle(note.title || '');
-      setContent(note.content || '');
+      setTitle(liveNote.title || '');
+      setContent(liveNote.content || '');
     };
 
     sync();
-    setFormat((note.format as 'text' | 'doodle') || 'text');
-    setTags((note.tags || []).join(', '));
-    setIsPublic(getNotePublicState(note));
+    setFormat((liveNote.format as 'text' | 'doodle') || 'text');
+    setTags((liveNote.tags || []).join(', '));
+    setIsPublic(getNotePublicState(liveNote));
     setIsEditingTitle(false);
     setIsEditingContent(false);
-  }, [note, note.$id, note.title, note.content, note.format, note.tags, note.isPublic, noteMeta, lastT4Key, isT4EncryptedPublicNote, isEditing]);
+  }, [liveNote, liveNote.$id, liveNote.title, liveNote.content, liveNote.format, liveNote.tags, liveNote.isPublic, noteMeta, lastT4Key, isT4EncryptedPublicNote, isEditing]);
 
   const normalizedTags = useMemo(() => {
     return tags
@@ -336,10 +342,10 @@ export function NoteDetailSidebar({
       .filter(Boolean);
   }, [tags]);
 
-  const displayTitle = title || note.title || 'Untitled note';
-  const displayContent = content || note.content || '';
+  const displayTitle = isEncryptedNote ? '🔒 Encrypted Note' : (title || liveNote.title || 'Untitled note');
+  const displayContent = isEncryptedNote ? '' : (content || liveNote.content || '');
   const displayFormat = format;
-  const displayTags = normalizedTags.length > 0 ? normalizedTags : (note.tags || []);
+  const displayTags = normalizedTags.length > 0 ? normalizedTags : (liveNote.tags || []);
   const canEditNoteContent = !isT4EncryptedPublicNote || !!lastT4Key;
 
   const resetTitleIdleTimer = () => {
@@ -405,12 +411,12 @@ export function NoteDetailSidebar({
   }, [isEditingTitle, isEditingContent]);
 
   const autosaveCandidate = useMemo<Notes>(() => ({
-    ...note,
+    ...liveNote,
     title: (title ?? '').trim(),
     content: (content ?? '').trim(),
     format,
     tags: normalizedTags,
-  }), [note, title, content, format, normalizedTags]);
+  }), [liveNote, title, content, format, normalizedTags]);
 
   const saveNote = useCallback(async (candidate: Notes) => {
     if (!candidate.$id) return candidate;
@@ -465,7 +471,7 @@ export function NoteDetailSidebar({
   }, [onUpdate, isT4EncryptedPublicNote, lastT4Key, noteMeta]);
 
   const { isSaving: isAutosaving, forceSave } = useAutosave(autosaveCandidate, {
-    enabled: !!note.$id,
+    enabled: !!liveNote.$id,
     debounceMs: 600,
     trigger: 'manual',
     save: saveNote,
@@ -485,34 +491,26 @@ export function NoteDetailSidebar({
   }, [isEditing, autosaveCandidate, forceSave]);
 
   useEffect(() => {
-    return () => {
-      if (autosaveCandidate.$id) {
-        forceSave(autosaveCandidate);
-      }
-    };
-  }, [autosaveCandidate, forceSave]);
-
-  useEffect(() => {
-    if (!isEditing || !note.$id) return;
+    if (!isEditing || !liveNote.$id) return;
     const trimmedTitle = (title ?? '').trim();
     const trimmedContent = (content ?? '').trim();
-    const tagsMatch = shallowArrayEqual(note.tags || [], normalizedTags);
+    const tagsMatch = shallowArrayEqual(liveNote.tags || [], normalizedTags);
     const matchesExisting =
-      (note.title || '') === trimmedTitle &&
-      (note.content || '') === trimmedContent &&
-      (note.format || 'text') === format &&
+      (liveNote.title || '') === trimmedTitle &&
+      (liveNote.content || '') === trimmedContent &&
+      (liveNote.format || 'text') === format &&
       tagsMatch;
     if (matchesExisting) return;
 
     onUpdate({
-      ...note,
+      ...liveNote,
       title: trimmedTitle,
       content: trimmedContent,
       format,
       tags: normalizedTags,
       updatedAt: new Date().toISOString(),
     });
-  }, [isEditing, title, content, format, normalizedTags, note, onUpdate]);
+  }, [isEditing, title, content, format, normalizedTags, liveNote, onUpdate]);
 
   const handleDoodleSave = (doodleData: string) => {
     setContent(doodleData);
@@ -549,7 +547,7 @@ export function NoteDetailSidebar({
         try {
           const formData = new FormData();
           formData.append('file', file);
-          const res = await fetch(`/api/notes/${note.$id}/attachments`, {
+          const res = await fetch(`/api/notes/${liveNote.$id}/attachments`, {
             method: 'POST',
             body: formData,
             credentials: 'include',
@@ -592,12 +590,12 @@ export function NoteDetailSidebar({
   };
 
   const handleCopyShareLink = async () => {
-    const shareUrl = isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
+    const shareUrl = isPublic ? await getCurrentPublicNoteShareUrl(liveNote.$id) : null;
     if (isPublic && !shareUrl) {
       showError('Vault Locked', 'Unlock vault to copy the current public link.');
       return;
     }
-    const finalUrl = shareUrl || getShareableUrl(note.$id, lastT4Key || undefined);
+    const finalUrl = shareUrl || getShareableUrl(liveNote.$id, lastT4Key || undefined);
     navigator.clipboard.writeText(finalUrl);
 
     if (!shareUrl && !lastT4Key) {
@@ -610,13 +608,13 @@ export function NoteDetailSidebar({
   const handleRotatePublicLink = async () => {
     const handleRotate = async () => {
       try {
-        const updated = await rotatePublicNoteLink(note.$id);
+        const updated = await rotatePublicNoteLink(liveNote.$id);
         if (updated) {
-          setIsPublic(updated.isPublic);
+          setIsPublic(!!updated.isPublic);
           setLastT4Key(updated.decryptionKey || null);
           onUpdate(updated);
           if (updated.decryptionKey) {
-            const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+            const shareUrl = getShareableUrl(liveNote.$id, updated.decryptionKey);
             navigator.clipboard.writeText(shareUrl);
             showSuccess('Public link rotated', 'New public link copied to clipboard.');
           } else {
@@ -638,16 +636,16 @@ export function NoteDetailSidebar({
   };
 
   const handleCancel = () => {
-    setTitle(note.title || '');
-    setContent(note.content || '');
-    setFormat((note.format as 'text' | 'doodle') || 'text');
-    setTags((note.tags || []).join(', '));
+    setTitle(liveNote.title || '');
+    setContent(liveNote.content || '');
+    setFormat((liveNote.format as 'text' | 'doodle') || 'text');
+    setTags((liveNote.tags || []).join(', '));
     setIsEditingTitle(false);
     setIsEditingContent(false);
   };
 
   const handleDelete = () => {
-    onDelete(note.$id || '');
+    onDelete(liveNote.$id || '');
     setShowDeleteConfirm(false);
   };
 
@@ -688,14 +686,14 @@ export function NoteDetailSidebar({
               onClick={async () => {
                 const handleToggle = async () => {
                   try {
-                    const updated = await toggleNoteVisibility(note.$id);
+                    const updated = await toggleNoteVisibility(liveNote.$id);
                     if (updated) {
-                      setIsPublic(updated.isPublic);
+                      setIsPublic(!!updated.isPublic);
                       setLastT4Key(updated.decryptionKey || null);
                       onUpdate(updated);
                       showSuccess(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
                       if (updated.isPublic && updated.decryptionKey) {
-                        const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+                        const shareUrl = getShareableUrl(liveNote.$id, updated.decryptionKey);
                         navigator.clipboard.writeText(shareUrl);
                         showSuccess('Link Copied', 'Encrypted public link is on your clipboard.');
                       }
@@ -986,7 +984,11 @@ export function NoteDetailSidebar({
             <NoteContentRenderer
               content={displayContent}
               format={displayFormat}
-              emptyFallback={<Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary }}>No content</Typography>}
+              emptyFallback={
+                <Typography variant="body2" sx={{ fontStyle: 'italic', color: theme.palette.text.secondary }}>
+                  🔒 Encrypted note
+                </Typography>
+              }
               onEditDoodle={displayFormat === 'doodle' ? activateContentEditing : undefined}
             />
 
@@ -1171,7 +1173,7 @@ export function NoteDetailSidebar({
                 </Box>
                 <Button
                   size="small"
-                  href={`/notes/${note.$id}/${a.id}`}
+                  href={`/notes/${liveNote.$id}/${a.id}`}
                   sx={{
                     color: theme.palette.primary.main,
                     fontWeight: 800,
@@ -1363,10 +1365,10 @@ export function NoteDetailSidebar({
       {/* Metadata */}
       <Box sx={{ pt: 4, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
-          Created: {formatNoteCreatedDate(note)}
+          Created: {formatNoteCreatedDate(liveNote)}
         </Typography>
         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
-          Updated: {formatNoteUpdatedDate(note)}
+          Updated: {formatNoteUpdatedDate(liveNote)}
         </Typography>
       </Box>
 
@@ -1438,7 +1440,7 @@ export function NoteDetailSidebar({
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'var(--font-satoshi), sans-serif', lineHeight: 1.6 }}>
-            Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action is permanent and cannot be undone.
+            Are you sure you want to delete &quot;{liveNote.title || 'this note'}&quot;? This action is permanent and cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 2, flexDirection: 'column' }}>

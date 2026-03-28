@@ -62,6 +62,14 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   const isPro = user?.prefs?.subscriptionTier === 'PRO' || 
                 user?.prefs?.subscriptionTier === 'ORG' || 
                 user?.prefs?.subscriptionTier === 'LIFETIME';
+  const noteMeta = (() => {
+    try {
+      return JSON.parse(note.metadata || '{}');
+    } catch {
+      return {};
+    }
+  })();
+  const isEncryptedNote = !!noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4' && !noteMeta?.clientDecrypted;
 
   const handleAIAction = async (action: 'summarize' | 'grammar' | 'expand') => {
     if (isAIProcessing) return;
@@ -469,7 +477,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
                   lineHeight: 1.2
                 }}
               >
-                {note.title}
+            {isEncryptedNote ? '🔒 Encrypted note' : note.title}
               </Typography>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -553,29 +561,56 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
               />
             </Box>
           ) : (
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'text.secondary',
-                fontFamily: 'var(--font-satoshi)',
-                fontSize: '0.85rem',
-                lineHeight: 1.6,
-                fontWeight: 500,
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                '@media (min-width: 600px)': {
-                  WebkitLineClamp: 4,
-                },
-                '@media (min-width: 900px)': {
-                  WebkitLineClamp: 5,
-                },
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                whiteSpace: 'pre-wrap'
-              }}
-            >
-              {note.content}
-            </Typography>
+            isEncryptedNote ? (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  fontFamily: 'var(--font-satoshi)',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.6,
+                  fontStyle: 'italic',
+                  opacity: 0.75,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  '@media (min-width: 600px)': {
+                    WebkitLineClamp: 4,
+                  },
+                  '@media (min-width: 900px)': {
+                    WebkitLineClamp: 5,
+                  },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
+                🔒 Encrypted note
+              </Typography>
+            ) : (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontFamily: 'var(--font-satoshi)',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.6,
+                  fontWeight: 500,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  '@media (min-width: 600px)': {
+                    WebkitLineClamp: 4,
+                  },
+                  '@media (min-width: 900px)': {
+                    WebkitLineClamp: 5,
+                  },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
+                {note.content}
+              </Typography>
+            )
           )}
           
           <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.8, overflow: 'hidden' }}>

@@ -68,12 +68,14 @@ export function useAutosave(note: Notes | null, options: AutosaveOptions = {}) {
   const lastSavedRef = useRef<Notes | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
+  const rateLimitUntilRef = useRef<number>(0);
 
   const saveFn = save ?? defaultSave;
 
   const performSave = useCallback(
     async (candidate: Notes, force = false) => {
       if ((!enabled && !force) || isSavingRef.current || !candidate.$id) return;
+      if (Date.now() < rateLimitUntilRef.current) return;
       if (!shouldSave(lastSavedRef.current, candidate, minChangeThreshold)) {
         return;
       }
@@ -87,6 +89,11 @@ export function useAutosave(note: Notes | null, options: AutosaveOptions = {}) {
         onSave?.(saved);
       } catch (error: any) {
         console.error('Autosave failed:', error);
+        const message = String(error?.message || '');
+        const isRateLimit = /rate limit|too many requests|exceeded/i.test(message);
+        if (isRateLimit) {
+          rateLimitUntilRef.current = Date.now() + 30000;
+        }
         onError?.(error as Error);
       } finally {
         isSavingRef.current = false;
@@ -101,10 +108,12 @@ export function useAutosave(note: Notes | null, options: AutosaveOptions = {}) {
   useEffect(() => {
     if (!note) {
       lastSavedRef.current = null;
+      rateLimitUntilRef.current = 0;
       return;
     }
     if (!lastSavedRef.current || lastSavedRef.current.$id !== note.$id) {
       lastSavedRef.current = note;
+      rateLimitUntilRef.current = 0;
     }
   }, [note]);
 
