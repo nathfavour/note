@@ -20,7 +20,6 @@ import {
 import {
     Lock,
     Fingerprint,
-    LayoutGrid,
     Eye,
     EyeOff,
 } from "lucide-react";
@@ -54,13 +53,11 @@ export function SudoModal({
     const { user, logout: _logout } = useAuth();
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [pin, setPin] = useState("");
     const [loading, setLoading] = useState(false);
     const [passkeyLoading, setPasskeyLoading] = useState(false);
     const [hasPasskey, setHasPasskey] = useState(false);
-    const [hasPin, setHasPin] = useState(false);
     const [hasMasterpass, setHasMasterpass] = useState<boolean | null>(null);
-    const [mode, setMode] = useState<"passkey" | "password" | "pin" | "initialize" | null>(null);
+    const [mode, setMode] = useState<"passkey" | "password" | "initialize" | null>(null);
     const [isDetecting, setIsDetecting] = useState(true);
     const [showPasskeyIncentive, setShowPasskeyIncentive] = useState(false);
 
@@ -105,12 +102,9 @@ export function SudoModal({
         }
     }, [user?.$id, isOpen, handleSuccessWithSync]);
 
-    // Check if user has passkey and PIN set up
+    // Check if user has passkey set up
     useEffect(() => {
         if (isOpen && user?.$id) {
-            const pinSet = ecosystemSecurity.isPinSet();
-            setHasPin(pinSet);
-
             // Check for passkey keychain entry
             AppwriteService.listKeychainEntries(user.$id).then(entries => {
                 const passkeyPresent = entries.some((e: any) => e.type === 'passkey');
@@ -143,13 +137,7 @@ export function SudoModal({
                     return;
                 }
 
-                if (passkeyPresent) {
-                    setMode("passkey");
-                } else if (pinSet) {
-                    setMode("pin");
-                } else {
-                    setMode("password");
-                }
+                setMode(passkeyPresent ? "passkey" : "password");
                 setIsDetecting(false);
             }).catch(() => {
                 setIsDetecting(false);
@@ -158,7 +146,6 @@ export function SudoModal({
 
             // Reset state on open
             setPassword("");
-            setPin("");
             setLoading(false);
             setPasskeyLoading(false);
             setIsDetecting(true);
@@ -339,51 +326,10 @@ export function SudoModal({
             </DialogTitle>
 
             <DialogContent sx={{ pb: 4 }}>
-                {isDetecting || (loading && !password && mode !== "pin") ? (
+                {isDetecting || (loading && !password) ? (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                         <CircularProgress sx={{ color: "#A855F7" }} />
                     </Box>
-                ) : mode === "pin" ? (
-                    <Stack spacing={3} sx={{ mt: 2 }}>
-                        <Box>
-                            <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.4)", fontWeight: 600, mb: 1, display: "block", textAlign: "center" }}>
-                                ENTER 4-DIGIT PIN
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                type="password"
-                                placeholder="••••"
-                                value={pin}
-                                onChange={handlePinChange}
-                                autoFocus
-                                inputProps={{
-                                    maxLength: 4,
-                                    inputMode: "numeric",
-                                    style: { textAlign: "center", fontSize: "2rem", letterSpacing: "0.5em" }
-                                }}
-                                sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                        borderRadius: "14px",
-                                        bgcolor: "rgba(255, 255, 255, 0.03)",
-                                        "& fieldset": { borderColor: "rgba(255, 255, 255, 0.1)" },
-                                        "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
-                                        "&.Mui-focused fieldset": { borderColor: "#A855F7" },
-                                    },
-                                    "& .MuiInputBase-input": { color: "white" }
-                                }}
-                            />
-                        </Box>
-
-                        <Button
-                            fullWidth
-                            variant="text"
-                            size="small"
-                            onClick={() => setMode("password")}
-                            sx={{ color: "rgba(255, 255, 255, 0.5)", "&:hover": { color: "white" } }}
-                        >
-                            Use Master Password
-                        </Button>
-                    </Stack>
                 ) : mode === "passkey" ? (
                     <Stack spacing={3} sx={{ mt: 2, alignItems: "center" }}>
                         <Box
@@ -539,27 +485,6 @@ export function SudoModal({
                                 }}
                             >
                                 Use Passkey
-                            </Button>
-                        )}
-
-                        {hasPin && (mode as any) !== "pin" && (
-                            <Button
-                                fullWidth
-                                variant="text"
-                                startIcon={<LayoutGrid size={18} />}
-                                onClick={() => setMode("pin")}
-                                sx={{
-                                    color: "rgba(255, 255, 255, 0.5)",
-                                    py: 1,
-                                    borderRadius: "12px",
-                                    textTransform: "none",
-                                    fontFamily: "var(--font-satoshi)",
-                                    fontWeight: 500,
-                                    "&:hover": { color: "white", bgcolor: "rgba(255, 255, 255, 0.03)" },
-                                    mt: 0.5
-                                }}
-                            >
-                                Use PIN
                             </Button>
                         )}
 
