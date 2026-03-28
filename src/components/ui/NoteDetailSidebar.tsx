@@ -45,7 +45,7 @@ import { useSudo } from '@/context/SudoContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl, getCurrentPublicNoteDecryptionKey } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import {
   PlaylistAddCheck as TaskIcon,
@@ -54,6 +54,7 @@ import {
   VpnKey as KeyIcon,
 } from '@mui/icons-material';
 import { useAutosave } from '@/hooks/useAutosave';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -74,6 +75,19 @@ const shallowArrayEqual = (a?: string[] | null, b?: string[] | null) => {
   }
   return true;
 };
+
+async function importUrlSafeAesKey(keyBase64: string): Promise<CryptoKey> {
+  const normalized = keyBase64.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  const raw = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+  return crypto.subtle.importKey(
+    'raw',
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+}
 
 export function NoteDetailSidebar({
   note,
@@ -106,6 +120,14 @@ export function NoteDetailSidebar({
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const noteMeta = useMemo(() => {
+    try {
+      return JSON.parse(note.metadata || '{}');
+    } catch {
+      return {};
+    }
+  }, [note.metadata]);
+  const isT4EncryptedPublicNote = !!note.isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
   
   // Fetch linked tasks from Kylrix Flow
   useEffect(() => {
@@ -229,18 +251,51 @@ export function NoteDetailSidebar({
     }
   }, [note.$id, note.attachments]);
 
+  useEffect(() => {
+    if (!isT4EncryptedPublicNote || lastT4Key) return;
+
+    let cancelled = false;
+    const loadKey = async () => {
+      const key = await getCurrentPublicNoteDecryptionKey(note.$id);
+      if (!cancelled && key) {
+        setLastT4Key(key);
+      }
+    };
+
+    loadKey();
+    return () => {
+      cancelled = true;
+    };
+  }, [isT4EncryptedPublicNote, lastT4Key, note.$id]);
 
   useEffect(() => {
     if (isEditing) return;
     prevNoteIdRef.current = note.$id;
-    setTitle(note.title || '');
-    setContent(note.content || '');
+    const sync = async () => {
+      if (isT4EncryptedPublicNote && lastT4Key) {
+        try {
+          const key = await importUrlSafeAesKey(lastT4Key);
+          const decryptedTitle = await ecosystemSecurity.decryptWithKey(noteMeta.encryptedTitle || note.title || '', key);
+          const decryptedContent = await ecosystemSecurity.decryptWithKey(note.content || '', key);
+          setTitle(decryptedTitle);
+          setContent(decryptedContent);
+          return;
+        } catch (error) {
+          console.error('Failed to decrypt public note for editing:', error);
+        }
+      }
+
+      setTitle(note.title || '');
+      setContent(note.content || '');
+    };
+
+    sync();
     setFormat((note.format as 'text' | 'doodle') || 'text');
     setTags((note.tags || []).join(', '));
     setIsPublic(note.isPublic);
     setIsEditingTitle(false);
     setIsEditingContent(false);
-  }, [note.$id, note.title, note.content, note.format, note.tags, note.isPublic, isEditing]);
+  }, [note.$id, note.title, note.content, note.format, note.tags, note.isPublic, noteMeta, lastT4Key, isT4EncryptedPublicNote, isEditing]);
 
   const normalizedTags = useMemo(() => {
     return tags
@@ -253,6 +308,7 @@ export function NoteDetailSidebar({
   const displayContent = content || note.content || '';
   const displayFormat = format;
   const displayTags = normalizedTags.length > 0 ? normalizedTags : (note.tags || []);
+  const canEditNoteContent = !isT4EncryptedPublicNote || !!lastT4Key;
 
   const resetTitleIdleTimer = () => {
     if (titleIdleTimer.current) {
@@ -339,10 +395,30 @@ export function NoteDetailSidebar({
       collaborators: candidate.collaborators,
       metadata: candidate.metadata,
     };
+
+    if (isT4EncryptedPublicNote || (candidate.isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4')) {
+      if (!lastT4Key) {
+        throw new Error('Missing public note key');
+      }
+
+      const key = await importUrlSafeAesKey(lastT4Key);
+      const encryptedTitle = await ecosystemSecurity.encryptWithKey(candidate.title || '', key);
+      const encryptedContent = await ecosystemSecurity.encryptWithKey(candidate.content || '', key);
+      payload.title = '🔒 Encrypted Note';
+      payload.content = encryptedContent;
+      payload.metadata = JSON.stringify({
+        ...noteMeta,
+        isGhost: false,
+        isEncrypted: true,
+        encryptionVersion: 'T4',
+        encryptedTitle,
+      });
+    }
+
     const saved = await updateNote(candidate.$id, payload);
     onUpdate(saved);
     return saved;
-  }, [onUpdate]);
+  }, [onUpdate, isT4EncryptedPublicNote, lastT4Key, noteMeta]);
 
   const { isSaving: isAutosaving, forceSave } = useAutosave(autosaveCandidate, {
     enabled: !!note.$id,
@@ -400,10 +476,18 @@ export function NoteDetailSidebar({
   };
 
   const activateTitleEditing = () => {
+    if (!canEditNoteContent) {
+      showError('Vault Locked', 'Unlock vault to edit this public note.');
+      return;
+    }
     setIsEditingTitle(true);
   };
 
   const activateContentEditing = () => {
+    if (!canEditNoteContent) {
+      showError('Vault Locked', 'Unlock vault to edit this public note.');
+      return;
+    }
     setIsEditingContent(true);
   };
 

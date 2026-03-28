@@ -3104,6 +3104,21 @@ export async function getCurrentPublicNoteShareUrl(noteId: string): Promise<stri
   }
 }
 
+export async function getCurrentPublicNoteDecryptionKey(noteId: string): Promise<string | null> {
+  try {
+    const note = await getNote(noteId);
+    if (!isNotePublic(note)) return null;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return null;
+    const ownerId = note.userId || currentUser.$id;
+    const key = await loadT4NoteKey(noteId, ownerId);
+    return await exportUrlSafeCryptoKey(key);
+  } catch (error) {
+    console.error('getCurrentPublicNoteDecryptionKey error:', error);
+    return null;
+  }
+}
+
 export async function validatePublicNoteAccess(noteId: string): Promise<Notes | null> {
   try {
     // We use getNote which uses the global guest-capable database client
