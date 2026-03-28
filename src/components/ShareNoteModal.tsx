@@ -39,7 +39,8 @@ import {
   removeNoteSharing,
   toggleNoteVisibility,
   getShareableUrl,
-  getNote
+  getNote,
+  getCurrentPublicNoteShareUrl
 } from '@/lib/appwrite';
 import { useSudo } from '@/context/SudoContext';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
@@ -84,7 +85,9 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const [updatingCollab, setUpdatingCollab] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(false);
   const [decryptionKey, setDecryptionKey] = useState<string | null>(null);
+  const [publicShareUrl, setPublicShareUrl] = useState<string | null>(null);
   const { promptSudo } = useSudo();
+  const resolvedPublicLink = publicShareUrl || (decryptionKey && decryptionKey !== '********' ? getShareableUrl(noteId, decryptionKey) : null);
 
   useEffect(() => {
     if (isOpen && noteId) {
@@ -95,6 +98,11 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
             const meta = JSON.parse(note.metadata || '{}');
             if (meta.isEncrypted) setDecryptionKey('********'); // Signal it's encrypted
           } catch(_e) {}
+          if (note.isPublic) {
+            getCurrentPublicNoteShareUrl(noteId).then(setPublicShareUrl).catch(() => setPublicShareUrl(null));
+          } else {
+            setPublicShareUrl(null);
+          }
         }
       });
     }
@@ -159,6 +167,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       setQuery('');
       setErrorMsg(null);
       setSuccessMsg(null);
+      setPublicShareUrl(null);
     }
   }, [isOpen, loadSharedUsers]);
 
@@ -640,11 +649,12 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                     if (updated) {
                       setIsPublic(!!updated.isPublic);
                       setDecryptionKey(updated.decryptionKey || null);
+                      setPublicShareUrl(updated.isPublic && updated.decryptionKey ? getShareableUrl(noteId, updated.decryptionKey) : null);
                       setSuccessMsg(updated.isPublic ? 'Note is now Public' : 'Note is now Private');
                     }
                   } catch (err: any) {
                     if (err.message === 'VAULT_LOCKED') {
-                      setErrorMsg('Vault Locked: Sudo required to encrypt note.');
+                      setErrorMsg('Vault Locked: Sudo required to update note visibility.');
                       const unlocked = await promptSudo();
                       if (unlocked) handleToggle();
                     } else {
@@ -670,12 +680,14 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
           {isPublic && (
             <Box sx={{ p: 1.5, bgcolor: '#0A0908', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Typography variant="caption" sx={{ flex: 1, color: 'rgba(255, 255, 255, 0.4)', fontFamily: 'var(--font-jetbrains)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {getShareableUrl(noteId, decryptionKey || undefined)}
+                {resolvedPublicLink || 'Unlock vault to reveal the current public link.'}
               </Typography>
               <Button
                 size="small"
+                disabled={!resolvedPublicLink}
                 onClick={() => {
-                  navigator.clipboard.writeText(getShareableUrl(noteId, decryptionKey || undefined));
+                  if (!resolvedPublicLink) return;
+                  navigator.clipboard.writeText(resolvedPublicLink);
                   setSuccessMsg('Public link copied!');
                 }}
                 sx={{ 

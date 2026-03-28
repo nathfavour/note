@@ -36,7 +36,8 @@ import {
   PushPinOutlined as PinOutlinedIcon,
   ArrowBack as BackIcon,
   Link as LinkIcon,
-  Lock as LockIcon
+  Lock as LockIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
@@ -44,7 +45,7 @@ import { useSudo } from '@/context/SudoContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, getShareableUrl } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import {
   PlaylistAddCheck as TaskIcon,
@@ -462,21 +463,50 @@ export function NoteDetailSidebar({
     }
   };
 
-  const handleCopyShareLink = () => {
-    let isEncrypted = false;
-    try {
-      const meta = JSON.parse(note.metadata || '{}');
-      isEncrypted = meta.encryptionVersion === 'T4';
-    } catch {}
+  const handleCopyShareLink = async () => {
+    const shareUrl = note.isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
+    if (note.isPublic && !shareUrl) {
+      showError('Vault Locked', 'Unlock vault to copy the current public link.');
+      return;
+    }
+    const finalUrl = shareUrl || getShareableUrl(note.$id, lastT4Key || undefined);
+    navigator.clipboard.writeText(finalUrl);
 
-    const shareUrl = getShareableUrl(note.$id, lastT4Key || undefined);
-    navigator.clipboard.writeText(shareUrl);
-    
-    if (isEncrypted && !lastT4Key) {
-      showSuccess('Base link copied', 'Note is encrypted. Re-toggle visibility to get a fresh link with key.');
+    if (!shareUrl && !lastT4Key) {
+      showSuccess('Base link copied', 'Note is encrypted. Use public link with key for others to view.');
     } else {
       showSuccess('Share link copied to clipboard');
     }
+  };
+
+  const handleRotatePublicLink = async () => {
+    const handleRotate = async () => {
+      try {
+        const updated = await rotatePublicNoteLink(note.$id);
+        if (updated) {
+          setIsPublic(updated.isPublic);
+          setLastT4Key(updated.decryptionKey || null);
+          onUpdate(updated);
+          if (updated.decryptionKey) {
+            const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+            navigator.clipboard.writeText(shareUrl);
+            showSuccess('Public link rotated', 'New public link copied to clipboard.');
+          } else {
+            showSuccess('Public link rotated');
+          }
+        }
+      } catch (err: any) {
+        if (err.message === 'VAULT_LOCKED') {
+          showError('Vault Locked', 'You must unlock your vault to rotate the public link.');
+          const unlocked = await promptSudo();
+          if (unlocked) handleRotate();
+        } else {
+          showError('Rotate Failed', err.message || 'Failed to rotate public link.');
+        }
+      }
+    };
+
+    handleRotate();
   };
 
   const handleCancel = () => {
@@ -544,7 +574,7 @@ export function NoteDetailSidebar({
                     }
                   } catch (err: any) {
                     if (err.message === 'VAULT_LOCKED') {
-                      showError('Vault Locked', 'You must unlock your vault to encrypt this note.');
+          showError('Vault Locked', 'You must unlock your vault to update this note.');
                       const unlocked = await promptSudo();
                       if (unlocked) handleToggle();
                     } else {
@@ -562,6 +592,20 @@ export function NoteDetailSidebar({
               {isPublic ? <LinkIcon fontSize="small" /> : <LockIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
+
+          {isPublic && (
+            <Tooltip title="Change public link">
+              <IconButton
+                onClick={handleRotatePublicLink}
+                sx={{
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.1) }
+                }}
+              >
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {isPublic && (
             <Tooltip title="Copy share link">

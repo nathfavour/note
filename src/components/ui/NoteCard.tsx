@@ -25,10 +25,11 @@ import {
   Lock as PrivateIcon,
   LockOpen as PublicIcon,
   Link as LinkIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import { updateNote, createNote, toggleNoteVisibility, createTaskFromNote, getShareableUrl } from '@/lib/appwrite';
+import { updateNote, createNote, toggleNoteVisibility, rotatePublicNoteLink, createTaskFromNote, getShareableUrl, getCurrentPublicNoteShareUrl } from '@/lib/appwrite';
 import { useToast } from './Toast';
 import { useSudo } from '@/context/SudoContext';
 import { useAuth } from './AuthContext';
@@ -157,7 +158,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
         }
       } catch (err: any) {
         if (err.message === 'VAULT_LOCKED') {
-          showError('Vault Locked', 'Unlock vault to encrypt note for public sharing.');
+          showError('Vault Locked', "Unlock vault to update this note's public state.");
           const unlocked = await promptSudo();
           if (unlocked) handleToggle();
         } else {
@@ -168,21 +169,44 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
     handleToggle();
   };
 
-  const handleCopyShareLink = (e?: React.MouseEvent) => {
+  const handleCopyShareLink = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    let isEncrypted = false;
-    try {
-      const meta = JSON.parse(note.metadata || '{}');
-      isEncrypted = meta.isEncrypted;
-    } catch(_e) {}
-
-    const shareUrl = getShareableUrl(note.$id);
-    navigator.clipboard.writeText(shareUrl);
-    if (isEncrypted) {
-      showSuccess('Base link copied', 'Note is encrypted. Use public link with key for others to view.');
-    } else {
-      showSuccess('Share link copied to clipboard');
+    const shareUrl = note.isPublic ? await getCurrentPublicNoteShareUrl(note.$id) : null;
+    if (note.isPublic && !shareUrl) {
+      showError('Vault Locked', 'Unlock vault to copy the current public link.');
+      return;
     }
+    const finalUrl = shareUrl || getShareableUrl(note.$id);
+    navigator.clipboard.writeText(finalUrl);
+    showSuccess('Share link copied to clipboard');
+  };
+
+  const handleRotatePublicLink = async () => {
+    const handleRotate = async () => {
+      try {
+        const updated = await rotatePublicNoteLink(note.$id);
+        if (updated) {
+          upsertNote(updated);
+          if (updated.decryptionKey) {
+            const shareUrl = getShareableUrl(note.$id, updated.decryptionKey);
+            navigator.clipboard.writeText(shareUrl);
+            showSuccess('Public link rotated', 'New public link copied to clipboard.');
+          } else {
+            showSuccess('Public link rotated');
+          }
+        }
+      } catch (err: any) {
+        if (err.message === 'VAULT_LOCKED') {
+          showError('Vault Locked', 'Unlock vault to rotate the public link.');
+          const unlocked = await promptSudo();
+          if (unlocked) handleRotate();
+        } else {
+          showError(err.message || 'Failed to rotate public link');
+        }
+      }
+    };
+
+    handleRotate();
   };
 
   // Render doodle preview on canvas
@@ -304,6 +328,10 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       label: 'Copy Share Link',
       icon: <LinkIcon sx={{ fontSize: 18 }} />,
       onClick: () => { handleCopyShareLink(); }
+    }, {
+      label: 'Change Public Link',
+      icon: <RefreshIcon sx={{ fontSize: 18 }} />,
+      onClick: () => { handleRotatePublicLink(); }
     }] : []),
     {
       label: note.isPublic ? 'Make Private' : 'Make Public',

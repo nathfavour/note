@@ -2739,9 +2739,18 @@ export function getShareableUrl(noteId: string, key?: string): string {
   return `${baseUrl}/shared/${noteId}${key ? `/${key}` : ''}`;
 }
 
-async function loadT4NoteKey(noteId: string, ownerId: string): Promise<CryptoKey> {
-  const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
-  const keyMappingRes = await databases.listDocuments(
+function toUrlSafeBase64(buffer: ArrayBuffer): string {
+  const standardBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  return standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function exportUrlSafeCryptoKey(key: CryptoKey): Promise<string> {
+  const raw = await crypto.subtle.exportKey('raw', key);
+  return toUrlSafeBase64(raw);
+}
+
+async function getT4NoteKeyMapping(noteId: string, ownerId: string) {
+  return await databases.listDocuments(
     APPWRITE_CONFIG.DATABASES.VAULT,
     'key_mapping',
     [
@@ -2751,6 +2760,11 @@ async function loadT4NoteKey(noteId: string, ownerId: string): Promise<CryptoKey
       Query.limit(1),
     ] as any
   );
+}
+
+async function loadT4NoteKey(noteId: string, ownerId: string): Promise<CryptoKey> {
+  const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
+  const keyMappingRes = await getT4NoteKeyMapping(noteId, ownerId);
 
   const mapping = keyMappingRes.documents[0] as any;
   if (!mapping?.wrappedKey) {
@@ -2773,6 +2787,99 @@ function stripT4Metadata(metadata: string | undefined | null): string {
   delete parsed.encryptedTitle;
 
   return JSON.stringify(parsed);
+}
+
+async function preparePublicNoteUpdate(
+  note: Notes,
+  ownerId: string,
+  rotateLink: boolean
+): Promise<{ updatePayload: Record<string, any>; decryptionKey: string }> {
+  if (!ecosystemSecurity.status.isUnlocked) {
+    throw new Error('VAULT_LOCKED');
+  }
+
+  const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
+  const existingMappings = await getT4NoteKeyMapping(note.$id, ownerId);
+  const hasExistingKey = existingMappings.total > 0;
+  let symmetricKey: CryptoKey;
+  let decryptionKey: string;
+
+  if (!rotateLink && hasExistingKey) {
+    const mapping = existingMappings.documents[0] as any;
+    symmetricKey = await ecosystemSecurity.unwrapKeyForIdentity(mapping.wrappedKey, ownerPublicKey);
+    decryptionKey = await exportUrlSafeCryptoKey(symmetricKey);
+  } else {
+    symmetricKey = await ecosystemSecurity.generateRandomMEK();
+    decryptionKey = await exportUrlSafeCryptoKey(symmetricKey);
+    const wrappedKey = await ecosystemSecurity.wrapKeyForIdentity(symmetricKey, ownerPublicKey);
+    const mappingData = {
+      resourceId: note.$id,
+      resourceType: 'note',
+      grantee: `user:${ownerId}`,
+      wrappedKey,
+      metadata: JSON.stringify({ algorithm: 'AES-GCM', version: 'T4' })
+    };
+    const mappingPermissions = [
+      Permission.read(Role.user(ownerId)),
+      Permission.update(Role.user(ownerId)),
+      Permission.delete(Role.user(ownerId))
+    ];
+
+    if (hasExistingKey) {
+      await databases.updateDocument(
+        APPWRITE_CONFIG.DATABASES.VAULT,
+        'key_mapping',
+        (existingMappings.documents[0] as any).$id,
+        mappingData,
+        mappingPermissions
+      );
+    } else {
+      await databases.createDocument(
+        APPWRITE_CONFIG.DATABASES.VAULT,
+        'key_mapping',
+        ID.unique(),
+        mappingData,
+        mappingPermissions
+      );
+    }
+  }
+
+  let meta: Record<string, any> = {};
+  try { meta = JSON.parse(note.metadata || '{}'); } catch {}
+
+  let sourceTitle = note.title || '';
+  let sourceContent = note.content || '';
+  const shouldDecryptSource = note.isPublic || rotateLink || meta.isEncrypted || meta.encryptionVersion === 'T4';
+  if (shouldDecryptSource) {
+    if (!hasExistingKey) {
+      throw new Error('Missing encryption key mapping for this note');
+    }
+    const existingKey = await loadT4NoteKey(note.$id, ownerId);
+    sourceTitle = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || note.title || '', existingKey);
+    sourceContent = await ecosystemSecurity.decryptWithKey(note.content || '', existingKey);
+  }
+
+  const encryptedTitle = await ecosystemSecurity.encryptWithKey(sourceTitle, symmetricKey);
+  const encryptedContent = await ecosystemSecurity.encryptWithKey(sourceContent, symmetricKey);
+
+  return {
+    decryptionKey,
+    updatePayload: {
+      isPublic: true,
+      updatedAt: new Date().toISOString(),
+      userId: ownerId,
+      id: note.$id,
+      title: '🔒 Encrypted Note',
+      content: encryptedContent,
+      metadata: JSON.stringify({
+        ...meta,
+        isGhost: false,
+        isEncrypted: true,
+        encryptionVersion: 'T4',
+        encryptedTitle
+      })
+    }
+  };
 }
 
 async function syncNoteVisibilityChildren(noteId: string, ownerId: string, isPublic: boolean) {
@@ -2899,86 +3006,9 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
     };
 
     if (newIsPublic) {
-        // T4 ENCRYPTION UPON MAKING PUBLIC
-        // 1. Ensure Vault is unlocked (handled by UI, but we check state)
-        if (!ecosystemSecurity.status.isUnlocked) {
-            throw new Error('VAULT_LOCKED'); // UI will catch this and show SudoModal
-        }
-
-        // 2. Generate new symmetric key for this resource
-        const symmetricKey = await ecosystemSecurity.generateRandomMEK();
-        const rawSymmetricKey = await crypto.subtle.exportKey('raw', symmetricKey);
-        const standardBase64 = btoa(String.fromCharCode(...new Uint8Array(rawSymmetricKey)));
-        
-        // Make key URL-safe
-        decryptionKey = standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-
-        // 3. Encrypt content and title
-        const encryptedTitle = await ecosystemSecurity.encryptWithKey(note.title || '', symmetricKey);
-        const encryptedContent = await ecosystemSecurity.encryptWithKey(note.content || '', symmetricKey);
-
-        // 4. Wrap key for owner identity
-        const ownerPublicKey = await ecosystemSecurity.ensureE2EIdentity(ownerId);
-        const wrappedKey = await ecosystemSecurity.wrapKeyForIdentity(symmetricKey, ownerPublicKey);
-
-        // 5. Store in key_mapping (Safe Upsert)
-        const existingMappings = await databases.listDocuments(
-            APPWRITE_CONFIG.DATABASES.VAULT,
-            'key_mapping',
-            [
-                Query.equal('resourceType', 'note'),
-                Query.equal('resourceId', note.$id),
-                Query.equal('grantee', `user:${ownerId}`)
-            ]
-        );
-
-        const mappingData = {
-            resourceId: note.$id,
-            resourceType: 'note',
-            grantee: `user:${ownerId}`,
-            wrappedKey: wrappedKey,
-            metadata: JSON.stringify({ algorithm: 'AES-GCM', version: 'T4' })
-        };
-
-        const mappingPermissions = [
-            Permission.read(Role.user(ownerId)),
-            Permission.update(Role.user(ownerId)),
-            Permission.delete(Role.user(ownerId))
-        ];
-
-        if (existingMappings.total > 0) {
-            await databases.updateDocument(
-                APPWRITE_CONFIG.DATABASES.VAULT,
-                'key_mapping',
-                existingMappings.documents[0].$id,
-                mappingData,
-                mappingPermissions
-            );
-        } else {
-            await databases.createDocument(
-                APPWRITE_CONFIG.DATABASES.VAULT,
-                'key_mapping',
-                ID.unique(),
-                mappingData,
-                mappingPermissions
-            );
-        }
-
-        // 6. Update payload with ciphertext and T4 metadata
-        // Note: encryptedTitle often exceeds 256 chars (DB limit), 
-        // so we store a placeholder in the 'title' column and the real encrypted title in 'metadata'.
-        let meta = {};
-        try { meta = JSON.parse(note.metadata || '{}'); } catch(e) {}
-        
-        updatePayload.title = '🔒 Encrypted Note';
-        updatePayload.content = encryptedContent;
-        updatePayload.metadata = JSON.stringify({
-            ...meta,
-            isGhost: false,
-            isEncrypted: true,
-            encryptionVersion: 'T4',
-            encryptedTitle: encryptedTitle
-        });
+        const prepared = await preparePublicNoteUpdate(note, ownerId, false);
+        decryptionKey = prepared.decryptionKey;
+        Object.assign(updatePayload, prepared.updatePayload);
     } else {
         // Restore plaintext storage when moving back to private.
         if (!ecosystemSecurity.status.isUnlocked) {
@@ -3023,6 +3053,54 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
   } catch (error: any) {
     console.error('toggleNoteVisibility error:', error);
     throw error;
+  }
+}
+
+export async function rotatePublicNoteLink(noteId: string): Promise<(Notes & { decryptionKey?: string }) | null> {
+  try {
+    const note = await getNote(noteId);
+    if (!(await isNoteOwner(note))) throw new Error('Permission denied');
+    if (!isNotePublic(note)) throw new Error('Note must be public before rotating its link');
+
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error('Not authenticated');
+
+    const ownerId = note.userId || currentUser.$id;
+    const prepared = await preparePublicNoteUpdate(note, ownerId, true);
+    const permissions = [
+      Permission.read(Role.user(ownerId)),
+      Permission.update(Role.user(ownerId)),
+      Permission.delete(Role.user(ownerId)),
+      Permission.read(Role.any())
+    ];
+
+    const updated = await databases.updateDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_TABLE_ID_NOTES,
+      noteId,
+      filterNoteData(prepared.updatePayload),
+      permissions
+    );
+    await syncNoteVisibilityChildren(noteId, ownerId, true);
+    return { ...(updated as unknown as Notes), decryptionKey: prepared.decryptionKey };
+  } catch (error: any) {
+    console.error('rotatePublicNoteLink error:', error);
+    throw error;
+  }
+}
+
+export async function getCurrentPublicNoteShareUrl(noteId: string): Promise<string | null> {
+  try {
+    const note = await getNote(noteId);
+    if (!isNotePublic(note)) return null;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return null;
+    const ownerId = note.userId || currentUser.$id;
+    const key = await loadT4NoteKey(noteId, ownerId);
+    return getShareableUrl(noteId, await exportUrlSafeCryptoKey(key));
+  } catch (error) {
+    console.error('getCurrentPublicNoteShareUrl error:', error);
+    return null;
   }
 }
 
@@ -3074,6 +3152,9 @@ const appwrite = {
   getNote,
   updateNote,
   deleteNote,
+  toggleNoteVisibility,
+  rotatePublicNoteLink,
+  getCurrentPublicNoteShareUrl,
    listNotes,
    listNotesPaginated,
    getAllNotes,
