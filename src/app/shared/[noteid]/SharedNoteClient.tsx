@@ -10,7 +10,8 @@ import {
   ArrowForward as ArrowRightIcon,
   Check as CheckIcon,
   ContentCopy as CopyIcon,
-  LibraryAdd as DuplicateIcon
+  LibraryAdd as DuplicateIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { 
   LayoutGrid, 
@@ -47,7 +48,8 @@ import {
   ListItemIcon,
   ListItemText,
   alpha,
-  Link as MuiLink
+  Link as MuiLink,
+  keyframes
 } from '@mui/material';
 import NextLink from 'next/link';
 import CommentsSection from '@/app/(app)/notes/Comments';
@@ -63,11 +65,21 @@ import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
 import { useParams } from 'next/navigation';
 
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
 interface SharedNoteClientProps {
    noteId: string;
 }
 
-function SharedNoteHeader() {
+interface SharedNoteHeaderProps {
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+}
+
+function SharedNoteHeader({ onRefresh, isRefreshing }: SharedNoteHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
@@ -142,6 +154,34 @@ function SharedNoteHeader() {
         />
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {onRefresh && (
+            <Tooltip title="Refresh Note">
+              <IconButton 
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                sx={{ 
+                  color: isRefreshing ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid',
+                  borderColor: isRefreshing ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  width: 44,
+                  height: 44,
+                  '&:hover': { 
+                    bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    color: 'white'
+                  },
+                  '& svg': {
+                    animation: isRefreshing ? `${spin} 1s linear infinite` : 'none',
+                  }
+                }}
+              >
+                <RefreshIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+
           <Tooltip title="Kylrix Portal">
             <IconButton 
               onClick={() => setIsEcosystemPortalOpen(true)}
@@ -279,6 +319,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingNote, setIsLoadingNote] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [alreadyDuplicated, setAlreadyDuplicated] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -453,6 +494,16 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
 
   useEffect(() => {
     fetchSharedNote();
+  }, [fetchSharedNote]);
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchSharedNote(true);
+    } finally {
+      // Small delay for visual feedback
+      setTimeout(() => setIsRefreshing(false), 600);
+    }
   }, [fetchSharedNote]);
 
   // Realtime subscription for aggressive live updates
@@ -807,7 +858,7 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
   if (isAuthenticated) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', color: 'white' }}>
-        <SharedNoteHeader />
+        <SharedNoteHeader onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />
         <Container maxWidth="md" sx={{ py: 8, pt: 12 }}>
           <NoteContent />
           
@@ -889,23 +940,51 @@ export default function SharedNoteClient({ noteId }: SharedNoteClientProps) {
               href="/"
             />
           </Box>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}>
-            <Button component={NextLink} href="/" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, textTransform: 'none' }}>Home</Button>
-            <Button 
-              component={NextLink}
-              href="/" 
-              variant="contained" 
-              sx={{ 
-                borderRadius: '12px', 
-                fontWeight: 800, 
-                bgcolor: '#6366F1', 
-                color: '#000',
-                textTransform: 'none',
-                '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
-              }}
-            >
-              Join Now
-            </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Tooltip title="Refresh Note">
+              <IconButton 
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                sx={{ 
+                  color: isRefreshing ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid',
+                  borderColor: isRefreshing ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  width: 44,
+                  height: 44,
+                  '&:hover': { 
+                    bgcolor: 'rgba(255, 255, 255, 0.05)', 
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    color: 'white'
+                  },
+                  '& svg': {
+                    animation: isRefreshing ? `${spin} 1s linear infinite` : 'none',
+                  }
+                }}
+              >
+                <RefreshIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}>
+              <Button component={NextLink} href="/" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, textTransform: 'none' }}>Home</Button>
+              <Button 
+                component={NextLink}
+                href="/" 
+                variant="contained" 
+                sx={{ 
+                  borderRadius: '12px', 
+                  fontWeight: 800, 
+                  bgcolor: '#6366F1', 
+                  color: '#000',
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: alpha('#6366F1', 0.8) }
+                }}
+              >
+                Join Now
+              </Button>
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>
