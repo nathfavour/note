@@ -461,6 +461,18 @@ export class EcosystemSecurity {
   }
 
   /**
+   * Alias for setupPinVerifier that returns success status
+   */
+  async setupPin(pin: string): Promise<boolean> {
+    try {
+      await this.setupPinVerifier(pin);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  /**
    * Phase 1: Setup PIN Verifier (Disk-Bound)
    * Stores { PinSalt, PinHash } in localStorage.
    */
@@ -508,6 +520,23 @@ export class EcosystemSecurity {
     };
 
     sessionStorage.setItem("kylrix_ephemeral_session", JSON.stringify(ephemeralData));
+  }
+
+  /**
+   * Verify PIN without necessarily unlocking the full system
+   */
+  async verifyPin(pin: string): Promise<boolean> {
+    const verifierStr = localStorage.getItem("kylrix_pin_verifier");
+    if (!verifierStr) return false;
+
+    try {
+      const { salt: saltBase64, hash: expectedHash } = JSON.parse(verifierStr);
+      const salt = new Uint8Array(atob(saltBase64).split("").map(c => c.charCodeAt(0)));
+      const actualHash = btoa(String.fromCharCode(...new Uint8Array(await this.derivePinHash(pin, salt))));
+      return actualHash === expectedHash;
+    } catch (_e) {
+      return false;
+    }
   }
 
   /**
@@ -562,6 +591,14 @@ export class EcosystemSecurity {
       console.error("[Security] PIN unlock failed", _e);
       return false;
     }
+  }
+
+  /**
+   * Remove PIN verifier
+   */
+  wipePin(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("kylrix_pin_verifier");
   }
 
   isPinSet(): boolean {
