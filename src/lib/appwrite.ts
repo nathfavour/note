@@ -1774,13 +1774,19 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
 
     // Call our accounts server API to bypass client permission restrictions
     const jwt = await account.createJWT();
-    const response = await fetch(`${getEcosystemUrl('accounts')}/api/notes/${noteId}/share`, {
+    const response = await fetch(`${getEcosystemUrl('accounts')}/api/permissions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwt.jwt}`
       },
-      body: JSON.stringify({ targetUserId, permission })
+      body: JSON.stringify({
+        databaseId: APPWRITE_DATABASE_ID,
+        tableId: APPWRITE_TABLE_ID_NOTES,
+        rowId: noteId,
+        targetUserId,
+        permission
+      })
     });
 
     if (!response.ok) {
@@ -1877,11 +1883,18 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
 
     // Call our server API to securely remove the user's DLS permissions
     const jwt = await account.createJWT();
-    const response = await fetch(`${getEcosystemUrl('accounts')}/api/notes/${noteId}/share?targetUserId=${encodeURIComponent(targetUserId)}`, {
+    const response = await fetch(`${getEcosystemUrl('accounts')}/api/permissions`, {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwt.jwt}`
-      }
+      },
+      body: JSON.stringify({
+        databaseId: APPWRITE_DATABASE_ID,
+        tableId: APPWRITE_TABLE_ID_NOTES,
+        rowId: noteId,
+        targetUserId
+      })
     });
 
     if (!response.ok) {
