@@ -170,6 +170,12 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                 subtitle: `@${doc.username}`,
                 icon: 'person',
                 avatar: doc.avatar,
+                createdAt: doc.$createdAt || doc.createdAt || null,
+                lastUsernameEdit: doc.last_username_edit || null,
+                username: doc.username || null,
+                bio: doc.bio || null,
+                tier: doc.tier || null,
+                publicKey: doc.publicKey || null,
                 apps: doc.appsActive || []
             }));
         } catch (e: any) {
@@ -191,6 +197,12 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                     subtitle: `@${doc.username}`,
                     icon: 'person',
                     avatar: doc.avatar,
+                    createdAt: doc.$createdAt || doc.createdAt || null,
+                    lastUsernameEdit: doc.last_username_edit || null,
+                    username: doc.username || null,
+                    bio: doc.bio || null,
+                    tier: doc.tier || null,
+                    publicKey: doc.publicKey || null,
                     apps: doc.appsActive || []
                 }));
             }
@@ -218,6 +230,12 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                             subtitle: doc.username ? `@${doc.username}` : doc.email,
                             icon: 'person',
                             avatar: doc.avatar || null,
+                            createdAt: doc.$createdAt || doc.createdAt || null,
+                            lastUsernameEdit: doc.last_username_edit || null,
+                            username: doc.username || null,
+                            bio: doc.bio || null,
+                            tier: doc.tier || null,
+                            publicKey: doc.publicKey || null,
                             apps: ['note']
                         });
                     }

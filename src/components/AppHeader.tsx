@@ -9,7 +9,6 @@ import {
   IconButton, 
   Menu, 
   MenuItem, 
-  Avatar, 
   Tooltip, 
   Divider,
   ListItemIcon,
@@ -281,21 +280,15 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 transition: 'all 0.2s'
               }}
             >
-              <Avatar 
+              <IdentityAvatar
                 src={smallProfileUrl || undefined}
-                sx={{ 
-                  width: 34, 
-                  height: 34, 
-                  bgcolor: '#0A0908',
-                  fontSize: '0.875rem',
-                  fontWeight: 800,
-                  color: '#6366F1',
-                  borderRadius: '10px',
-                  fontFamily: 'var(--font-mono)'
-                }}
-              >
-                {user?.name ? user.name[0].toUpperCase() : 'U'}
-              </Avatar>
+                alt={user?.name || user?.email || 'profile'}
+                fallback={user?.name ? user.name[0].toUpperCase() : 'U'}
+                verified={identitySignals.verified}
+                pro={identitySignals.pro}
+                size={34}
+                borderRadius="10px"
+              />
             </IconButton>
           ) : (
             <Button
@@ -345,9 +338,11 @@ export default function AppHeader({ className }: AppHeaderProps) {
             <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
               Identity
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', mt: 1, fontFamily: 'var(--font-satoshi)' }}>
-              {user?.name || user?.email}
-            </Typography>
+            <Box sx={{ mt: 1 }}>
+              <IdentityName verified={identitySignals.verified} sx={{ fontWeight: 800, color: 'white', fontFamily: 'var(--font-satoshi)' }}>
+                {user?.name || user?.email}
+              </IdentityName>
+            </Box>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', mt: 0.5, fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
               {user?.email}
             </Typography>
