@@ -43,6 +43,8 @@ import { WalletSidebar } from '@/components/overlays/WalletSidebar';
 import Logo from '@/components/common/Logo';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { useTheme } from '@/components/ThemeProvider';
+import { AppwriteService } from '@/lib/appwrite';
+import { IdentityAvatar, IdentityName, computeIdentityFlags } from './common/IdentityBadge';
 
 interface AppHeaderProps {
   className?: string;
@@ -77,6 +79,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
 
   const [_currentSubdomain, setCurrentSubdomain] = useState<string | null>(null);
   const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+  const [profileRecord, setProfileRecord] = useState<any>(null);
   const profilePicId = getUserProfilePicId(user);
 
   useEffect(() => {
@@ -124,6 +127,35 @@ export default function AppHeader({ className }: AppHeaderProps) {
     fetchPreview();
     return () => { mounted = false; };
   }, [profilePicId]);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadProfileRecord = async () => {
+      if (!user?.$id) return;
+      try {
+        const status = await AppwriteService.getGlobalProfileStatus(user.$id);
+        if (!mounted) return;
+        setProfileRecord(status?.profile || null);
+      } catch (error) {
+        console.warn('[Note Header] Failed to load profile record:', error);
+      }
+    };
+    loadProfileRecord();
+    return () => {
+      mounted = false;
+    };
+  }, [user?.$id]);
+
+  const identitySignals = computeIdentityFlags({
+    createdAt: profileRecord?.$createdAt || profileRecord?.createdAt || (user as any)?.$createdAt || null,
+    lastUsernameEdit: profileRecord?.last_username_edit || user?.prefs?.last_username_edit || null,
+    profilePicId: profileRecord?.profilePicId || user?.prefs?.profilePicId || null,
+    username: profileRecord?.username || user?.prefs?.username || user?.name || null,
+    bio: profileRecord?.bio || user?.prefs?.bio || null,
+    tier: profileRecord?.tier || user?.prefs?.tier || null,
+    publicKey: profileRecord?.publicKey || null,
+    emailVerified: Boolean((user as any)?.emailVerification),
+  });
 
   const handleLogout = () => {
     setAnchorElAccount(null);
