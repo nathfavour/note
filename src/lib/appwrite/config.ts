@@ -46,7 +46,8 @@ export const APPWRITE_CONFIG = {
         PASSWORD_MANAGER: { // Alias for WalletService
             KEYCHAIN: 'keychain',
             IDENTITIES: 'identities',
-            WALLETS: 'wallets'
+            WALLETS: 'wallets',
+            KEY_MAPPING: 'key_mapping'
         },
         FLOW: {
             TASKS: 'tasks',
@@ -58,6 +59,7 @@ export const APPWRITE_CONFIG = {
             PROFILES: 'profiles',
             CONVERSATIONS: 'conversations',
             MESSAGES: 'messages',
+            EPOCHS: 'epochs',
             ACCOUNT_EVENTS: 'accountEvents',
             CALL_LOGS: 'call_logs',
             APP_ACTIVITY: 'app_activity',

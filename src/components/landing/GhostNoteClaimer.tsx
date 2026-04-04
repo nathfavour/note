@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@/components/ui/AuthContext';
-import { functions } from '@/lib/appwrite';
-import { APPWRITE_CONFIG } from '@/lib/appwrite/config';
+import { account } from '@/lib/appwrite';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 
 const GHOST_STORAGE_KEY = 'kylrix_ghost_notes_v2';
 const GHOST_SECRET_KEY = 'kylrix_ghost_secret_v2';
@@ -32,34 +33,40 @@ export const GhostNoteClaimer = () => {
                 isClaiming.current = true;
                 console.log(`[GhostClaimer] Detected ${history.length} notes to claim for user ${user.$id}`);
 
-                // Call the Appwrite function (skeleton/ready for when function is deployed)
-                // Even if it fails (404), we catch it. Once the function is live, it works.
                 try {
                     const noteIds = history.map(n => n.id);
-                    await functions.createExecution(
-                        APPWRITE_CONFIG.FUNCTIONS.CLAIM_GHOST_NOTES || 'claim-ghost-notes', // Function ID
-                        JSON.stringify({ noteIds, ghostSecret: secret }),
-                        false, // async
-                        '/', // path
-                        'POST' as any
-                    );
-                    
-                    // On success (or at least attempt), we clear local memory to avoid infinite loops
-                    // In a production scenario, we might want to wait for a 200 OK
-                    // But here we prioritize "not toiling on each reload" as requested.
+                    const jwt = await account.createJWT();
+                    const wrappedSecret = ecosystemSecurity.status.isUnlocked
+                        ? await ecosystemSecurity.encrypt(secret)
+                        : secret;
+
+                    const response = await fetch(`${getEcosystemUrl('accounts')}/api/permissions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${jwt.jwt}`,
+                        },
+                        body: JSON.stringify({
+                            action: 'pin_ghost_note',
+                            noteIds,
+                            wrappedKey: wrappedSecret,
+                            metadata: {
+                                source: 'ghost-claimer',
+                                noteCount: noteIds.length,
+                            },
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to claim ghost notes');
+                    }
+
                     localStorage.removeItem(GHOST_STORAGE_KEY);
                     localStorage.removeItem(GHOST_SECRET_KEY);
-                    
-                    console.log('[GhostClaimer] Successfully handed off ghost notes to claim function.');
+                    console.log('[GhostClaimer] Successfully handed off ghost notes to accounts API.');
                 } catch (fnErr: any) {
-                    // If function doesn't exist yet (404), we don't clear yet so it can try again later
-                    // Or we can clear it if we want to be "brutally efficient" and not try again until next session
-                    if (fnErr?.code === 404) {
-                        console.warn('[GhostClaimer] Claim function not yet deployed. Retaining ghost notes.');
-                    } else {
-                        // For other errors, we might want to clear to avoid spamming a broken function
-                        console.error('[GhostClaimer] Failed to execute claim function:', fnErr);
-                    }
+                    console.error('[GhostClaimer] Failed to claim ghost notes:', fnErr);
                 }
             } catch (e) {
                 console.error('[GhostClaimer] Error processing ghost history:', e);
