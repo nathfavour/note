@@ -1,4 +1,5 @@
 import { databases, CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, Query, Permission, Role } from '../appwrite';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 
 const PROFILE_SYNC_KEY = 'kylrix_identity_synced_v2';
 const SESSION_SYNC_KEY = 'kylrix_session_identity_ok';
@@ -19,6 +20,32 @@ export async function ensureGlobalIdentity(user: any, force = false) {
     }
 
     try {
+        const syncProfileEvent = async (payload: {
+            type: 'username_change' | 'profile_sync';
+            userId: string;
+            newUsername?: string | null;
+            profilePatch?: Record<string, unknown>;
+            metadata?: Record<string, unknown>;
+        }) => {
+            try {
+                const res = await fetch(`${getEcosystemUrl('accounts')}/api/account-events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data?.error || 'Failed to sync profile event');
+                return data;
+            } catch (error) {
+                console.warn('[Identity] Failed to sync profile event:', error);
+                return null;
+            }
+        };
+
         const { account } = await import('../appwrite');
         const [prefs, profile] = await Promise.all([
             account.getPrefs(),
@@ -51,6 +78,15 @@ export async function ensureGlobalIdentity(user: any, force = false) {
                     Permission.update(Role.user(user.$id)),
                     Permission.delete(Role.user(user.$id))
                 ]);
+                await syncProfileEvent({
+                    type: 'username_change',
+                    userId: user.$id,
+                    newUsername: username,
+                    profilePatch: payload,
+                    metadata: {
+                        source: 'note.ensureGlobalIdentity.create',
+                    },
+                });
             } catch (inner: any) {
                 console.error('[Identity] Global profile creation failed:', inner);
                 throw inner;
@@ -60,6 +96,15 @@ export async function ensureGlobalIdentity(user: any, force = false) {
                 try {
                     const payload = { ...profileData };
                     await databases.updateDocument(CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, user.$id, payload);
+                    await syncProfileEvent({
+                        type: profile.username !== username ? 'username_change' : 'profile_sync',
+                        userId: user.$id,
+                        newUsername: username,
+                        profilePatch: payload,
+                        metadata: {
+                            source: 'note.ensureGlobalIdentity.update',
+                        },
+                    });
                 } catch (inner: any) {
                     console.error('[Identity] Global profile update failed:', inner);
                     throw inner;
@@ -69,6 +114,21 @@ export async function ensureGlobalIdentity(user: any, force = false) {
 
         if (prefs.username !== username) {
             await account.updatePrefs({ ...prefs, username });
+            await syncProfileEvent({
+                type: 'username_change',
+                userId: user.$id,
+                newUsername: username,
+                profilePatch: {
+                    username,
+                    displayName: profileData.displayName,
+                    bio: profileData.bio,
+                    avatar: picId,
+                    walletAddress: user.walletAddress || null,
+                },
+                metadata: {
+                    source: 'note.ensureGlobalIdentity.prefs',
+                },
+            });
         }
 
         localStorage.setItem(PROFILE_SYNC_KEY, Date.now().toString());
