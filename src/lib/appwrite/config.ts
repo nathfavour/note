@@ -52,6 +52,20 @@ export const APPWRITE_CONFIG = {
             TASKS: 'tasks',
             EVENTS: 'events',
             GUESTS: 'eventGuests'
+        },
+        CHAT: {
+            USERS: 'users',
+            PROFILES: 'profiles',
+            CONVERSATIONS: 'conversations',
+            MESSAGES: 'messages',
+            ACCOUNT_EVENTS: 'accountEvents',
+            CALL_LOGS: 'call_logs',
+            APP_ACTIVITY: 'app_activity',
+            CALL_LINKS: 'call_links',
+            FOLLOWS: 'follows',
+            MOMENTS: 'moments',
+            INTERACTIONS: 'interactions',
+            CONTACTS: 'contacts'
         }
     },
     BUCKETS: {
