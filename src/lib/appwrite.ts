@@ -61,7 +61,7 @@ export const KEEP_COLLECTION_ID_KEYCHAIN = APPWRITE_CONFIG.TABLES.VAULT.KEYCHAIN
 
 // Ecosystem: Kylrix Connect
 export const CONNECT_DATABASE_ID = APPWRITE_CONFIG.DATABASES.CHAT;
-export const CONNECT_COLLECTION_ID_USERS = 'users';
+export const CONNECT_COLLECTION_ID_USERS = APPWRITE_CONFIG.TABLES.CHAT.PROFILES;
 
 export const APPWRITE_BUCKET_PROFILE_PICTURES = APPWRITE_CONFIG.BUCKETS.PROFILE_PICTURES;
 export const APPWRITE_BUCKET_NOTES_ATTACHMENTS = APPWRITE_CONFIG.BUCKETS.NOTES_ATTACHMENTS;
@@ -72,6 +72,21 @@ export const APPWRITE_BUCKET_TEMP_UPLOADS = APPWRITE_CONFIG.BUCKETS.TEMP_UPLOADS
 export { client, account, databases, storage, functions, ID, Query, Permission, Role, OAuthProvider, realtime };
 
 export class AppwriteService {
+  static async getGlobalProfileStatus(userId: string) {
+    try {
+      const res = await databases.listDocuments(CONNECT_DATABASE_ID, CONNECT_COLLECTION_ID_USERS, [
+        Query.equal('userId', userId),
+        Query.limit(1)
+      ]);
+      if (res.total > 0) {
+        return { exists: true, profile: res.documents[0] };
+      }
+      return { exists: false, error: 'Not Found' };
+    } catch (e: unknown) {
+      return { exists: false, error: (e as any).message };
+    }
+  }
+
   static async hasMasterpass(userId: string): Promise<boolean> {
     try {
       const res = await databases.listDocuments(
