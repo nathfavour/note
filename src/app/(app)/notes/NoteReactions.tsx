@@ -84,24 +84,23 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
       if (existingReaction) {
         // Remove the existing reaction (either to toggle it off or replace it)
         await deleteReaction(existingReaction.$id);
+        setReactions((prev) => prev.filter((reaction) => reaction.$id !== existingReaction.$id));
         
         // If they clicked the SAME emoji, we stop here (standard toggle-off)
         if (existingReaction.emoji === emoji) {
-          await fetchReactions();
           return;
         }
       }
 
       // If they clicked a new emoji (or had no reaction), add it
-      await createReaction({
+      const createdReaction = await createReaction({
         targetType: targetType,
         targetId: targetId,
         emoji,
         userId: user.$id,
         createdAt: new Date().toISOString(),
       });
-      
-      await fetchReactions();
+      setReactions((prev) => [...prev, createdReaction as Reactions]);
     } catch (err: any) {
       console.error('Failed to update reaction:', err);
       setError('Failed to update reaction.');
