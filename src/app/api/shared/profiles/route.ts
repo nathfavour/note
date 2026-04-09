@@ -11,7 +11,7 @@ const rateLimiter = createRateLimiter({
 const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
 const APPWRITE_DATABASE_ID = APPWRITE_CONFIG.DATABASES.NOTE;
-const APPWRITE_TABLE_ID_USERS = APPWRITE_CONFIG.TABLES.NOTE.USERS;
+const APPWRITE_TABLE_ID_PROFILES = APPWRITE_CONFIG.TABLES.CHAT.PROFILES;
 
 export async function POST(req: NextRequest) {
   const { allowed, retryAfter } = rateLimiter(req);
@@ -46,10 +46,11 @@ export async function POST(req: NextRequest) {
 
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_TABLE_ID_USERS,
+      APPWRITE_TABLE_ID_PROFILES,
       [
         Query.equal('$id', targetIds),
         Query.limit(targetIds.length),
+        Query.select(['$id', 'name', 'username', 'avatar', 'profilePicId']),
       ]
     );
 

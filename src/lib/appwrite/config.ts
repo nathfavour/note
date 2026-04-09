@@ -13,7 +13,6 @@ export const APPWRITE_CONFIG = {
     },
     TABLES: {
         NOTE: {
-            USERS: '67ff05c900247b5673d3',
             NOTES: '67ff05f3002502ef239e',
             TAGS: '67ff06280034908cf08a',
             APIKEYS: '67ff064400263631ffe4',
@@ -26,11 +25,10 @@ export const APPWRITE_CONFIG = {
             SUBSCRIPTIONS: 'subscriptions',
             NOTE_TAGS: 'note_tags',
             NOTE_REVISIONS: 'note_revisions',
-            BLOGPOSTS: '67ff065a003e2bb950f7',
             WALLET_MAP: 'walletMap' // Added for WalletService
         },
         KYLRIXNOTE: { // Alias for WalletService
-            USERS: '67ff05c900247b5673d3',
+            PROFILES: 'profiles',
             ACTIVITY_LOG: 'activityLog',
             WALLET_MAP: 'walletMap'
         },
@@ -55,7 +53,6 @@ export const APPWRITE_CONFIG = {
             GUESTS: 'eventGuests'
         },
         CHAT: {
-            USERS: 'users',
             PROFILES: 'profiles',
             CONVERSATIONS: 'conversations',
             MESSAGES: 'messages',

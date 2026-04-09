@@ -155,7 +155,8 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                     Query.startsWith('username', cleaned.toLowerCase()),
                     Query.startsWith('displayName', cleaned)
                 ]),
-                Query.limit(limit)
+                Query.limit(limit),
+                Query.select(['$id', 'userId', 'username', 'displayName', 'bio', 'avatar', 'publicKey', 'tier', 'appsActive', '$createdAt', 'createdAt', 'last_username_edit'])
             ];
 
             const res = await databases.listDocuments(
@@ -187,7 +188,8 @@ export async function searchGlobalUsers(query: string, limit = 10) {
                     CONNECT_COLLECTION_ID_USERS,
                     [
                         Query.startsWith('username', cleaned.toLowerCase()),
-                        Query.limit(limit)
+                        Query.limit(limit),
+                        Query.select(['$id', 'userId', 'username', 'displayName', 'bio', 'avatar', 'publicKey', 'tier', 'appsActive', '$createdAt', 'createdAt', 'last_username_edit'])
                     ]
                 );
                 results = res.documents.map(doc => ({
@@ -211,10 +213,10 @@ export async function searchGlobalUsers(query: string, limit = 10) {
         // 2. Secondary Fallback: Search by 'name' (Fulltext index in note table)
         if (results.length < 5) {
             try {
-                const { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_USERS } = await import('../appwrite');
+                const { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_PROFILES } = await import('../appwrite');
                 const noteRes = await databases.listDocuments(
                     APPWRITE_DATABASE_ID,
-                    APPWRITE_TABLE_ID_USERS,
+                    APPWRITE_TABLE_ID_PROFILES,
                     [
                         Query.search('name', cleaned),
                         Query.limit(5)
