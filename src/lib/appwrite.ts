@@ -645,7 +645,7 @@ export async function createNote(data: Partial<Notes>) {
       ...noteData,
       id: docId, // Sync custom id attribute with Appwrite $id
       userId: user.$id,
-      searchTitle: buildSearchTitle(noteData.title),
+      searchTitle: buildSearchTitle(typeof noteData.title === "string" ? noteData.title : null),
       createdAt: now,
       updatedAt: now,
       attachments: null
@@ -766,7 +766,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const updatedAt = new Date().toISOString();
   const updatedData = filterNoteData({ ...cleanData, updatedAt: updatedAt });
   if (cleanData.title !== undefined) {
-    updatedData.searchTitle = buildSearchTitle(cleanData.title);
+    updatedData.searchTitle = buildSearchTitle(typeof cleanData.title === "string" ? cleanData.title : null);
   }
   
   const user = await getCurrentUser();
