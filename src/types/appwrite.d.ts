@@ -88,27 +88,6 @@ export enum CallsType {
     VIDEO = "video"
 }
 
-export enum AccountEventsType {
-    REFERRAL = "referral",
-    REPUTATION = "reputation",
-    REPORT = "report",
-    COUPON = "coupon",
-    USERNAME_CHANGE = "username_change",
-    VERIFICATION = "verification",
-    PROFILE_SYNC = "profile_sync"
-}
-
-export enum AccountEventsStatus {
-    PENDING = "pending",
-    ACTIVE = "active",
-    VERIFIED = "verified",
-    REJECTED = "rejected",
-    REDEEMED = "redeemed",
-    EXPIRED = "expired",
-    REVOKED = "revoked",
-    SYNCED = "synced"
-}
-
 export enum FormsStatus {
     DRAFT = "draft",
     PUBLISHED = "published",
@@ -157,19 +136,6 @@ export type Tags = Models.Row & {
     usageCount: number | null;
     userId: string | null;
     nameLower: string | null;
-}
-
-export type ApiKeys = Models.Row & {
-    id: string | null;
-    key: string | null;
-    name: string | null;
-    userId: string | null;
-    createdAt: string | null;
-    lastUsed: string | null;
-    expiresAt: string | null;
-    scopes: string[] | null;
-    lastUsedIp: string | null;
-    keyHash: string | null;
 }
 
 export type Comments = Models.Row & {
@@ -250,20 +216,6 @@ export type NoteRevisions = Models.Row & {
     diffFormat: string | null;
     fullSnapshot: boolean | null;
     cause: NoteRevisionsCause | null;
-}
-
-export type AiGenerations = Models.Row & {
-    userId: string;
-    promptHash: string | null;
-    prompt: string | null;
-    mode: string | null;
-    providerId: string | null;
-    model: string | null;
-    durationMs: number | null;
-    tokensUsed: number | null;
-    success: boolean | null;
-    error: string | null;
-    createdAt: string | null;
 }
 
 export type Subscriptions = Models.Row & {
@@ -501,6 +453,9 @@ export type Moments = Models.Row & {
     caption: string | null;
     createdAt: string;
     expiresAt: string;
+    momentKind: string | null;
+    sourceId: string | null;
+    searchTitle: string | null;
 }
 
 export type Calls = Models.Row & {
@@ -510,6 +465,8 @@ export type Calls = Models.Row & {
     startsAt: string | null;
     expiresAt: string | null;
     metadata: string | null;
+    receiverId: string | null;
+    conversationId: string | null;
 }
 
 export type Profiles = Models.Row & {
@@ -530,16 +487,9 @@ export type Epochs = Models.Row & {
     createdBy: string;
 }
 
-export type AccountEvents = Models.Row & {
+export type ConversationMembers = Models.Row & {
+    conversationId: string;
     userId: string;
-    type: AccountEventsType;
-    actorId: string;
-    relatedUserId: string | null;
-    delta: number | null;
-    discountPercent: number | null;
-    status: AccountEventsStatus | null;
-    expiresAt: string | null;
-    metadata: string | null;
 }
 
 export type FocusSessions = Models.Row & {
