@@ -16,7 +16,7 @@ import type {
 import { TargetType } from '../types/appwrite';
 
 import { APPWRITE_CONFIG } from './appwrite/config';
-import { getEcosystemUrl } from '@/constants/ecosystem';
+import { KYLRIX_AUTH_URI, getEcosystemUrl } from '@/constants/ecosystem';
 import { ecosystemSecurity } from './ecosystem/security';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
@@ -1822,7 +1822,7 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
 
     // Call our accounts server API to bypass client permission restrictions
     const jwt = await account.createJWT();
-    const response = await fetch(`${getEcosystemUrl('accounts')}/api/permissions`, {
+    const response = await fetch(`${KYLRIX_AUTH_URI}/api/permissions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1931,7 +1931,7 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
 
     // Call our server API to securely remove the user's DLS permissions
     const jwt = await account.createJWT();
-    const response = await fetch(`${getEcosystemUrl('accounts')}/api/permissions`, {
+    const response = await fetch(`${KYLRIX_AUTH_URI}/api/permissions`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
