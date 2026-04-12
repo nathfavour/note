@@ -12,6 +12,8 @@ import {
     Stack,
     InputAdornment,
     Divider,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import {
     Lock,
@@ -46,6 +48,8 @@ export function SudoModal({
 }: SudoModalProps) {
     const isOpen = _isOpen ?? open ?? false;
     const cancelHandler = onCancel ?? onClose ?? (() => {});
+    const theme = useTheme();
+    const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
     const { user, logout: _logout } = useAuth();
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -215,23 +219,23 @@ export function SudoModal({
         <Drawer
             open={isOpen}
             onClose={cancelHandler}
-            anchor="bottom"
+            anchor={isDesktop ? "right" : "bottom"}
             ModalProps={{ keepMounted: true, sx: { zIndex: 2200 } }}
             PaperProps={{
                 sx: {
-                    borderTopLeftRadius: '32px',
-                    borderTopRightRadius: '32px',
-                    borderBottomLeftRadius: 0,
+                    borderTopLeftRadius: isDesktop ? '32px' : '32px',
+                    borderTopRightRadius: isDesktop ? 0 : '32px',
+                    borderBottomLeftRadius: isDesktop ? '32px' : 0,
                     borderBottomRightRadius: 0,
                     bgcolor: '#161412',
                     backdropFilter: 'none',
                     border: '1px solid rgba(255, 255, 255, 0.06)',
                     backgroundImage: 'none',
                     boxShadow: '0 25px 50px rgba(0, 0, 0, 0.8)',
-                    width: '100%',
+                    width: isDesktop ? 'min(100vw, 420px)' : '100%',
                     maxWidth: '100vw',
-                    height: 'auto',
-                    maxHeight: 'calc(100dvh - 12px)',
+                    height: isDesktop ? '100dvh' : 'auto',
+                    maxHeight: isDesktop ? '100dvh' : 'calc(100dvh - 12px)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
