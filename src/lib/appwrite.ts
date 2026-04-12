@@ -1489,9 +1489,9 @@ export async function createCollaborator(data: Partial<Collaborators>) {
               existingCollaborator.$id,
               { permission }
             );
-            await updateNoteAccessForUser(noteId, userId, permission, 'grant');
             existingCollaborator.permission = permission;
           }
+          await updateNoteAccessForUser(noteId, userId, existingCollaborator.permission, 'grant');
           return existingCollaborator as any;
         }
       } catch (listErr) {
@@ -1510,7 +1510,12 @@ export async function createCollaborator(data: Partial<Collaborators>) {
   const created = await databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
 
   if (noteId && userId) {
-    await updateNoteAccessForUser(noteId, userId, permission, 'grant');
+    try {
+      await updateNoteAccessForUser(noteId, userId, permission, 'grant');
+    } catch (error) {
+      await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, created.$id);
+      throw error;
+    }
   }
 
   return created;
@@ -1526,7 +1531,12 @@ export async function updateCollaborator(collaboratorId: string, data: Partial<C
   const updated = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
 
   if (current.noteId && current.userId) {
-    await updateNoteAccessForUser(current.noteId, current.userId, nextPermission, 'grant');
+    try {
+      await updateNoteAccessForUser(current.noteId, current.userId, nextPermission, 'grant');
+    } catch (error) {
+      await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId, { permission: current.permission });
+      throw error;
+    }
   }
 
   return updated;
