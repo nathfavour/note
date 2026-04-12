@@ -1812,6 +1812,7 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
     if (!currentUser) throw new Error("User not authenticated");
 
     const note = await getNote(noteId);
+    const allowAnyoneEdit = isNoteEditableByAnyone(note);
     if (note.userId !== currentUser.$id) {
       throw new Error("Only note owner can share notes");
     }
@@ -1840,6 +1841,10 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to share note via API');
+    }
+
+    if (allowAnyoneEdit) {
+      await setAnyoneCanEdit(noteId, true);
     }
 
     return { success: true, message: `Note shared${emailForMessage ? ' with ' + emailForMessage : ''}` };
@@ -1925,6 +1930,7 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
 
     // Check if user owns the note
     const note = await getNote(noteId);
+    const allowAnyoneEdit = isNoteEditableByAnyone(note);
     if (note.userId !== currentUser.$id) {
       throw new Error("Only note owner can remove sharing");
     }
@@ -1948,6 +1954,10 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to remove share via API');
+    }
+
+    if (allowAnyoneEdit) {
+      await setAnyoneCanEdit(noteId, true);
     }
 
     return { success: true };
@@ -1990,6 +2000,7 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
       const perms = note.$permissions || [];
       if (perms.includes(`delete("user:${currentUser.$id}")`)) myPerm = 'admin';
       else if (perms.includes(`update("user:${currentUser.$id}")`)) myPerm = 'write';
+      else if (isNoteEditableByAnyone(note)) myPerm = 'write';
 
       note.sharedPermission = myPerm;
       note.sharedAt = note.$updatedAt || note.$createdAt; // Rough estimate since we don't track invite times anymore
@@ -2043,6 +2054,7 @@ export async function getNoteWithSharing(noteId: string): Promise<(Notes & { isS
       const perms = (note as any).$permissions || [];
       if (perms.includes(`delete("user:${currentUser.$id}")`)) sharePermission = 'admin';
       else if (perms.includes(`update("user:${currentUser.$id}")`)) sharePermission = 'write';
+      else if (isNoteEditableByAnyone(note)) sharePermission = 'write';
     }
 
     return {
@@ -2776,6 +2788,18 @@ export function getNotePublicState(note: Notes): boolean {
   return typeof note.isPublic === 'boolean' ? note.isPublic : isNotePublic(note);
 }
 
+export function isNoteEditableByAnyone(note: Notes): boolean {
+  if (!note) return false;
+  const permissions = (note as any).$permissions as string[] | undefined;
+  if (!permissions) return false;
+
+  return permissions.some((permission) =>
+    permission.includes('update("any")') ||
+    permission.includes('update("guests")') ||
+    permission.includes('update("role:all")')
+  );
+}
+
 export async function isNoteOwner(note: Notes): Promise<boolean> {
   const currentUser = await getCurrentUser();
   if (!currentUser) return false;
@@ -3133,6 +3157,7 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
     if (!currentUser) throw new Error('Not authenticated');
 
     const ownerId = note.userId || currentUser.$id;
+    const allowAnyoneEdit = isNoteEditableByAnyone(note);
     let decryptionKey: string | undefined = undefined;
     const updatePayload: any = { 
         isPublic: newIsPublic, 
@@ -3175,6 +3200,9 @@ export async function toggleNoteVisibility(noteId: string): Promise<(Notes & { d
     ];
     if (newIsPublic) {
       permissions.push(Permission.read(Role.any()));
+    }
+    if (allowAnyoneEdit) {
+      permissions.push(Permission.update(Role.any()));
     }
 
     const updated = await databases.updateDocument(
@@ -3279,6 +3307,42 @@ export async function validatePublicNoteAccess(noteId: string): Promise<Notes | 
   }
 }
 
+export async function setAnyoneCanEdit(noteId: string, enabled: boolean): Promise<Notes> {
+  const note = await getNote(noteId);
+  if (!(await isNoteOwner(note))) throw new Error('Permission denied');
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error('Not authenticated');
+
+  const ownerId = note.userId || currentUser.$id;
+  const permissions = new Set<string>((note as any).$permissions || []);
+
+  permissions.add(Permission.read(Role.user(ownerId)));
+  permissions.add(Permission.update(Role.user(ownerId)));
+  permissions.add(Permission.delete(Role.user(ownerId)));
+
+  if (isNotePublic(note)) {
+    permissions.add(Permission.read(Role.any()));
+  }
+
+  const editPermission = Permission.update(Role.any());
+  if (enabled) {
+    permissions.add(editPermission);
+  } else {
+    permissions.delete(editPermission);
+  }
+
+  const updated = await databases.updateDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_TABLE_ID_NOTES,
+    noteId,
+    {},
+    Array.from(permissions)
+  );
+
+  return updated as unknown as Notes;
+}
+
 const appwrite = {
   client,
   account,
@@ -3311,6 +3375,9 @@ const appwrite = {
   completePasswordReset,
   createNote,
   getNote,
+  getNotePublicState,
+  isNoteEditableByAnyone,
+  setAnyoneCanEdit,
   updateNote,
   deleteNote,
   toggleNoteVisibility,

@@ -34,10 +34,12 @@ import {
 import { 
   account, 
   shareNoteWithUser, 
-  shareNoteWithUserId, 
-  getSharedUsers, 
+  shareNoteWithUserId,
+  getSharedUsers,
   removeNoteSharing,
   toggleNoteVisibility,
+  setAnyoneCanEdit,
+  isNoteEditableByAnyone,
   getShareableUrl,
   getNote,
   getCurrentPublicNoteShareUrl
@@ -84,6 +86,8 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [updatingCollab, setUpdatingCollab] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(false);
+  const [allowAnyoneEdit, setAllowAnyoneEditState] = useState(false);
+  const [isUpdatingAnyoneEdit, setIsUpdatingAnyoneEdit] = useState(false);
   const [decryptionKey, setDecryptionKey] = useState<string | null>(null);
   const [publicShareUrl, setPublicShareUrl] = useState<string | null>(null);
   const { promptSudo } = useSudo();
@@ -91,13 +95,14 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
 
   useEffect(() => {
     if (isOpen && noteId) {
-      getNote(noteId).then(note => {
-        if (note) {
-          setIsPublic(!!note.isPublic);
-          try {
-            const meta = JSON.parse(note.metadata || '{}');
-            if (meta.isEncrypted) setDecryptionKey('********'); // Signal it's encrypted
-          } catch(_e) {}
+        getNote(noteId).then(note => {
+          if (note) {
+            setIsPublic(!!note.isPublic);
+            setAllowAnyoneEditState(isNoteEditableByAnyone(note));
+            try {
+              const meta = JSON.parse(note.metadata || '{}');
+              if (meta.isEncrypted) setDecryptionKey('********'); // Signal it's encrypted
+            } catch(_e) {}
           if (note.isPublic) {
             getCurrentPublicNoteShareUrl(noteId).then(setPublicShareUrl).catch(() => setPublicShareUrl(null));
           } else {
@@ -168,6 +173,8 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       setErrorMsg(null);
       setSuccessMsg(null);
       setPublicShareUrl(null);
+      setAllowAnyoneEditState(false);
+      setIsUpdatingAnyoneEdit(false);
     }
   }, [isOpen, loadSharedUsers]);
 
@@ -314,6 +321,22 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       setSharedUsers(prev => prev.map(u => u.id === collab.id ? { ...u, permission: prevPerm } : u));
     } finally {
       setUpdatingCollab(null);
+    }
+  };
+
+  const handleToggleAnyoneEdit = async () => {
+    resetMessages();
+    try {
+      setIsUpdatingAnyoneEdit(true);
+      const next = !allowAnyoneEdit;
+      await setAnyoneCanEdit(noteId, next);
+      setAllowAnyoneEditState(next);
+      setSuccessMsg(next ? 'Anyone can now edit this note' : 'Anyone edit disabled');
+    } catch (err: any) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
+      setErrorMsg(msg || 'Failed to update edit access');
+    } finally {
+      setIsUpdatingAnyoneEdit(false);
     }
   };
 
@@ -541,6 +564,49 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
           </Box>
         </Box>
 
+        <Box sx={{ mb: 4 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              borderRadius: '16px',
+              bgcolor: '#0A0908',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+              <Box>
+                <Typography variant="body2" sx={{ color: 'white', fontWeight: 800, fontFamily: 'var(--font-satoshi)' }}>
+                  Allow anyone edit
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.45)', fontFamily: 'var(--font-satoshi)' }}>
+                  Grants update access to anyone who can open the note.
+                </Typography>
+              </Box>
+              <Button
+                variant={allowAnyoneEdit ? 'contained' : 'outlined'}
+                onClick={() => void handleToggleAnyoneEdit()}
+                disabled={isUpdatingAnyoneEdit}
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 900,
+                  fontFamily: 'var(--font-clash)',
+                  bgcolor: allowAnyoneEdit ? '#10B981' : 'transparent',
+                  color: allowAnyoneEdit ? '#000' : 'white',
+                  borderColor: allowAnyoneEdit ? '#10B981' : 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': {
+                    bgcolor: allowAnyoneEdit ? '#34D399' : 'rgba(255, 255, 255, 0.05)',
+                    borderColor: allowAnyoneEdit ? '#34D399' : 'rgba(255, 255, 255, 0.2)',
+                  }
+                }}
+              >
+                {isUpdatingAnyoneEdit ? <CircularProgress size={16} color="inherit" /> : (allowAnyoneEdit ? 'Enabled' : 'Disabled')}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+
         <Box>
           <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 2, fontFamily: 'var(--font-clash)' }}>
             Collaborators
@@ -721,4 +787,3 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     </Dialog>
   );
 }
-

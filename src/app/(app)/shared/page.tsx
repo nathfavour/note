@@ -12,6 +12,7 @@ import {
   Tabs,
   Tab,
   Grid,
+  Chip,
   CircularProgress,
   Container,
   IconButton
@@ -204,15 +205,30 @@ export default function SharedNotesPage() {
         ) : (
           <Grid container spacing={3}>
             {currentNotes.map((note) => (
-              <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={note.$id}>
-                <NoteCard note={note} />
-                {activeTab === 0 && (note as SharedNote).sharedBy && (
-                  <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary', textAlign: 'center' }}>
-                    Shared by {(note as SharedNote).sharedBy?.name || (note as SharedNote).sharedBy?.email}
-                  </Typography>
-                )}
-              </Grid>
-            ))}
+                <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={note.$id}>
+                  <NoteCard note={note} />
+                  {activeTab === 0 && (note as SharedNote).sharedBy && (
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary', textAlign: 'center' }}>
+                      Shared by {(note as SharedNote).sharedBy?.name || (note as SharedNote).sharedBy?.email}
+                    </Typography>
+                  )}
+                  {activeTab === 0 && ['write', 'admin'].includes(String((note as SharedNote).sharedPermission || '')) && (
+                    <Chip
+                      size="small"
+                      label="Editable"
+                      sx={{
+                        display: 'flex',
+                        mx: 'auto',
+                        mt: 1,
+                        width: 'fit-content',
+                        bgcolor: 'rgba(16, 185, 129, 0.12)',
+                        color: '#10B981',
+                        fontWeight: 800,
+                      }}
+                    />
+                  )}
+                </Grid>
+              ))}
           </Grid>
         )}
       </Container>

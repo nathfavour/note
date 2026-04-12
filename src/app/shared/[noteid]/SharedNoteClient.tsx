@@ -25,11 +25,13 @@ import {
   listNotes,
   realtime,
   APPWRITE_DATABASE_ID,
-  APPWRITE_TABLE_ID_NOTES
+  APPWRITE_TABLE_ID_NOTES,
+  isNoteEditableByAnyone
 } from '@/lib/appwrite';
 import { useToast } from '@/components/ui/Toast';
 import {
   Box,
+  Chip,
   Typography,
   Button,
   Container,
@@ -337,6 +339,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const CACHE_KEY = useMemo(() => `public_note_${noteId}`, [noteId]);
   const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days standard
   const GHOST_NOTE_TTL = 1000 * 60 * 60 * 24 * 30; // 30 days "infinite" for ghosts
+  const isEditableByAnyone = useMemo(() => isNoteEditableByAnyone(verifiedNote as Notes), [verifiedNote]);
 
   const fetchSharedNote = useCallback(async (forceRefresh: boolean = false) => {
     if (!forceRefresh) {
@@ -774,6 +777,18 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
               <EyeIcon sx={{ fontSize: 16 }} />
               <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'var(--font-satoshi)' }}>Public Note</Typography>
             </Box>
+            {isEditableByAnyone && (
+              <Chip
+                label="Editable"
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(16, 185, 129, 0.12)',
+                  color: '#10B981',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-satoshi)',
+                }}
+              />
+            )}
             {authorProfile && (
               <MuiLink 
                 component={NextLink}
