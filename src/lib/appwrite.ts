@@ -1463,11 +1463,13 @@ export async function deleteReactionsForTarget(targetType: TargetType, targetId:
 // --- COLLABORATORS CRUD ---
 
 export async function createCollaborator(data: Partial<Collaborators>) {
+  const noteId = data.noteId;
+  const userId = data.userId;
+  const permission = (data.permission as NoteCollaboratorPermission | undefined) ?? 'read';
+
   // Duplicate guard: unique per (noteId,userId)
   try {
-    if (data && (data as any).noteId && (data as any).userId) {
-      const noteId = (data as any).noteId;
-      const userId = (data as any).userId;
+    if (noteId && userId) {
       try {
         const existing = await databases.listDocuments(
           APPWRITE_DATABASE_ID,
@@ -1479,36 +1481,39 @@ export async function createCollaborator(data: Partial<Collaborators>) {
           ] as any
         );
         if (existing.documents.length) {
-          // Optionally update permission if provided and different
-          if ((data as any).permission && existing.documents[0].permission !== (data as any).permission) {
-            try {
-              await databases.updateDocument(
-                APPWRITE_DATABASE_ID,
-                APPWRITE_TABLE_ID_COLLABORATORS,
-                existing.documents[0].$id,
-                { permission: (data as any).permission }
-              );
-              (existing.documents[0] as any).permission = (data as any).permission;
-            } catch (upErr) {
-              console.error('createCollaborator permission sync failed', upErr);
-            }
+          const existingCollaborator = existing.documents[0] as Collaborators;
+          if (existingCollaborator.permission !== permission) {
+            await databases.updateDocument(
+              APPWRITE_DATABASE_ID,
+              APPWRITE_TABLE_ID_COLLABORATORS,
+              existingCollaborator.$id,
+              { permission }
+            );
+            await updateNoteAccessForUser(noteId, userId, permission, 'grant');
+            existingCollaborator.permission = permission;
           }
-          return existing.documents[0] as any;
+          return existingCollaborator as any;
         }
       } catch (listErr) {
         console.error('createCollaborator duplicate guard list failed', listErr);
       }
-      if (!(data as any).invitedAt) {
-        (data as any).invitedAt = new Date().toISOString();
+      if (!data.invitedAt) {
+        data.invitedAt = new Date().toISOString();
       }
-      if (typeof (data as any).accepted === 'undefined') {
-        (data as any).accepted = true;
+      if (typeof data.accepted === 'undefined') {
+        data.accepted = true;
       }
     }
   } catch (guardErr) {
     console.error('createCollaborator duplicate guard failed', guardErr);
   }
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
+  const created = await databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
+
+  if (noteId && userId) {
+    await updateNoteAccessForUser(noteId, userId, permission, 'grant');
+  }
+
+  return created;
 }
 
 export async function getCollaborator(collaboratorId: string): Promise<Collaborators> {
@@ -1516,10 +1521,24 @@ export async function getCollaborator(collaboratorId: string): Promise<Collabora
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
+  const current = await getCollaborator(collaboratorId);
+  const nextPermission = (data.permission as NoteCollaboratorPermission | undefined) ?? current.permission;
+  const updated = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
+
+  if (current.noteId && current.userId) {
+    await updateNoteAccessForUser(current.noteId, current.userId, nextPermission, 'grant');
+  }
+
+  return updated;
 }
 
 export async function deleteCollaborator(collaboratorId: string) {
+  const current = await getCollaborator(collaboratorId);
+
+  if (current.noteId && current.userId) {
+    await updateNoteAccessForUser(current.noteId, current.userId, current.permission as NoteCollaboratorPermission, 'revoke');
+  }
+
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId);
 }
 
@@ -1855,27 +1874,7 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
       throw new Error("Cannot share a note with yourself");
     }
 
-    // Call our accounts server API to bypass client permission restrictions
-    const jwt = await account.createJWT();
-    const response = await fetch(`${KYLRIX_AUTH_URI}/api/permissions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwt.jwt}`
-      },
-      body: JSON.stringify({
-        databaseId: APPWRITE_DATABASE_ID,
-        tableId: APPWRITE_TABLE_ID_NOTES,
-        rowId: noteId,
-        targetUserId,
-        permission
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to share note via API');
-    }
+    await updateNoteAccessForUser(noteId, targetUserId, permission, 'grant');
 
     if (allowAnyoneEdit) {
       await setAnyoneCanEdit(noteId, true);
@@ -1969,26 +1968,7 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
       throw new Error("Only note owner can remove sharing");
     }
 
-    // Call our server API to securely remove the user's DLS permissions
-    const jwt = await account.createJWT();
-    const response = await fetch(`${KYLRIX_AUTH_URI}/api/permissions`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwt.jwt}`
-      },
-      body: JSON.stringify({
-        databaseId: APPWRITE_DATABASE_ID,
-        tableId: APPWRITE_TABLE_ID_NOTES,
-        rowId: noteId,
-        targetUserId
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to remove share via API');
-    }
+    await updateNoteAccessForUser(noteId, targetUserId, 'read', 'revoke');
 
     if (allowAnyoneEdit) {
       await setAnyoneCanEdit(noteId, true);
