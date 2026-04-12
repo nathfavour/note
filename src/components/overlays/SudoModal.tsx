@@ -231,8 +231,8 @@ export function SudoModal({
                     boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
                     width: '100%',
                     maxWidth: '100vw',
-                    height: '40dvh',
-                    maxHeight: '40dvh',
+                    height: 'auto',
+                    maxHeight: 'calc(100dvh - 12px)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
@@ -251,7 +251,7 @@ export function SudoModal({
                     100% { transform: scale(1); opacity: 1; }
                 }
             `}</style>
-            <Box sx={{ position: 'relative', px: 3, pt: 2, pb: 1, flex: '0 0 auto' }}>
+            <Box sx={{ position: 'relative', px: { xs: 2.5, sm: 3 }, pt: { xs: 1.5, sm: 2 }, pb: 1, flex: '0 0 auto' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
                     <Box sx={{
                         width: 44,
@@ -264,7 +264,7 @@ export function SudoModal({
                     <Box sx={{ position: 'relative' }}>
                         <Logo 
                             variant="icon" 
-                            size={52} 
+                            size={48} 
                             app="note"
                             sx={{
                                 borderRadius: '18px',
@@ -289,7 +289,7 @@ export function SudoModal({
                             border: '3px solid #0a0a0a',
                             zIndex: 1
                         }}>
-                            <Lock size={12} strokeWidth={3} />
+                            <Lock size={11} strokeWidth={3} />
                         </Box>
                     </Box>
                     <Box sx={{ minWidth: 0 }}>
@@ -311,13 +311,13 @@ export function SudoModal({
 
             <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
-            <Box sx={{ px: 3, py: 2, flex: '1 1 auto', minHeight: 0, overflowY: 'auto', pb: 'calc(16px + env(safe-area-inset-bottom))' }}>
+            <Box sx={{ px: { xs: 2.5, sm: 3 }, py: { xs: 1.5, sm: 2 }, flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarGutter: 'stable', pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
                 {isDetecting || (loading && !password) ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 2.5 }}>
                         <CircularProgress sx={{ color: "#A855F7" }} />
                     </Box>
                 ) : mode === "passkey" ? (
-                    <Stack spacing={3} sx={{ mt: 2, alignItems: "center" }}>
+                    <Stack spacing={2} sx={{ mt: 1.5, alignItems: "center" }}>
                         <Box
                             onClick={handlePasskeyVerify}
                             sx={{
@@ -372,22 +372,12 @@ export function SudoModal({
                             </Box>
                         </Box>
 
-                        <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.3)", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                            {passkeyLoading ? "CONFIRM ON DEVICE" : "TAP TO VERIFY"}
-                        </Typography>
-
-                        <Button
-                            fullWidth
-                            variant="text"
-                            size="small"
-                            onClick={() => setMode("password")}
-                            sx={{ color: "rgba(255, 255, 255, 0.5)", "&:hover": { color: "white" } }}
-                        >
-                            Use Master Password
-                        </Button>
+                            <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.3)", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                                {passkeyLoading ? "CONFIRM ON DEVICE" : "TAP TO VERIFY"}
+                            </Typography>
                     </Stack>
                 ) : (
-                    <Stack spacing={3} component="form" onSubmit={handlePasswordVerify}>
+                    <Stack spacing={2.25} component="form" onSubmit={handlePasswordVerify}>
                         <Box>
                             <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.4)", fontWeight: 600, mb: 1, display: "block" }}>
                                 MASTER PASSWORD
@@ -450,55 +440,40 @@ export function SudoModal({
                             {loading ? <CircularProgress size={24} color="inherit" /> : "Verify Identity"}
                         </Button>
 
-                        {hasPasskey && (mode as any) !== "passkey" && (
-                            <Button
-                                fullWidth
-                                variant="text"
-                                startIcon={<Fingerprint size={18} />}
-                                onClick={() => {
-                                    setMode("passkey");
-                                }}
-                                sx={{
-                                    color: "rgba(255, 255, 255, 0.6)",
-                                    py: 1.5,
-                                    borderRadius: "14px",
-                                    border: "1px solid rgba(255, 255, 255, 0.05)",
-                                    textTransform: "none",
-                                    fontFamily: "var(--font-satoshi)",
-                                    fontWeight: 600,
-                                    "&:hover": { color: "white", bgcolor: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.15)" },
-                                    mt: 1
-                                }}
-                            >
-                                Use Passkey
-                            </Button>
-                        )}
-
-                        {mode === "password" && (
-                            <Button
-                                fullWidth
-                                variant="text"
-                                size="small"
-                                onClick={() => {
-                                    const callbackUrl = encodeURIComponent(window.location.href);
-                                    window.location.href = `https://vault.kylrix.space/masterpass/reset?callbackUrl=${callbackUrl}`;
-                                }}
-                                sx={{
-                                    color: "error.main",
-                                    fontSize: "0.75rem",
-                                    mt: 1,
-                                    "&:hover": { bgcolor: alpha("#ef4444", 0.1) },
-                                    textTransform: "none",
-                                    fontWeight: 600
-                                }}
-                            >
-                                Reset Master Password
-                            </Button>
-                        )}
                     </Stack>
                 )
             }
             </Box>
+            {mode === "passkey" && (
+                <Box sx={{
+                    flex: '0 0 auto',
+                    px: { xs: 2.5, sm: 3 },
+                    pb: 'calc(12px + env(safe-area-inset-bottom))',
+                    pt: 1.5,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    bgcolor: 'rgba(5, 5, 5, 0.06)'
+                }}>
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Fingerprint size={18} />}
+                        onClick={() => setMode("password")}
+                        sx={{
+                            minHeight: 46,
+                            color: "white",
+                            borderColor: "rgba(255, 255, 255, 0.12)",
+                            borderRadius: "14px",
+                            textTransform: "none",
+                            fontFamily: "var(--font-satoshi)",
+                            fontWeight: 700,
+                            bgcolor: "rgba(255, 255, 255, 0.03)",
+                            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.06)", borderColor: "rgba(255, 255, 255, 0.25)" }
+                        }}
+                    >
+                        Use Master Password
+                    </Button>
+                </Box>
+            )}
         </Drawer>
     );
 }
