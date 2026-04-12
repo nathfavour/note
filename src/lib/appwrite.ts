@@ -1481,17 +1481,17 @@ export async function createCollaborator(data: Partial<Collaborators>) {
         );
         if (existing.documents.length) {
           const existingCollaborator = existing.documents[0] as unknown as Collaborators;
-          if (existingCollaborator.permission !== permission) {
+          const existingPermission = existingCollaborator.permission as unknown as NoteCollaboratorPermission;
+          if (existingPermission !== permission) {
             await databases.updateDocument(
               APPWRITE_DATABASE_ID,
               APPWRITE_TABLE_ID_COLLABORATORS,
               existingCollaborator.$id,
               { permission }
             );
-            existingCollaborator.permission = permission;
           }
-          await updateNoteAccessForUser(noteId, userId, existingCollaborator.permission, 'grant');
-          return existingCollaborator as any;
+          await updateNoteAccessForUser(noteId, userId, permission, 'grant');
+          return { ...existingCollaborator, permission } as unknown as Collaborators;
         }
       } catch (listErr) {
         console.error('createCollaborator duplicate guard list failed', listErr);

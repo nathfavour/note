@@ -554,7 +554,6 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     isAuthenticated,
     setCachedData,
     user?.$id,
-    key,
     invalidate,
     normalizeSharedNote,
     parseSharedNoteMeta,
