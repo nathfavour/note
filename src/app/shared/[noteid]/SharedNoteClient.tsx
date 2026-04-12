@@ -41,7 +41,6 @@ import {
   Menu,
   MenuItem,
   Divider,
-  Chip,
   CircularProgress,
   AppBar,
   Toolbar,
@@ -341,8 +340,64 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const GHOST_NOTE_TTL = 1000 * 60 * 60 * 24 * 30; // 30 days "infinite" for ghosts
   const isEditableByAnyone = useMemo(() => isNoteEditableByAnyone(verifiedNote as Notes), [verifiedNote]);
 
+  const decryptSharedNote = useCallback(async (note: Notes) => {
+    const meta = (() => {
+      try {
+        return JSON.parse(note.metadata || '{}');
+      } catch {
+        return {};
+      }
+    })();
+
+    if (!meta.isEncrypted) {
+      return note;
+    }
+
+    if (!key) {
+      throw new Error('This note is encrypted and requires a valid decryption key in the URL to view its contents.');
+    }
+
+    if (meta.encryptionVersion === 'T4') {
+      const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyBuffer as any,
+        { name: 'AES-GCM', length: 256 },
+        true,
+        ['decrypt']
+      );
+
+      return {
+        ...note,
+        title: await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || note.title || '', cryptoKey),
+        content: await ecosystemSecurity.decryptWithKey(note.content || '', cryptoKey),
+      };
+    }
+
+    return {
+      ...note,
+      title: await decryptGhostData(note.title || '', key),
+      content: await decryptGhostData(note.content || '', key),
+    };
+  }, [key]);
+
+  const normalizeSharedNote = useCallback(async (note: Notes) => {
+    const decrypted = await decryptSharedNote(note);
+    const meta = (() => {
+      try {
+        return JSON.parse(decrypted.metadata || '{}');
+      } catch {
+        return {};
+      }
+    })();
+    return {
+      ...decrypted,
+      metadata: JSON.stringify({ ...meta, clientDecrypted: true }),
+    };
+  }, [decryptSharedNote]);
+
   const fetchSharedNote = useCallback(async (forceRefresh: boolean = false) => {
-    if (!forceRefresh) {
+      if (!forceRefresh) {
       // 1. Owner Detection: Check if we already have this note in our private notes cache
       if (isAuthenticated && user?.$id) {
         const privateCached = getCachedData<Notes>(`note_${noteId}`);
@@ -357,28 +412,12 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       // 2. Check DataNexus public cache
       const cached = getCachedData<Notes>(CACHE_KEY);
       if (cached) {
-          // If encrypted, we need to decrypt even if cached
-          const finalNote = { ...cached };
           try {
-            const meta = JSON.parse(finalNote.metadata || '{}');
-            if (meta.isEncrypted && key) {
-              if (meta.encryptionVersion === 'T4') {
-                const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
-                const cryptoKey = await crypto.subtle.importKey(
-                  'raw', keyBuffer as any, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
-                );
-                finalNote.title = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || finalNote.title || '', cryptoKey);
-                finalNote.content = await ecosystemSecurity.decryptWithKey(finalNote.content || '', cryptoKey);
-              } else {
-                finalNote.title = await decryptGhostData(finalNote.title || '', key);
-                finalNote.content = await decryptGhostData(finalNote.content || '', key);
-              }
-            }
-          } catch(_e) {
+            const finalNote = await normalizeSharedNote(cached);
+            setVerifiedNote(finalNote);
+          } catch (_e) {
             console.error("Cache decryption failed", _e);
           }
-
-          setVerifiedNote(finalNote);
           setIsLoadingNote(false);
           // If it's a ghost note, we're mathematically sure it hasn't changed
           try {
@@ -441,28 +480,15 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
         
         // HANDLE DECRYPTION
         if (meta.isEncrypted) {
-            if (key) {
-                try {
-                    if (meta.encryptionVersion === 'T4') {
-                        const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
-                        const cryptoKey = await crypto.subtle.importKey(
-                          'raw', keyBuffer as any, { name: 'AES-GCM', length: 256 }, true, ['decrypt']
-                        );
-                        note.title = await ecosystemSecurity.decryptWithKey(meta.encryptedTitle || note.title || '', cryptoKey);
-                        note.content = await ecosystemSecurity.decryptWithKey(note.content || '', cryptoKey);
-                    } else {
-                        note.title = await decryptGhostData(note.title || '', key);
-                        note.content = await decryptGhostData(note.content || '', key);
-                    }
-                } catch (decErr) {
-                    console.error("Decryption failed", decErr);
-                    throw new Error("This note is encrypted and the provided key is invalid.");
-                }
-            } else {
-                // No key provided for an encrypted note
-                note.title = "🔒 Encrypted Note";
-                note.content = "This note is encrypted and requires a valid decryption key in the URL to view its contents.";
-            }
+          try {
+            const decrypted = await normalizeSharedNote(note);
+            note.title = decrypted.title;
+            note.content = decrypted.content;
+            note.metadata = decrypted.metadata;
+          } catch (decErr) {
+            console.error("Decryption failed", decErr);
+            throw new Error("This note is encrypted and the provided key is invalid.");
+          }
         }
 
         if (meta.isGhost) {
@@ -534,14 +560,20 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_TABLE_ID_NOTES}.documents.${noteId}`;
 
     const sub = realtime.subscribe(channel, (response) => {
-      const payload = response.payload as Notes;
       const isUpdate = response.events.some(e => e.endsWith('.update'));
       const isDelete = response.events.some(e => e.endsWith('.delete'));
 
       if (isUpdate) {
-        // Aggressively update local state and cache
-        setVerifiedNote(payload);
-        setCachedData(CACHE_KEY, payload);
+        void (async () => {
+          const payload = response.payload as Notes;
+          try {
+            const decrypted = await normalizeSharedNote(payload);
+            setVerifiedNote(decrypted);
+            setCachedData(CACHE_KEY, decrypted);
+          } catch (error) {
+            console.error('Failed to normalize shared note update', error);
+          }
+        })();
       } else if (isDelete) {
         setError('This note has been deleted by the owner.');
         setVerifiedNote(null);
@@ -557,7 +589,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
         (sub as any).unsubscribe();
       }
     };
-  }, [noteId, CACHE_KEY, setCachedData]);
+  }, [noteId, CACHE_KEY, setCachedData, normalizeSharedNote]);
 
   // Check if note is already duplicated in user collection
   useEffect(() => {    if (!isAuthenticated || !verifiedNote || !user) return;

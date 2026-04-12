@@ -1407,11 +1407,10 @@ export async function createReaction(data: Partial<Reactions>) {
   const permissions = userId
     ? [
         Permission.read(isTargetPublic ? Role.any() : Role.user(userId)),
-        ...(isTargetPublic ? [Permission.read(Role.guests())] : []),
         Permission.update(Role.user(userId)),
         Permission.delete(Role.user(userId)),
       ]
-    : [Permission.read(Role.any()), Permission.read(Role.guests())];
+    : [Permission.read(Role.any())];
   return databases.createDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_TABLE_ID_REACTIONS,
@@ -3148,7 +3147,7 @@ async function syncNoteVisibilityChildren(noteId: string, ownerId: string, isPub
           const reactionUserId = reaction.userId || ownerId;
           const permissions = [
             Permission.read(Role.user(ownerId)),
-            ...(isPublic ? [Permission.read(Role.any()), Permission.read(Role.guests())] : []),
+            ...(isPublic ? [Permission.read(Role.any())] : []),
             Permission.update(Role.user(reactionUserId)),
             Permission.delete(Role.user(reactionUserId))
           ];
