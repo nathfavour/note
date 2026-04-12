@@ -223,11 +223,11 @@ export function SudoModal({
                     borderTopRightRadius: '32px',
                     borderBottomLeftRadius: 0,
                     borderBottomRightRadius: 0,
-                    bgcolor: 'rgba(5, 5, 5, 0.03)',
-                    backdropFilter: 'blur(25px) saturate(180%)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    bgcolor: '#161412',
+                    backdropFilter: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                     backgroundImage: 'none',
-                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.8)',
                     width: '100%',
                     maxWidth: '100vw',
                     height: 'auto',
@@ -250,7 +250,7 @@ export function SudoModal({
                     100% { transform: scale(1); opacity: 1; }
                 }
             `}</style>
-            <Box sx={{ position: 'relative', px: { xs: 2.5, sm: 3 }, pt: { xs: 1.5, sm: 2 }, pb: 1, flex: '0 0 auto' }}>
+            <Box sx={{ position: 'relative', px: { xs: 2.5, sm: 3 }, pt: { xs: 1.5, sm: 2 }, pb: 1, flex: '0 0 auto', bgcolor: '#161412' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
                     <Box sx={{
                         width: 44,
@@ -310,7 +310,7 @@ export function SudoModal({
 
             <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
-            <Box sx={{ px: { xs: 2.5, sm: 3 }, py: { xs: 1.5, sm: 2 }, flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarGutter: 'stable', pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
+            <Box sx={{ px: { xs: 2.5, sm: 3 }, py: { xs: 1.5, sm: 2 }, flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarGutter: 'stable', pb: 'calc(8px + env(safe-area-inset-bottom))', bgcolor: '#161412' }}>
                 {isDetecting || (loading && !password) ? (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 2.5 }}>
                         <CircularProgress sx={{ color: "#A855F7" }} />
@@ -450,7 +450,7 @@ export function SudoModal({
                     pb: 'calc(12px + env(safe-area-inset-bottom))',
                     pt: 1.5,
                     borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                    bgcolor: 'rgba(5, 5, 5, 0.06)'
+                    bgcolor: '#161412'
                 }}>
                     <Button
                         fullWidth
