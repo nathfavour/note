@@ -75,6 +75,40 @@ export const APPWRITE_BUCKET_TEMP_UPLOADS = APPWRITE_CONFIG.BUCKETS.TEMP_UPLOADS
 
 export { client, account, databases, storage, functions, ID, Query, Permission, Role, OAuthProvider, realtime };
 
+type PermissionUpdateAction = 'grant' | 'revoke';
+type NoteCollaboratorPermission = 'read' | 'write' | 'admin';
+
+async function updateNoteAccessForUser(
+  noteId: string,
+  targetUserId: string,
+  permission: NoteCollaboratorPermission,
+  action: PermissionUpdateAction = 'grant'
+) {
+  const jwt = await account.createJWT();
+  const response = await fetch(`${KYLRIX_AUTH_URI}/api/permissions`, {
+    method: action === 'grant' ? 'POST' : 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${jwt.jwt}`,
+    },
+    body: JSON.stringify({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId,
+      targetUserIds: [targetUserId],
+      permission,
+      action,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to update note permissions');
+  }
+
+  return response.json().catch(() => ({}));
+}
+
 export class AppwriteService {
   static async getGlobalProfileStatus(userId: string) {
     try {
