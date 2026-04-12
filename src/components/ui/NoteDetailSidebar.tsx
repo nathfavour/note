@@ -135,6 +135,7 @@ export function NoteDetailSidebar({
   const titleInputRef = useRef<HTMLInputElement>(null);
   const isEncryptedNote = !!noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4' && !noteMeta?.clientDecrypted;
   const isT4EncryptedPublicNote = !!isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
+  const isLegacyPublicNote = !!isPublic && !isT4EncryptedPublicNote;
   
   // Fetch linked tasks from Kylrix Flow
   useEffect(() => {
@@ -590,19 +591,21 @@ export function NoteDetailSidebar({
   };
 
   const handleCopyShareLink = async () => {
-    const shareUrl = isPublic ? await getCurrentPublicNoteShareUrl(liveNote.$id) : null;
-    if (isPublic && !shareUrl) {
+    if (!isPublic) return;
+
+    if (isLegacyPublicNote) {
+      navigator.clipboard.writeText(getShareableUrl(liveNote.$id));
+      showSuccess('Share link copied to clipboard');
+      return;
+    }
+
+    const shareUrl = await getCurrentPublicNoteShareUrl(liveNote.$id);
+    if (!shareUrl) {
       showError('Vault Locked', 'Unlock vault to copy the current public link.');
       return;
     }
-    const finalUrl = shareUrl || getShareableUrl(liveNote.$id, lastT4Key || undefined);
-    navigator.clipboard.writeText(finalUrl);
-
-    if (!shareUrl && !lastT4Key) {
-      showSuccess('Base link copied', 'Note is encrypted. Use public link with key for others to view.');
-    } else {
-      showSuccess('Share link copied to clipboard');
-    }
+    navigator.clipboard.writeText(shareUrl);
+    showSuccess('Share link copied to clipboard');
   };
 
   const handleRotatePublicLink = async () => {
@@ -719,7 +722,7 @@ export function NoteDetailSidebar({
             </IconButton>
           </Tooltip>
 
-          {isPublic && (
+          {isT4EncryptedPublicNote && (
             <Tooltip title="Change public link">
               <IconButton
                 onClick={handleRotatePublicLink}
@@ -1481,4 +1484,3 @@ export function NoteDetailSidebar({
     </Box>
   );
 }
-
