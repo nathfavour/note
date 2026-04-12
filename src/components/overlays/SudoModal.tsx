@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    Drawer,
     Typography,
     Button,
     TextField,
@@ -13,9 +10,9 @@ import {
     IconButton,
     CircularProgress,
     Stack,
-    Fade,
     alpha,
     InputAdornment,
+    Divider,
 } from "@mui/material";
 import {
     Lock,
@@ -216,23 +213,30 @@ export function SudoModal({
     }
 
     return (
-        <Dialog
+        <Drawer
             open={isOpen}
             onClose={cancelHandler}
-            maxWidth="xs"
-            fullWidth
-            TransitionComponent={Fade}
+            anchor="bottom"
+            ModalProps={{ keepMounted: true, sx: { zIndex: 2200 } }}
             PaperProps={{
                 sx: {
-                    borderRadius: '32px',
+                    borderTopLeftRadius: '32px',
+                    borderTopRightRadius: '32px',
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
                     bgcolor: 'rgba(5, 5, 5, 0.03)',
                     backdropFilter: 'blur(25px) saturate(180%)',
                     border: '1px solid rgba(255, 255, 255, 0.08)',
                     backgroundImage: 'none',
                     boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
                     width: '100%',
-                    maxWidth: '400px',
-                    overflow: 'hidden'
+                    maxWidth: '100vw',
+                    height: '40dvh',
+                    maxHeight: '40dvh',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: 2201,
                 }
             }}
         >
@@ -247,12 +251,20 @@ export function SudoModal({
                     100% { transform: scale(1); opacity: 1; }
                 }
             `}</style>
-            <DialogTitle sx={{ textAlign: 'center', pt: 6, pb: 1, position: 'relative' }}>
-                <Box sx={{ position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)' }}>
+            <Box sx={{ position: 'relative', px: 3, pt: 2, pb: 1, flex: '0 0 auto' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+                    <Box sx={{
+                        width: 44,
+                        height: 5,
+                        borderRadius: 999,
+                        bgcolor: 'rgba(255, 255, 255, 0.18)',
+                    }} />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ position: 'relative' }}>
                         <Logo 
                             variant="icon" 
-                            size={64} 
+                            size={52} 
                             app="note"
                             sx={{
                                 borderRadius: '18px',
@@ -265,8 +277,8 @@ export function SudoModal({
                             position: 'absolute',
                             bottom: -6,
                             right: -6,
-                            width: 28,
-                            height: 28,
+                            width: 24,
+                            height: 24,
                             borderRadius: '8px',
                             bgcolor: '#A855F7',
                             color: 'white',
@@ -277,26 +289,29 @@ export function SudoModal({
                             border: '3px solid #0a0a0a',
                             zIndex: 1
                         }}>
-                            <Lock size={14} strokeWidth={3} />
+                            <Lock size={12} strokeWidth={3} />
                         </Box>
                     </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="h6" sx={{
+                            fontWeight: 900,
+                            letterSpacing: "-0.04em",
+                            fontFamily: "var(--font-clash)",
+                            color: "white",
+                            lineHeight: 1.1
+                        }}>
+                            {user?.name || "User"}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.4)", mt: 0.5, fontFamily: "var(--font-satoshi)", fontWeight: 600 }}>
+                            Enter MasterPass to continue
+                        </Typography>
+                    </Box>
                 </Box>
+            </Box>
 
-                <Typography variant="h5" sx={{
-                    fontWeight: 900,
-                    letterSpacing: "-0.04em",
-                    fontFamily: "var(--font-clash)",
-                    color: "white",
-                    mt: 4
-                }}>
-                    {user?.name || "User"}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.4)", mt: 1, fontFamily: "var(--font-satoshi)", fontWeight: 600 }}>
-                    Enter MasterPass to continue
-                </Typography>
-            </DialogTitle>
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
-            <DialogContent sx={{ pb: 4 }}>
+            <Box sx={{ px: 3, py: 2, flex: '1 1 auto', minHeight: 0, overflowY: 'auto', pb: 'calc(16px + env(safe-area-inset-bottom))' }}>
                 {isDetecting || (loading && !password) ? (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                         <CircularProgress sx={{ color: "#A855F7" }} />
@@ -483,11 +498,7 @@ export function SudoModal({
                     </Stack>
                 )
             }
-        </DialogContent>
-
-            <DialogActions sx={{ flexDirection: 'column', p: 4, pt: 0, gap: 2 }}>
-                {/* No logout here */}
-            </DialogActions>
-        </Dialog>
+            </Box>
+        </Drawer>
     );
 }

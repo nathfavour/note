@@ -340,7 +340,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const GHOST_NOTE_TTL = 1000 * 60 * 60 * 24 * 30; // 30 days "infinite" for ghosts
   const isEditableByAnyone = useMemo(() => isNoteEditableByAnyone(verifiedNote as Notes), [verifiedNote]);
 
-  const decryptSharedNote = useCallback(async (note: Notes) => {
+  const parseSharedNoteMeta = useCallback((note: Notes) => {
     const meta = (() => {
       try {
         return JSON.parse(note.metadata || '{}');
@@ -348,8 +348,24 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
         return {};
       }
     })();
+    return meta;
+  }, []);
 
-    if (!meta.isEncrypted) {
+  const looksEncryptedPayload = useCallback((value?: string | null) => {
+    if (!value) return false;
+    const trimmed = value.trim();
+    if (trimmed.length < 48) return false;
+    return /^[A-Za-z0-9+/=_\-\.]+$/.test(trimmed);
+  }, []);
+
+  const decryptSharedNote = useCallback(async (note: Notes) => {
+    const meta = parseSharedNoteMeta(note);
+    const payloadLooksEncrypted = meta.isEncrypted
+      || meta.encryptionVersion === 'T4'
+      || looksEncryptedPayload(meta.encryptedTitle || note.title || '')
+      || looksEncryptedPayload(note.content || '');
+
+    if (!payloadLooksEncrypted) {
       return note;
     }
 
@@ -357,7 +373,11 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       throw new Error('This note is encrypted and requires a valid decryption key in the URL to view its contents.');
     }
 
-    if (meta.encryptionVersion === 'T4') {
+    const shouldTryT4 = meta.encryptionVersion === 'T4'
+      || meta.isEncrypted
+      || (payloadLooksEncrypted && !(meta.isGhost || String(note.content || '').includes('.') || String(note.title || '').includes('.')));
+
+    if (shouldTryT4) {
       const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
       const cryptoKey = await crypto.subtle.importKey(
         'raw',
@@ -374,27 +394,25 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       };
     }
 
+    if (!meta.isGhost && !String(note.content || '').includes('.') && !String(note.title || '').includes('.')) {
+      throw new Error('This note is encrypted and requires the correct shared-link key.');
+    }
+
     return {
       ...note,
       title: await decryptGhostData(note.title || '', key),
       content: await decryptGhostData(note.content || '', key),
     };
-  }, [key]);
+  }, [key, parseSharedNoteMeta, looksEncryptedPayload]);
 
   const normalizeSharedNote = useCallback(async (note: Notes) => {
     const decrypted = await decryptSharedNote(note);
-    const meta = (() => {
-      try {
-        return JSON.parse(decrypted.metadata || '{}');
-      } catch {
-        return {};
-      }
-    })();
+    const meta = parseSharedNoteMeta(decrypted);
     return {
       ...decrypted,
       metadata: JSON.stringify({ ...meta, clientDecrypted: true }),
     };
-  }, [decryptSharedNote]);
+  }, [decryptSharedNote, parseSharedNoteMeta]);
 
   const fetchSharedNote = useCallback(async (forceRefresh: boolean = false) => {
       if (!forceRefresh) {
@@ -402,10 +420,21 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       if (isAuthenticated && user?.$id) {
         const privateCached = getCachedData<Notes>(`note_${noteId}`);
         if (privateCached && (privateCached.userId === user.$id || (privateCached as any).owner_id === user.$id)) {
-          setVerifiedNote(privateCached);
-          setIsLoadingNote(false);
-          // If we are the owner, we definitely have the latest state (via Realtime in NotesContext)
-          return; 
+          let handledFromPrivateCache = false;
+          try {
+            setVerifiedNote(await normalizeSharedNote(privateCached));
+            handledFromPrivateCache = true;
+          } catch (_e) {
+            if (!looksEncryptedPayload(privateCached.content || '') && !looksEncryptedPayload(privateCached.title || '')) {
+              setVerifiedNote(privateCached);
+              handledFromPrivateCache = true;
+            }
+          }
+          if (handledFromPrivateCache) {
+            setIsLoadingNote(false);
+            // If we are the owner, we definitely have the latest state (via Realtime in NotesContext)
+            return;
+          }
         }
       }
 
@@ -471,31 +500,32 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       };
 
       // Perform fetch
-      const note = await fetcher();
+      let note = await fetcher();
 
       // Determine TTL: Ghosts are immutable
       let ttl = SHARED_NOTE_TTL;
       try {
-        const meta = JSON.parse(note.metadata || '{}');
-        
-        // HANDLE DECRYPTION
-        if (meta.isEncrypted) {
-          try {
-            const decrypted = await normalizeSharedNote(note);
-            note.title = decrypted.title;
-            note.content = decrypted.content;
-            note.metadata = decrypted.metadata;
-          } catch (decErr) {
-            console.error("Decryption failed", decErr);
-            throw new Error("This note is encrypted and the provided key is invalid.");
-          }
-        }
+        const meta = parseSharedNoteMeta(note);
 
         if (meta.isGhost) {
           ttl = GHOST_NOTE_TTL;
-          // Verify expiry
           if (meta.expiresAt && new Date(meta.expiresAt) < new Date()) {
              throw new Error('This temporary note has expired after 7 days and is no longer available.');
+          }
+        }
+
+        const shouldNormalize = meta.isEncrypted
+          || meta.isGhost
+          || looksEncryptedPayload(meta.encryptedTitle || note.title || '')
+          || looksEncryptedPayload(note.content || '');
+
+        if (shouldNormalize) {
+          try {
+            const decrypted = await normalizeSharedNote(note);
+            note = decrypted;
+          } catch (decErr) {
+            console.error('Decryption failed', decErr);
+            throw new Error('This note is encrypted and the provided key is invalid.');
           }
         }
       } catch (_e: any) {
@@ -643,6 +673,29 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
               <CircularProgress size={32} sx={{ color: '#6366F1' }} />
             </Box>
           )}
+        </Box>
+      </Box>
+    );
+  }
+
+  const verifiedNoteMeta = parseSharedNoteMeta(verifiedNote);
+  const noteLooksEncrypted = verifiedNoteMeta.isEncrypted
+    || verifiedNoteMeta.isGhost
+    || looksEncryptedPayload(verifiedNote.title || '')
+    || looksEncryptedPayload(verifiedNote.content || '');
+  if (!verifiedNoteMeta.clientDecrypted && noteLooksEncrypted) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+        <Box sx={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, fontFamily: 'var(--font-clash)', color: 'white' }}>
+            Decrypting shared note
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 3 }}>
+            The shared note is encrypted and is being resolved before display.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress size={32} sx={{ color: '#6366F1' }} />
+          </Box>
         </Box>
       </Box>
     );
