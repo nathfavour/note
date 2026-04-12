@@ -1480,7 +1480,7 @@ export async function createCollaborator(data: Partial<Collaborators>) {
           ] as any
         );
         if (existing.documents.length) {
-          const existingCollaborator = existing.documents[0] as Collaborators;
+          const existingCollaborator = existing.documents[0] as unknown as Collaborators;
           if (existingCollaborator.permission !== permission) {
             await databases.updateDocument(
               APPWRITE_DATABASE_ID,

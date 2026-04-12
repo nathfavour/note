@@ -545,7 +545,20 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     } finally {
       setIsLoadingNote(false);
     }
-  }, [noteId, CACHE_KEY, getCachedData, SHARED_NOTE_TTL, GHOST_NOTE_TTL, isAuthenticated, setCachedData, user?.$id, key, invalidate]);
+  }, [
+    noteId,
+    CACHE_KEY,
+    getCachedData,
+    SHARED_NOTE_TTL,
+    GHOST_NOTE_TTL,
+    isAuthenticated,
+    setCachedData,
+    user?.$id,
+    key,
+    invalidate,
+    normalizeSharedNote,
+    parseSharedNoteMeta,
+  ]);
 
   useEffect(() => {
     fetchSharedNote();
