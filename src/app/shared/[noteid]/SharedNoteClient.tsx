@@ -351,21 +351,12 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     return meta;
   }, []);
 
-  const looksEncryptedPayload = useCallback((value?: string | null) => {
-    if (!value) return false;
-    const trimmed = value.trim();
-    if (trimmed.length < 48) return false;
-    return /^[A-Za-z0-9+/=_\-\.]+$/.test(trimmed);
-  }, []);
-
   const decryptSharedNote = useCallback(async (note: Notes) => {
     const meta = parseSharedNoteMeta(note);
-    const payloadLooksEncrypted = meta.isEncrypted
-      || meta.encryptionVersion === 'T4'
-      || looksEncryptedPayload(meta.encryptedTitle || note.title || '')
-      || looksEncryptedPayload(note.content || '');
+    const isT4EncryptedPublicNote = meta.isEncrypted && meta.encryptionVersion === 'T4';
+    const isGhostNote = !!meta.isGhost;
 
-    if (!payloadLooksEncrypted) {
+    if (!isT4EncryptedPublicNote && !isGhostNote) {
       return note;
     }
 
@@ -373,11 +364,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       throw new Error('This note is encrypted and requires a valid decryption key in the URL to view its contents.');
     }
 
-    const shouldTryT4 = meta.encryptionVersion === 'T4'
-      || meta.isEncrypted
-      || (payloadLooksEncrypted && !(meta.isGhost || String(note.content || '').includes('.') || String(note.title || '').includes('.')));
-
-    if (shouldTryT4) {
+    if (isT4EncryptedPublicNote) {
       const keyBuffer = decodeUrlSafeBase64ToBuffer(key);
       const cryptoKey = await crypto.subtle.importKey(
         'raw',
@@ -394,16 +381,12 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       };
     }
 
-    if (!meta.isGhost && !String(note.content || '').includes('.') && !String(note.title || '').includes('.')) {
-      throw new Error('This note is encrypted and requires the correct shared-link key.');
-    }
-
     return {
       ...note,
       title: await decryptGhostData(note.title || '', key),
       content: await decryptGhostData(note.content || '', key),
     };
-  }, [key, parseSharedNoteMeta, looksEncryptedPayload]);
+  }, [key, parseSharedNoteMeta]);
 
   const normalizeSharedNote = useCallback(async (note: Notes) => {
     const decrypted = await decryptSharedNote(note);
@@ -425,7 +408,8 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
             setVerifiedNote(await normalizeSharedNote(privateCached));
             handledFromPrivateCache = true;
           } catch (_e) {
-            if (!looksEncryptedPayload(privateCached.content || '') && !looksEncryptedPayload(privateCached.title || '')) {
+            const privateMeta = parseSharedNoteMeta(privateCached);
+            if (!(privateMeta.isEncrypted && privateMeta.encryptionVersion === 'T4')) {
               setVerifiedNote(privateCached);
               handledFromPrivateCache = true;
             }
@@ -514,10 +498,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
           }
         }
 
-        const shouldNormalize = meta.isEncrypted
-          || meta.isGhost
-          || looksEncryptedPayload(meta.encryptedTitle || note.title || '')
-          || looksEncryptedPayload(note.content || '');
+        const shouldNormalize = (meta.isEncrypted && meta.encryptionVersion === 'T4') || meta.isGhost;
 
         if (shouldNormalize) {
           try {
@@ -679,10 +660,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   }
 
   const verifiedNoteMeta = parseSharedNoteMeta(verifiedNote);
-  const noteLooksEncrypted = verifiedNoteMeta.isEncrypted
-    || verifiedNoteMeta.isGhost
-    || looksEncryptedPayload(verifiedNote.title || '')
-    || looksEncryptedPayload(verifiedNote.content || '');
+  const noteLooksEncrypted = (verifiedNoteMeta.isEncrypted && verifiedNoteMeta.encryptionVersion === 'T4') || verifiedNoteMeta.isGhost;
   if (!verifiedNoteMeta.clientDecrypted && noteLooksEncrypted) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
