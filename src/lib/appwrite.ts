@@ -120,6 +120,7 @@ async function notifyNoteShare(params: {
   await sendKylrixEmailNotification({
     eventType: 'note_collaborator_added',
     sourceApp: 'note',
+    verificationMode: 'error',
     actorName: params.actorName,
     recipientIds: [params.recipientId],
     resourceId: params.noteId,
