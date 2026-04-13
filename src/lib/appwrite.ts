@@ -1918,6 +1918,8 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
       actorName: currentUser.name || currentUser.email || 'Someone',
       recipientId: targetUserId,
       permission,
+    }).catch((error) => {
+      console.error('Failed to queue note share email', error);
     });
 
     return { success: true, message: `Note shared${emailForMessage ? ' with ' + emailForMessage : ''}` };
