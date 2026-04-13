@@ -18,6 +18,7 @@ import { TargetType } from '../types/appwrite';
 import { APPWRITE_CONFIG } from './appwrite/config';
 import { KYLRIX_AUTH_URI, getEcosystemUrl } from '@/constants/ecosystem';
 import { ecosystemSecurity } from './ecosystem/security';
+import { sendKylrixEmailNotification } from './email-notifications';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 export const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
@@ -107,6 +108,28 @@ async function updateNoteAccessForUser(
   }
 
   return response.json().catch(() => ({}));
+}
+
+async function notifyNoteShare(params: {
+  noteId: string;
+  noteTitle: string;
+  actorName: string;
+  recipientId: string;
+  permission: NoteCollaboratorPermission;
+}) {
+  await sendKylrixEmailNotification({
+    eventType: 'note_collaborator_added',
+    sourceApp: 'note',
+    actorName: params.actorName,
+    recipientIds: [params.recipientId],
+    resourceId: params.noteId,
+    resourceTitle: params.noteTitle,
+    resourceType: 'note',
+    rightsLabel: params.permission,
+    templateKey: 'note:collaborator-added',
+    ctaUrl: `${APP_URI}/notes/${params.noteId}`,
+    ctaText: 'Open note',
+  });
 }
 
 export class AppwriteService {
@@ -1888,6 +1911,14 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
     if (allowAnyoneEdit) {
       await setAnyoneCanEdit(noteId, true);
     }
+
+    await notifyNoteShare({
+      noteId,
+      noteTitle: note.title || 'Note',
+      actorName: currentUser.name || currentUser.email || 'Someone',
+      recipientId: targetUserId,
+      permission,
+    });
 
     return { success: true, message: `Note shared${emailForMessage ? ' with ' + emailForMessage : ''}` };
   } catch (error: any) {
