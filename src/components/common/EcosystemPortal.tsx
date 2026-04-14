@@ -100,43 +100,70 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
         <Dialog
             open={open}
             onClose={onClose}
+            hideBackdrop
+            disableEscapeKeyDown={false}
             fullWidth
             maxWidth="sm"
             PaperProps={{
                 sx: {
-                    bgcolor: 'transparent',
-                    boxShadow: 'none',
+                    position: 'fixed',
+                    top: { xs: 72, sm: 88 },
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 'min(960px, calc(100vw - 24px))',
+                    maxHeight: 'calc(100vh - 32px)',
+                    m: 0,
+                    bgcolor: '#000000',
+                    boxShadow: '0 24px 64px rgba(0, 0, 0, 0.7), 0 0 120px rgba(99, 102, 241, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderTop: 'none',
+                    borderRadius: '0 0 32px 32px',
                     backgroundImage: 'none',
-                    overflow: 'visible'
+                    overflow: 'hidden'
                 }
             }}
         >
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             >
                 <Paper
                     sx={{
                         p: 0,
-                        borderRadius: '32px',
-                        bgcolor: 'rgba(10, 10, 10, 0.8)',
-                        backdropFilter: 'blur(40px) saturate(180%)',
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
-                        boxShadow: '0 32px 64px rgba(0,0,0,0.7), 0 0 100px rgba(99, 102, 241, 0.05)',
+                        borderRadius: 0,
+                        bgcolor: '#000000',
+                        backdropFilter: 'blur(28px) saturate(180%)',
+                        border: 'none',
+                        boxShadow: 'none',
                         overflow: 'hidden'
                     }}
                 >
                     {/* Header / Search */}
-                    <Box sx={{ p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <Box sx={{ p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
                             <Zap size={24} color="#6366F1" strokeWidth={1.5} />
                             <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', color: 'white' }}>
                                 KYLRIX <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>PORTAL</Box>
                             </Typography>
                             <Box sx={{ flexGrow: 1 }} />
-                            <IconButton onClick={onClose} size="small" sx={{ color: 'rgba(255, 255, 255, 0.3)' }}>
+                            <IconButton
+                                onClick={onClose}
+                                size="small"
+                                sx={{
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    bgcolor: 'rgba(255, 255, 255, 0.04)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    borderRadius: '12px',
+                                    width: 36,
+                                    height: 36,
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255, 255, 255, 0.08)',
+                                        borderColor: '#6366F1'
+                                    }
+                                }}
+                            >
                                 <X size={20} />
                             </IconButton>
                         </Box>
@@ -145,7 +172,7 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                             display: 'flex',
                             alignItems: 'center',
                             gap: 2,
-                            bgcolor: 'rgba(255, 255, 255, 0.04)',
+                            bgcolor: 'rgba(255, 255, 255, 0.03)',
                             borderRadius: '16px',
                             px: 2,
                             py: 1.5,
@@ -247,7 +274,7 @@ export function EcosystemPortal({ open: controlledOpen, onClose: controlledOnClo
                     </Box>
 
                     {/* Footer */}
-                    <Box sx={{ p: 2, bgcolor: 'rgba(99, 102, 241, 0.03)', display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{ p: 2, bgcolor: 'rgba(99, 102, 241, 0.04)', display: 'flex', justifyContent: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
                         <Typography variant="caption" sx={{ color: 'rgba(99, 102, 241, 0.4)', fontWeight: 700, letterSpacing: '0.05em' }}>
                             KYLRIX ECOSYSTEM v1.0
                         </Typography>

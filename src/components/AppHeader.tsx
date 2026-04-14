@@ -169,7 +169,7 @@ export default function AppHeader({ className }: AppHeaderProps) {
       className={className}
       sx={{ 
         zIndex: 1201,
-        bgcolor: '#0A0908',
+        bgcolor: '#000000',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         backgroundImage: 'none',
         boxShadow: 'inset 0 -1px 0 rgba(0, 0, 0, 0.4)'
