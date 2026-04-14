@@ -11,9 +11,9 @@
   --font-clash-display: "Clash Display", "Satoshi", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-void: #050505;
-  --color-surface: rgba(255, 255, 255, 0.03);
-  --color-surface-2: rgba(255, 255, 255, 0.05);
+  --color-void: #000000;
+  --color-surface: #161514;
+  --color-surface-2: #1F1D1B;
   --color-titanium: #F2F2F2;
   --color-gunmetal: #A1A1AA;
   --color-electric: #EC4899;
@@ -21,20 +21,11 @@
   --color-primary: #6366F1;
   /* Ecosystem Primary */
 
-  /* ASH SHADES (Tapering) */
-  --ash-50: #F8F9FA;
-  --ash-100: #E9ECEF;
-  --ash-200: #DEE2E6;
-  --ash-300: #CED4DA;
-  --ash-400: #ADB5BD;
-  --ash-500: #6C757D;
-  --ash-600: #495057;
-  --ash-700: #343A40;
-  --ash-800: #212529;
-  --ash-900: #121417;
-
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-active: rgba(255, 255, 255, 0.15);
+  --glow-soft: 0.12;
+  --glow-focus: 0.18;
+  --glow-serious: 0.06;
 
   --background: var(--color-void);
   --foreground: var(--color-titanium);
@@ -62,11 +53,9 @@ body {
   selection-color: #fff;
 }
 
-/* Glassmorphism 2.0 */
 .glass-panel {
-  background: rgba(10, 10, 10, 0.7);
-  backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
 }
 
 /* Custom scrollbar */
@@ -92,6 +81,20 @@ body {
 ::selection {
   background-color: rgba(99, 102, 241, 0.2);
   color: #fff;
+}
+
+body[data-ui-mood="focus"] {
+  --color-surface: #1A1816;
+  --color-surface-2: #22201D;
+  --glow-soft: 0.08;
+  --glow-focus: 0.12;
+}
+
+body[data-ui-mood="serious"] {
+  --color-surface: #151312;
+  --color-surface-2: #1C1A18;
+  --glow-soft: 0.05;
+  --glow-focus: 0.08;
 }
 
 /* Animation keyframes */
