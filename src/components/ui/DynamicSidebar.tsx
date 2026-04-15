@@ -90,8 +90,7 @@ export function DynamicSidebar() {
             md: 450,
             lg: 500
           },
-          bgcolor: 'rgba(15, 13, 12, 0.95)',
-          backdropFilter: 'blur(25px) saturate(180%)',
+          bgcolor: 'var(--color-surface)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
           backgroundImage: 'none',
           display: 'flex',
@@ -117,7 +116,7 @@ export function DynamicSidebar() {
             sx={{ 
               display: { xs: 'inline-flex', sm: 'none' },
               color: 'rgba(255, 255, 255, 0.5)',
-              '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+              '&:hover': { color: '#6366F1', bgcolor: 'var(--color-surface-2)' }
             }}
           >
             <BackIcon />
@@ -142,7 +141,7 @@ export function DynamicSidebar() {
           sx={{ 
             display: { xs: 'none', sm: 'inline-flex' },
             color: 'rgba(255, 255, 255, 0.5)',
-            '&:hover': { color: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.1)' }
+            '&:hover': { color: '#6366F1', bgcolor: 'var(--color-surface-2)' }
           }}
         >
           <CloseIcon />

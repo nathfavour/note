@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
@@ -10,6 +11,17 @@ import { Box } from '@mui/material';
 export default function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const mood = isDynamicSidebarOpen || pathname?.includes('/notes/') || pathname?.includes('/shared/')
+      ? 'focus'
+      : 'ambient';
+    document.body.dataset.uiMood = mood;
+    return () => {
+      document.body.dataset.uiMood = 'ambient';
+    };
+  }, [isDynamicSidebarOpen, pathname]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', overflowX: 'hidden' }}>

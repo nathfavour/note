@@ -1,5 +1,9 @@
 import { createTheme, ThemeOptions, alpha } from '@mui/material/styles';
 
+const SURFACE_BACKGROUND = '#000000';
+const SURFACE = '#161514';
+const SURFACE_ELEVATED = '#1F1D1B';
+
 /**
  * KYLRIX ECOSYSTEM DESIGN SYSTEM v3
  * Intelligent Theme Architecture
@@ -27,8 +31,8 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       contrastText: '#FFFFFF',
     },
     background: {
-      default: mode === 'dark' ? '#0A0908' : '#F1F5F9', // Deep Void Ash
-      paper: mode === 'dark' ? '#161412' : '#FFFFFF',   // Elevated Surface
+      default: mode === 'dark' ? SURFACE_BACKGROUND : '#F1F5F9',
+      paper: mode === 'dark' ? SURFACE : '#FFFFFF',
     },
     text: {
       primary: mode === 'dark' ? '#F8FAFC' : '#0F172A',
@@ -63,9 +67,8 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: (theme) => ({
         body: {
           backgroundColor: theme.palette.background.default,
-          backgroundImage: mode === 'dark' 
-            ? `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.12)} 0%, transparent 70%), 
-               linear-gradient(180deg, ${alpha('#161412', 0.4)} 0%, transparent 100%)`
+          backgroundImage: mode === 'dark'
+            ? `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.1)} 0%, transparent 70%),\n               linear-gradient(180deg, ${alpha(SURFACE, 0.35)} 0%, transparent 100%)`
             : `radial-gradient(circle at 50% -20%, ${alpha('#6366F1', 0.05)} 0%, transparent 70%)`,
           backgroundAttachment: 'fixed',
           minHeight: '100vh',
@@ -103,7 +106,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           borderRadius: 28,
           background: mode === 'dark' 
-            ? `linear-gradient(165deg, #161412 0%, #0A0908 100%)`
+            ? `linear-gradient(165deg, ${SURFACE} 0%, ${SURFACE_BACKGROUND} 100%)`
             : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
           border: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : theme.palette.divider}`,
           boxShadow: mode === 'dark'
@@ -124,7 +127,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundImage: 'none',
-          backgroundColor: mode === 'dark' ? '#161412' : alpha(theme.palette.background.paper, 0.8),
+          backgroundColor: mode === 'dark' ? SURFACE : alpha(theme.palette.background.paper, 0.8),
           border: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : theme.palette.divider}`,
           boxShadow: mode === 'dark' ? '0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)' : 'none',
         }),
