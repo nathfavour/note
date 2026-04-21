@@ -370,6 +370,209 @@ const GhostSparkShelf = React.memo(({
     );
 });
 
+interface GhostSparkDetailPanelProps {
+    note: GhostNoteRef;
+    onRecreate: (title: string, content: string) => void;
+    onOpenPublicLink: (note: GhostNoteRef) => void;
+}
+
+function parseSparkMeta(note: any): Record<string, any> {
+    try {
+        return JSON.parse(note?.metadata || '{}');
+    } catch {
+        return {};
+    }
+}
+
+const GhostSparkDetailPanel = ({ note, onRecreate, onOpenPublicLink }: GhostSparkDetailPanelProps) => {
+    const theme = useTheme();
+    const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+    const [loadedNote, setLoadedNote] = useState<any | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [retryToken, setRetryToken] = useState(0);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const resolveNote = async () => {
+            setStatus('loading');
+            setError(null);
+            setLoadedNote(null);
+
+            try {
+                const res = await fetch(`/api/shared/${note.id}`, { cache: 'no-store' });
+                if (!res.ok) {
+                    const payload = await res.json().catch(() => ({}));
+                    throw new Error(payload.error || 'Failed to load shared note.');
+                }
+
+                const data = await res.json();
+                const meta = parseSparkMeta(data);
+                const needsKey = Boolean((meta.isEncrypted && meta.encryptionVersion === 'T4') || meta.isGhost);
+
+                if (needsKey && !note.decryptionKey) {
+                    throw new Error('This note is encrypted and requires a decryption key. Ask the sender to resend the full shared link.');
+                }
+
+                let title = data.title || note.title;
+                let content = data.content || '';
+
+                if (note.decryptionKey) {
+                    try {
+                        title = await decryptGhostData(title, note.decryptionKey);
+                        content = await decryptGhostData(content, note.decryptionKey);
+                    } catch {
+                        throw new Error('This note could not be decrypted because the key is invalid. Ask the sender to resend the full shared link.');
+                    }
+                }
+
+                if (cancelled) return;
+                setLoadedNote({ ...data, title, content });
+                setStatus('ready');
+            } catch (err) {
+                if (cancelled) return;
+                setError(err instanceof Error ? err.message : 'Failed to load shared note.');
+                setStatus('error');
+            }
+        };
+
+        resolveNote();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [note.id, note.decryptionKey, retryToken]);
+
+    const displayTitle = loadedNote?.title || note.title;
+    const displayContent = loadedNote?.content || '';
+    const canRecreate = status === 'ready' && Boolean(displayContent);
+
+    if (status === 'error') {
+        return (
+            <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Stack spacing={1}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                        {note.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                        GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
+                    </Typography>
+                </Stack>
+                <Box sx={{ p: 3, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', bgcolor: 'rgba(255,255,255,0.02)' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 900, color: 'white', mb: 1 }}>
+                        Unable to open shared note
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.65)' }}>
+                        {error}
+                    </Typography>
+                </Box>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => setRetryToken((value) => value + 1)}
+                    sx={{ borderRadius: '12px', fontWeight: 800 }}
+                >
+                    Retry
+                </Button>
+            </Box>
+        );
+    }
+
+    if (status === 'loading') {
+        return (
+            <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Stack spacing={1}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                        {note.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                        GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
+                    </Typography>
+                </Stack>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <CircularProgress color="secondary" />
+                </Box>
+            </Box>
+        );
+    }
+
+    return (
+        <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Stack spacing={1}>
+                <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
+                    {displayTitle}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
+                    GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
+                </Typography>
+            </Stack>
+
+            <Stack direction="row" spacing={1.5}>
+                <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => {
+                        navigator.clipboard.writeText(displayContent);
+                        toast.success("Content copied");
+                    }}
+                    startIcon={<CopyIcon size={16} />}
+                    sx={{
+                        flex: 1,
+                        borderRadius: '12px',
+                        fontWeight: 800,
+                        borderColor: alpha(theme.palette.secondary.main, 0.4),
+                        color: theme.palette.secondary.main,
+                        '&:hover': {
+                            borderColor: theme.palette.secondary.main,
+                            bgcolor: alpha(theme.palette.secondary.main, 0.05)
+                        }
+                    }}
+                >
+                    COPY
+                </Button>
+                <Button
+                    size="small"
+                    variant="contained"
+                    color="secondary"
+                    disabled={!canRecreate}
+                    onClick={() => onRecreate(displayTitle, displayContent)}
+                    startIcon={<RefreshCcw size={16} />}
+                    sx={{ flex: 1, borderRadius: '12px', fontWeight: 800 }}
+                >
+                    RECREATE
+                </Button>
+            </Stack>
+
+            <Typography
+                variant="body1"
+                sx={{
+                    whiteSpace: 'pre-wrap',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontFamily: 'var(--font-satoshi)',
+                    lineHeight: 1.8,
+                    fontSize: '0.95rem',
+                    bgcolor: 'rgba(255, 255, 255, 0.02)',
+                    p: 3,
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255, 255, 255, 0.05)'
+                }}
+            >
+                {displayContent}
+            </Typography>
+
+            <Button
+                fullWidth
+                variant="text"
+                onClick={() => onOpenPublicLink(note)}
+                startIcon={<ExternalLink size={16} />}
+                sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.4)', '&:hover': { color: 'white' } }}
+            >
+                OPEN PUBLIC LINK
+            </Button>
+        </Box>
+    );
+};
+
 export const GhostEditor = () => {
     const theme = useTheme();
     const { openIDMWindow } = useAuth();
@@ -388,130 +591,22 @@ export const GhostEditor = () => {
     const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    const handleViewNote = useCallback(async (note: GhostNoteRef) => {
-        // Open sidebar with a loading state
+    const handleViewNote = useCallback((note: GhostNoteRef) => {
         openSidebar(
-            <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Stack spacing={1}>
-                    <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
-                        {note.title}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
-                        GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
-                    </Typography>
-                </Stack>
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                    <CircularProgress color="secondary" />
-                </Box>
-            </Box>
+            <GhostSparkDetailPanel
+                note={note}
+                onRecreate={(displayTitle, displayContent) => {
+                    setTitle(displayTitle);
+                    setContent(displayContent);
+                    closeSidebar();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onOpenPublicLink={(currentNote) => {
+                    window.open(`/shared/${currentNote.id}${currentNote.decryptionKey ? `/${currentNote.decryptionKey}` : ''}`, '_blank');
+                }}
+            />,
+            note.id
         );
-
-        try {
-            const res = await fetch(`/api/shared/${note.id}`);
-            if (res.ok) {
-                const data = await res.json();
-                
-                let displayTitle = note.title;
-                let displayContent = data.content;
-
-                if (note.decryptionKey) {
-                    try {
-                        displayTitle = await decryptGhostData(data.title, note.decryptionKey);
-                        displayContent = await decryptGhostData(data.content, note.decryptionKey);
-                    } catch (e) {
-                        console.error("Decryption failed", e);
-                        toast.error("Failed to decrypt note content. Key might be invalid.");
-                    }
-                }
-
-                // Update sidebar with actual content
-                openSidebar(
-                    <Box sx={{ p: { xs: 3, sm: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <Stack spacing={1}>
-                            <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', color: 'white' }}>
-                                {displayTitle}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700 }}>
-                                GHOST SPARK • {new Date(note.createdAt).toLocaleDateString()}
-                            </Typography>
-                        </Stack>
-                        
-                        <Stack direction="row" spacing={1.5}>
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(displayContent);
-                                    toast.success("Content copied");
-                                }}
-                                startIcon={<CopyIcon size={16} />}
-                                sx={{ 
-                                    flex: 1,
-                                    borderRadius: '12px', 
-                                    fontWeight: 800, 
-                                    borderColor: alpha(theme.palette.secondary.main, 0.4),
-                                    color: theme.palette.secondary.main,
-                                    '&:hover': {
-                                        borderColor: theme.palette.secondary.main,
-                                        bgcolor: alpha(theme.palette.secondary.main, 0.05)
-                                    }
-                                }}
-                            >
-                                COPY
-                            </Button>
-                            <Button
-                                size="small"
-                                variant="contained"
-                                color="secondary"
-                                onClick={() => {
-                                    setTitle(displayTitle);
-                                    setContent(displayContent);
-                                    closeSidebar();
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                startIcon={<RefreshCcw size={16} />}
-                                sx={{ flex: 1, borderRadius: '12px', fontWeight: 800 }}
-                            >
-                                RECREATE
-                            </Button>
-                        </Stack>
-
-                        <Typography 
-                            variant="body1" 
-                            sx={{ 
-                                whiteSpace: 'pre-wrap', 
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                fontFamily: 'var(--font-satoshi)',
-                                lineHeight: 1.8,
-                                fontSize: '0.95rem',
-                                bgcolor: 'rgba(255, 255, 255, 0.02)',
-                                p: 3,
-                                borderRadius: '16px',
-                                border: '1px solid rgba(255, 255, 255, 0.05)'
-                            }}
-                        >
-                            {displayContent}
-                        </Typography>
-
-                        <Button 
-                            fullWidth 
-                            variant="text" 
-                            onClick={() => window.open(`/shared/${note.id}${note.decryptionKey ? `/${note.decryptionKey}` : ''}`, '_blank')}
-                            startIcon={<ExternalLink size={16} />}
-                            sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.4)', '&:hover': { color: 'white' } }}
-                        >
-                            OPEN PUBLIC LINK
-                        </Button>
-                    </Box>,
-                    note.id
-                );
-            } else {
-                toast.error("Failed to fetch note. It might have expired.");
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("An error occurred while fetching the note.");
-        }
     }, [closeSidebar, openSidebar]);
 
     const [contextMenu, setContextMenu] = useState<{
@@ -759,36 +854,6 @@ export const GhostEditor = () => {
 
     const activeSparks = useMemo(() => prevNotes.filter(n => new Date(n.expiresAt).getTime() > Date.now()), [prevNotes]);
     const staleSparks = useMemo(() => prevNotes.filter(n => new Date(n.expiresAt).getTime() <= Date.now()), [prevNotes]);
-
-    const handleCloseContextMenu = () => {
-        setContextMenu(null);
-    };
-
-    const handleDeleteNote = (noteId: string | null) => {
-        if (!noteId) return;
-        
-        const confirmDelete = window.confirm("Removing this note from your sparks will mean you lose control over it (even though it will still exist for its 7-day lifespan). Proceed?");
-        
-        if (confirmDelete) {
-            const updatedHistory = prevNotes.filter(n => n.id !== noteId);
-            saveHistory(updatedHistory);
-            toast.success("Spark removed from stash");
-        }
-        handleCloseContextMenu();
-    };
-
-    const handleDeleteAll = () => {
-        const confirmDelete = window.confirm("This will clear your entire local stash. You will lose access to manage these notes. Proceed?");
-        if (confirmDelete) {
-            saveHistory([]);
-            toast.success("All sparks cleared");
-        }
-        handleCloseContextMenu();
-    };
-
-    const activeSparks = prevNotes.filter(n => new Date(n.expiresAt).getTime() > Date.now());
-    const staleSparks = prevNotes.filter(n => new Date(n.expiresAt).getTime() <= Date.now());
-    const hasHistory = prevNotes.length > 0;
 
     return (
         <Container maxWidth="lg" sx={{ py: 2, position: 'relative' }}>
