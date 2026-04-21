@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
     Box, 
     TextField, 
@@ -146,6 +146,230 @@ const GhostClock = ({ createdAt, expiresAt }: { createdAt: string, expiresAt: st
     );
 };
 
+interface GhostSparkShelfProps {
+    activeSparks: GhostNoteRef[];
+    staleSparks: GhostNoteRef[];
+    contextMenu: {
+        mouseX: number;
+        mouseY: number;
+        noteId: string;
+    } | null;
+    onContextMenu: (event: React.MouseEvent, noteId: string) => void;
+    onCloseContextMenu: () => void;
+    onViewNote: (note: GhostNoteRef) => void;
+    onDeleteNote: (noteId: string | null) => void;
+    onOpenIDMWindow: () => void;
+}
+
+const GhostSparkShelf = React.memo(({
+    activeSparks,
+    staleSparks,
+    contextMenu,
+    onContextMenu,
+    onCloseContextMenu,
+    onViewNote,
+    onDeleteNote,
+    onOpenIDMWindow
+}: GhostSparkShelfProps) => {
+    const theme = useTheme();
+
+    return (
+        <Stack spacing={3}>
+            {activeSparks.length > 0 && (
+                <Box>
+                    <Typography variant="caption" sx={{ fontWeight: 900, color: theme.palette.secondary.main, mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
+                        ACTIVE
+                    </Typography>
+                    <Stack spacing={1.5}>
+                        {activeSparks.map((note) => (
+                            <Card
+                                key={note.id}
+                                onContextMenu={(e) => onContextMenu(e, note.id)}
+                                sx={{
+                                    bgcolor: '#1C1A18',
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    position: 'relative',
+                                    backgroundImage: 'none',
+                                    '&:hover': {
+                                        transform: 'translateX(4px)',
+                                        bgcolor: '#1C1A18',
+                                        borderColor: alpha(theme.palette.secondary.main, 0.4),
+                                        boxShadow: `0 20px 40px -10px rgba(0,0,0,0.5), 0 0 10px ${alpha(theme.palette.secondary.main, 0.1)}`
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                                        <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5, flex: 1, pr: 1 }}>
+                                            {note.title}
+                                        </Typography>
+                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                            <GhostClock createdAt={note.createdAt} expiresAt={note.expiresAt} />
+                                            <IconButton size="small" onClick={(e) => onContextMenu(e, note.id)} sx={{ color: 'rgba(255,255,255,0.2)' }}>
+                                                <MoreVertical size={14} />
+                                            </IconButton>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                        <Typography variant="caption" sx={{ opacity: 0.4 }}>
+                                            Created {new Date(note.createdAt).toLocaleDateString()}
+                                        </Typography>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => onViewNote(note)}
+                                            sx={{ color: theme.palette.secondary.main }}
+                                        >
+                                            <EyeIcon size={14} />
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => window.open(`/shared/${note.id}${note.decryptionKey ? `/${note.decryptionKey}` : ''}`, '_blank')}
+                                            sx={{ color: theme.palette.secondary.main }}
+                                        >
+                                            <ExternalLink size={14} />
+                                        </IconButton>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Stack>
+                </Box>
+            )}
+
+            {staleSparks.length > 0 && (
+                <Box>
+                    <Typography variant="caption" sx={{ fontWeight: 900, color: 'error.main', mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
+                        STALE (EXPIRED)
+                    </Typography>
+                    <Stack spacing={1.5}>
+                        {staleSparks.map((note) => (
+                            <Card
+                                key={note.id}
+                                onContextMenu={(e) => onContextMenu(e, note.id)}
+                                sx={{
+                                    bgcolor: '#0F0D0C',
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(255, 255, 255, 0.03)',
+                                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    backgroundImage: 'none',
+                                    opacity: 0.6,
+                                    '&:hover': {
+                                        opacity: 1,
+                                        bgcolor: '#161412',
+                                        borderColor: alpha(theme.palette.error.main, 0.3)
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                                        <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5, flex: 1, pr: 1 }}>
+                                            {note.title}
+                                        </Typography>
+                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                            <GhostClock createdAt={note.createdAt} expiresAt={note.expiresAt} />
+                                            <IconButton size="small" onClick={(e) => onContextMenu(e, note.id)} sx={{ color: 'rgba(255,255,255,0.2)' }}>
+                                                <MoreVertical size={14} />
+                                            </IconButton>
+                                        </Stack>
+                                    </Stack>
+                                    <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'error.main', fontWeight: 700 }}>
+                                        Link expired. Recoverable for 7 days.
+                                    </Typography>
+                                    <Button
+                                        fullWidth
+                                        size="small"
+                                        variant="text"
+                                        onClick={() => onViewNote(note)}
+                                        sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5, mb: 0.5 }}
+                                    >
+                                        VIEW STALE NOTE
+                                    </Button>
+                                    <Button
+                                        fullWidth
+                                        size="small"
+                                        variant="text"
+                                        onClick={() => onOpenIDMWindow()}
+                                        sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5 }}
+                                    >
+                                        CLAIM TO RESTORE
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Stack>
+                </Box>
+            )}
+
+            <Menu
+                open={contextMenu !== null}
+                onClose={onCloseContextMenu}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                    contextMenu !== null
+                        ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+                        : undefined
+                }
+                slotProps={{
+                    paper: {
+                        sx: {
+                            minWidth: 180,
+                            bgcolor: '#1C1A18',
+                            backdropFilter: 'none',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '12px',
+                            backgroundImage: 'none',
+                            py: 0.5,
+                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05)',
+                        }
+                    }
+                }}
+            >
+                <MenuItem
+                    onClick={() => onDeleteNote(contextMenu?.noteId || null)}
+                    sx={{
+                        px: 2,
+                        py: 1,
+                        gap: 1.5,
+                        color: '#FF453A',
+                        '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.1)' }
+                    }}
+                >
+                    <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
+                        <Trash2 size={16} />
+                    </ListItemIcon>
+                    <ListItemText
+                        primary="Remove from Stash"
+                        slotProps={{ primary: { sx: { fontSize: '0.8rem', fontWeight: 700, fontFamily: 'var(--font-satoshi)' } } }}
+                    />
+                </MenuItem>
+            </Menu>
+
+            <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: '#1C1A18', border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: theme.palette.secondary.main }}>
+                    Don&apos;t Lose Your Spark!
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mb: 2, opacity: 0.8 }}>
+                    Sparks vanish from stash 7 days after creation. Claim them now to secure them.
+                </Typography>
+                <Button
+                    fullWidth
+                    size="small"
+                    onClick={() => onOpenIDMWindow()}
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                        fontWeight: 900
+                    }}
+                >
+                    CLAIM NOTES NOW
+                </Button>
+            </Box>
+        </Stack>
+    );
+});
+
 export const GhostEditor = () => {
     const theme = useTheme();
     const { openIDMWindow } = useAuth();
@@ -164,7 +388,7 @@ export const GhostEditor = () => {
     const [lifespanMs, setLifespanMs] = useState(7 * 24 * 60 * 60 * 1000); // Default 7 days
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    const handleViewNote = async (note: GhostNoteRef) => {
+    const handleViewNote = useCallback(async (note: GhostNoteRef) => {
         // Open sidebar with a loading state
         openSidebar(
             <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -179,8 +403,7 @@ export const GhostEditor = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                     <CircularProgress color="secondary" />
                 </Box>
-            </Box>,
-            note.id
+            </Box>
         );
 
         try {
@@ -289,7 +512,7 @@ export const GhostEditor = () => {
             console.error(error);
             toast.error("An error occurred while fetching the note.");
         }
-    };
+    }, [closeSidebar, openSidebar]);
 
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number;
@@ -507,7 +730,7 @@ export const GhostEditor = () => {
         }
     };
 
-    const handleContextMenu = (event: React.MouseEvent, noteId: string) => {
+    const handleContextMenu = useCallback((event: React.MouseEvent, noteId: string) => {
         event.preventDefault();
         setContextMenu(
             contextMenu === null
@@ -518,7 +741,24 @@ export const GhostEditor = () => {
                   }
                 : null,
         );
-    };
+    }, [contextMenu]);
+
+    const handleCloseContextMenu = useCallback(() => setContextMenu(null), []);
+
+    const handleDeleteNote = useCallback((noteId: string | null) => {
+        if (!noteId) {
+            return;
+        }
+
+        const updatedHistory = prevNotes.filter((note) => note.id !== noteId);
+        saveHistory(updatedHistory);
+        setContextMenu(null);
+    }, [prevNotes]);
+
+    const handleOpenIDMWindow = useCallback(() => openIDMWindow(), [openIDMWindow]);
+
+    const activeSparks = useMemo(() => prevNotes.filter(n => new Date(n.expiresAt).getTime() > Date.now()), [prevNotes]);
+    const staleSparks = useMemo(() => prevNotes.filter(n => new Date(n.expiresAt).getTime() <= Date.now()), [prevNotes]);
 
     const handleCloseContextMenu = () => {
         setContextMenu(null);
@@ -868,202 +1108,16 @@ export const GhostEditor = () => {
                                 </Tooltip>
                             </Stack>
 
-                            <Stack spacing={3}>
-                                {activeSparks.length > 0 && (
-                                    <Box>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: theme.palette.secondary.main, mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
-                                            ACTIVE
-                                        </Typography>
-                                        <Stack spacing={1.5}>
-                                            {activeSparks.map((note) => (
-                                                <Card 
-                                                    key={note.id} 
-                                                    onContextMenu={(e) => handleContextMenu(e, note.id)}
-                                                    sx={{ 
-                                                        bgcolor: '#1C1A18', 
-                                                        borderRadius: '20px',
-                                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                                                        position: 'relative',
-                                                        backgroundImage: 'none',
-                                                        '&:hover': {
-                                                            transform: 'translateX(4px)',
-                                                            bgcolor: '#1C1A18',
-                                                            borderColor: alpha(theme.palette.secondary.main, 0.4),
-                                                            boxShadow: `0 20px 40px -10px rgba(0,0,0,0.5), 0 0 10px ${alpha(theme.palette.secondary.main, 0.1)}`
-                                                        }
-                                                    }}
-                                                >
-                                                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                                                            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5, flex: 1, pr: 1 }}>
-                                                                {note.title}
-                                                            </Typography>
-                                                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                                                <GhostClock createdAt={note.createdAt} expiresAt={note.expiresAt} />
-                                                                <IconButton size="small" onClick={(e) => handleContextMenu(e, note.id)} sx={{ color: 'rgba(255,255,255,0.2)' }}>
-                                                                    <MoreVertical size={14} />
-                                                                </IconButton>
-                                                            </Stack>
-                                                        </Stack>
-                                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                            <Typography variant="caption" sx={{ opacity: 0.4 }}>
-                                                                Created {new Date(note.createdAt).toLocaleDateString()}
-                                                            </Typography>
-                                                            <IconButton 
-                                                                size="small" 
-                                                                onClick={() => handleViewNote(note)}
-                                                                sx={{ color: theme.palette.secondary.main }}
-                                                            >
-                                                                <EyeIcon size={14} />
-                                                            </IconButton>
-                                                            <IconButton 
-                                                                size="small" 
-                                                                onClick={() => window.open(`/shared/${note.id}`, '_blank')}
-                                                                sx={{ color: theme.palette.secondary.main }}
-                                                            >
-                                                                <ExternalLink size={14} />
-                                                            </IconButton>
-                                                        </Stack>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </Stack>
-                                    </Box>
-                                )}
-
-                                {staleSparks.length > 0 && (
-                                    <Box>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: 'error.main', mb: 1.5, display: 'block', letterSpacing: '0.1em' }}>
-                                            STALE (EXPIRED)
-                                        </Typography>
-                                        <Stack spacing={1.5}>
-                                            {staleSparks.map((note) => (
-                                            <Card 
-                                                    key={note.id} 
-                                                    onContextMenu={(e) => handleContextMenu(e, note.id)}
-                                                    sx={{ 
-                                                        bgcolor: '#0F0D0C', 
-                                                        borderRadius: '20px',
-                                                        border: '1px solid rgba(255, 255, 255, 0.03)',
-                                                        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                                                        backgroundImage: 'none',
-                                                        opacity: 0.6,
-                                                        '&:hover': {
-                                                            opacity: 1,
-                                                            bgcolor: '#161412',
-                                                            borderColor: alpha(theme.palette.error.main, 0.3)
-                                                        }
-                                                    }}
-                                                >
-                                                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                                                            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, mb: 0.5, flex: 1, pr: 1 }}>
-                                                                {note.title}
-                                                            </Typography>
-                                                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                                                <GhostClock createdAt={note.createdAt} expiresAt={note.expiresAt} />
-                                                                <IconButton size="small" onClick={(e) => handleContextMenu(e, note.id)} sx={{ color: 'rgba(255,255,255,0.2)' }}>
-                                                                    <MoreVertical size={14} />
-                                                                </IconButton>
-                                                            </Stack>
-                                                        </Stack>
-                                                        <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'error.main', fontWeight: 700 }}>
-                                                            Link expired. Recoverable for 7 days.
-                                                        </Typography>
-                                                            <Button 
-                                                                fullWidth
-                                                                size="small"
-                                                                variant="text"
-                                                                onClick={() => handleViewNote(note)}
-                                                                sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5, mb: 0.5 }}
-                                                            >
-                                                                VIEW STALE NOTE
-                                                            </Button>
-                                                            <Button 
-                                                                fullWidth
-                                                                size="small"
-                                                                variant="text"
-                                                                onClick={() => openIDMWindow()}
-                                                                sx={{ fontSize: '0.7rem', fontWeight: 900, height: 'auto', py: 0.5 }}
-                                                            >
-                                                                CLAIM TO RESTORE
-                                                            </Button>
-
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </Stack>
-                                    </Box>
-                                )}
-                            </Stack>
-
-                            {/* Context Menu for Sparks */}
-                            <Menu
-                                open={contextMenu !== null}
-                                onClose={handleCloseContextMenu}
-                                anchorReference="anchorPosition"
-                                anchorPosition={
-                                    contextMenu !== null
-                                        ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-                                        : undefined
-                                }
-                                slotProps={{
-                                    paper: {
-                                        sx: {
-                                            minWidth: 180,
-                                            bgcolor: '#1C1A18',
-                                            backdropFilter: 'none',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                                            borderRadius: '12px',
-                                            backgroundImage: 'none',
-                                            py: 0.5,
-                                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05)',
-                                        }
-                                    }
-                                }}
-                            >
-                                <MenuItem 
-                                    onClick={() => handleDeleteNote(contextMenu?.noteId || null)}
-                                    sx={{ 
-                                        px: 2, 
-                                        py: 1, 
-                                        gap: 1.5,
-                                        color: '#FF453A',
-                                        '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.1)' }
-                                    }}
-                                >
-                                    <ListItemIcon sx={{ minWidth: 'auto', color: 'inherit' }}>
-                                        <Trash2 size={16} />
-                                    </ListItemIcon>
-                                    <ListItemText 
-                                        primary="Remove from Stash" 
-                                        slotProps={{ primary: { sx: { fontSize: '0.8rem', fontWeight: 700, fontFamily: 'var(--font-satoshi)' } } }}
-                                    />
-                                </MenuItem>
-                            </Menu>
-
-                            {/* Chronic User CTA */}
-                                <Box sx={{ mt: 4, p: 3, borderRadius: '24px', bgcolor: '#1C1A18', border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1, color: theme.palette.secondary.main }}>
-                                        Don&apos;t Lose Your Spark!
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ display: 'block', mb: 2, opacity: 0.8 }}>
-                                        Sparks vanish from stash 7 days after creation. Claim them now to secure them.
-                                    </Typography>
-                                    <Button 
-                                        fullWidth
-                                        size="small"
-                                        onClick={() => openIDMWindow()}
-                                        variant="contained"
-                                        color="secondary"
-                                        sx={{ 
-                                            fontWeight: 900
-                                        }}
-                                    >
-                                        CLAIM NOTES NOW
-                                    </Button>
-                                </Box>
+                            <GhostSparkShelf
+                                activeSparks={activeSparks}
+                                staleSparks={staleSparks}
+                                contextMenu={contextMenu}
+                                onContextMenu={handleContextMenu}
+                                onCloseContextMenu={handleCloseContextMenu}
+                                onViewNote={handleViewNote}
+                                onDeleteNote={handleDeleteNote}
+                                onOpenIDMWindow={handleOpenIDMWindow}
+                            />
                         </Paper>
                     </Grid>
                 )}
