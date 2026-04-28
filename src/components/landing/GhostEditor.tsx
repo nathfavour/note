@@ -581,6 +581,7 @@ export const GhostEditor = () => {
     const [content, setContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [prevNotes, setPrevNotes] = useState<GhostNoteRef[]>([]);
+    const hasHistory = prevNotes.length > 0;
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [isLinkCopied, setIsLinkCopied] = useState(false);
     const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(false);
