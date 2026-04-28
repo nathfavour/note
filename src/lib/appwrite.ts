@@ -370,7 +370,7 @@ function getNotePermissions(userId: string, isPublic: boolean) {
 function filterNoteData(data: Record<string, any>): Record<string, any> {
   const schemaKeys = [
     'id', 'createdAt', 'updatedAt', 'userId', 'isPublic', 'status', 
-    'parentNoteId', 'title', 'searchTitle', 'content', 'tags', 'comments', 
+    'parentNoteId', 'title', 'content', 'tags', 'comments', 
     'extensions', 'collaborators', 'metadata', 'attachments', 'format'
   ];
   
@@ -403,10 +403,6 @@ function filterNoteData(data: Record<string, any>): Record<string, any> {
   }
 
   return filtered;
-}
-
-function buildSearchTitle(title?: string | null) {
-  return title ? String(title).trim() : '';
 }
 
 /**
@@ -699,11 +695,10 @@ export async function createNote(data: Partial<Notes>) {
   const doc = await databases.createDocument(    APPWRITE_DATABASE_ID,
     APPWRITE_TABLE_ID_NOTES,
     docId,
-      filterNoteData({
+    filterNoteData({
       ...noteData,
       id: docId, // Sync custom id attribute with Appwrite $id
       userId: user.$id,
-      searchTitle: buildSearchTitle(typeof noteData.title === "string" ? noteData.title : null),
       createdAt: now,
       updatedAt: now,
       attachments: null
@@ -823,10 +818,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const cleanData = cleanDocumentData(data);
   const updatedAt = new Date().toISOString();
   const updatedData = filterNoteData({ ...cleanData, updatedAt: updatedAt });
-  if (cleanData.title !== undefined) {
-    updatedData.searchTitle = buildSearchTitle(typeof cleanData.title === "string" ? cleanData.title : null);
-  }
-  
+
   const user = await getCurrentUser();
   
   let permissions = undefined;
@@ -1764,7 +1756,7 @@ export async function deleteDocument(collectionId: string, documentId: string) {
 // --- ADVANCED/SEARCH ---
 
 export async function searchNotesByTitle(title: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.search('searchTitle', title)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.search('title', title)]);
 }
 
 export async function searchNotesByTag(tagId: string) {
