@@ -28,7 +28,7 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (!mounted || isLoading) {
+  if (!mounted) {
     return (
       <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#0F0D0C' }}>
         <CircularProgress color="primary" />

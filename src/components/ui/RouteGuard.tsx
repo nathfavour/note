@@ -27,14 +27,17 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
   const { isLoading, isAuthenticated, openIDMWindow } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const publicRoute = isPublicRoute(pathname);
 
   useEffect(() => {
+    if (isLoading && publicRoute) {
+      return;
+    }
+
     if (isLoading) {
       return;
     }
 
-    const publicRoute = isPublicRoute(pathname);
-    
     // If user is not authenticated and trying to access protected route
     if (!isAuthenticated && !publicRoute) {
       openIDMWindow();
@@ -48,10 +51,10 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       return;
     }
 
-  }, [isLoading, isAuthenticated, pathname, router, openIDMWindow]);
+  }, [isLoading, isAuthenticated, pathname, router, openIDMWindow, publicRoute]);
 
   // Show loading during initial auth check
-  if (isLoading) {
+  if (isLoading && !publicRoute) {
     return (
       <Box
         sx={{
@@ -69,7 +72,6 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
   }
 
   // For protected routes when user is not authenticated, stay on current page and show IDM window
-  const publicRoute = isPublicRoute(pathname);
   if (!isAuthenticated && !publicRoute) {
     return (
       <Box
