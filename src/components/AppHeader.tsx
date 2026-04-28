@@ -1,107 +1,113 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Box, 
-  Typography, 
-  IconButton, 
-  Menu, 
-  MenuItem, 
-  Tooltip, 
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  IconButton,
+  Tooltip,
+  Menu,
+  MenuItem,
   Divider,
   ListItemIcon,
   ListItemText,
-
+  Paper,
+  InputBase,
+  Stack,
   alpha,
-  Button
-  } from '@mui/material';
-  import {
+  Button,
+  Badge,
+} from '@mui/material';
+import {
+  Search,
   Settings,
   LogOut,
   LayoutGrid,
   Download,
   Sparkles,
-
-  Wallet
-  } from 'lucide-react';
-  import { SubscriptionBadge } from '@/context/subscription/SubscriptionContext';
-  import { useAuth } from '@/components/ui/AuthContext';
-  import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-  import { useNotifications } from '@/context/NotificationContext';
-  import { useIsland } from '@/components/ui/DynamicIsland';
-
-  import { useOverlay } from '@/components/ui/OverlayContext';
-import { getUserProfilePicId } from '@/lib/utils';
+  Wallet,
+  Bell,
+  Menu as MenuIcon,
+  ChevronDown,
+} from 'lucide-react';
+import { useAuth } from '@/components/ui/AuthContext';
+import { useSidebar } from '@/components/ui/SidebarContext';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useNotifications } from '@/context/NotificationContext';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
-import { TopBarSearch } from '@/components/TopBarSearch';
+import { getUserProfilePicId } from '@/lib/utils';
 import { AICommandModal } from '@/components/ai/AICommandModal';
 import { EcosystemPortal } from '@/components/common/EcosystemPortal';
 import { WalletSidebar } from '@/components/overlays/WalletSidebar';
 import Logo from '@/components/common/Logo';
 import { getEcosystemUrl } from '@/constants/ecosystem';
-import { useTheme } from '@/components/ThemeProvider';
 import { AppwriteService } from '@/lib/appwrite';
 import { IdentityAvatar, IdentityName, computeIdentityFlags } from './common/IdentityBadge';
+import { usePotato } from '@/components/providers/PotatoProvider';
 
 interface AppHeaderProps {
   className?: string;
 }
 
+type IslandPayload = {
+  id?: string;
+  app?: 'note' | 'connect' | 'root' | string;
+  type?: string;
+  title?: string;
+  message?: string;
+  duration?: number;
+  majestic?: boolean;
+};
+
+function islandColorFrom(payload: IslandPayload | null) {
+  const key = String(payload?.app || payload?.type || 'note').toLowerCase();
+  if (key === 'connect') return '#F59E0B';
+  if (key === 'root' || key === 'accounts') return '#6366F1';
+  if (key === 'pro') return '#A855F7';
+  return '#EC4899';
+}
+
 export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
-  const { } = useTheme();
-  const { } = useNotifications();
-  const { } = useIsland();
-  const { } = useOverlay();
-  const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
-  
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { setIsCollapsed } = useSidebar();
+  const potato = usePotato();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
+  const [anchorElNotifications, setAnchorElNotifications] = useState<null | HTMLElement>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+  const [profileRecord, setProfileRecord] = useState<any>(null);
+  const [activeIsland, setActiveIsland] = useState<IslandPayload | null>(null);
+  const [islandAnchorEl, setIslandAnchorEl] = useState<null | HTMLElement>(null);
+
+  const searchRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const islandTimerRef = useRef<number | null>(null);
+
+  const profilePicId = getUserProfilePicId(user);
+  const searchSurface = useMemo(() => potato.buildSearchSurface(searchQuery), [potato, searchQuery]);
+  const searchItems = (searchQuery.trim() ? [...searchSurface.searchTargets, ...searchSurface.quickActions] : searchSurface.quickActions).slice(0, 6);
+  const islandColor = islandColorFrom(activeIsland);
+
   useEffect(() => {
     if (searchParams.get('openWallet') === 'true') {
       setIsWalletOpen(true);
-      // Optional: Clean up URL
       const params = new URLSearchParams(searchParams.toString());
       params.delete('openWallet');
       const newQuery = params.toString();
       router.replace(pathname + (newQuery ? `?${newQuery}` : ''));
     }
   }, [searchParams, router, pathname]);
-
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
-
-  const [_currentSubdomain, setCurrentSubdomain] = useState<string | null>(null);
-  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
-  const [profileRecord, setProfileRecord] = useState<any>(null);
-  const profilePicId = getUserProfilePicId(user);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
-        e.preventDefault();
-        setIsEcosystemPortalOpen(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const host = window.location.hostname;
-    const segments = host.split('.');
-    if (segments.length <= 2) {
-      setCurrentSubdomain('app');
-      return;
-    }
-    setCurrentSubdomain(segments[0]);
-  }, [isAuthenticated, user]);
 
   useEffect(() => {
     let mounted = true;
@@ -115,20 +121,24 @@ export default function AppHeader({ className }: AppHeaderProps) {
         if (profilePicId) {
           const url = await fetchProfilePreview(profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
-        } else {
-          if (mounted) setSmallProfileUrl(null);
+        } else if (mounted) {
+          setSmallProfileUrl(null);
         }
-      } catch (err: any) {
-        console.warn('Failed to load profile preview', err);
+      } catch (error) {
+        console.warn('[Note Header] Failed to load profile preview:', error);
         if (mounted) setSmallProfileUrl(null);
       }
     };
-    fetchPreview();
-    return () => { mounted = false; };
+
+    void fetchPreview();
+    return () => {
+      mounted = false;
+    };
   }, [profilePicId]);
 
   useEffect(() => {
     let mounted = true;
+
     const loadProfileRecord = async () => {
       if (!user?.$id) return;
       try {
@@ -139,16 +149,78 @@ export default function AppHeader({ className }: AppHeaderProps) {
         console.warn('[Note Header] Failed to load profile record:', error);
       }
     };
-    loadProfileRecord();
+
+    void loadProfileRecord();
     return () => {
       mounted = false;
     };
   }, [user?.$id]);
 
+  useEffect(() => {
+    const handleExternalNotification = (event: Event) => {
+      const detail = (event as CustomEvent<IslandPayload>).detail;
+      if (!detail) return;
+
+      setActiveIsland(detail);
+      if (islandTimerRef.current) window.clearTimeout(islandTimerRef.current);
+
+      const duration = typeof detail.duration === 'number' ? detail.duration : 6500;
+      islandTimerRef.current = window.setTimeout(() => {
+        setActiveIsland(null);
+        islandTimerRef.current = null;
+      }, duration);
+    };
+
+    window.addEventListener('kylrix:island-notification', handleExternalNotification as EventListener);
+    return () => {
+      window.removeEventListener('kylrix:island-notification', handleExternalNotification as EventListener);
+      if (islandTimerRef.current) window.clearTimeout(islandTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleOutside = (event: MouseEvent) => {
+      if (!searchOpen) return;
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
+        e.preventDefault();
+        setIsEcosystemPortalOpen((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyK') {
+        e.preventDefault();
+        setSearchOpen(true);
+        requestAnimationFrame(() => searchInputRef.current?.focus());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const identitySignals = computeIdentityFlags({
-    createdAt: profileRecord?.$createdAt || profileRecord?.createdAt || (user as any)?.$createdAt || null,
+    createdAt: profileRecord?.$createdAt || (user as any)?.$createdAt || null,
     lastUsernameEdit: profileRecord?.last_username_edit || user?.prefs?.last_username_edit || null,
-    profilePicId: profileRecord?.profilePicId || user?.prefs?.profilePicId || null,
+    profilePicId: profileRecord?.profilePicId || profileRecord?.avatar || user?.prefs?.profilePicId || null,
     username: profileRecord?.username || user?.prefs?.username || user?.name || null,
     bio: profileRecord?.bio || user?.prefs?.bio || null,
     tier: profileRecord?.tier || user?.prefs?.tier || null,
@@ -156,168 +228,344 @@ export default function AppHeader({ className }: AppHeaderProps) {
     emailVerified: Boolean((user as any)?.emailVerification),
   });
 
+  const handleCloseMenus = () => {
+    setAnchorElAccount(null);
+    setAnchorElNotifications(null);
+    setIslandAnchorEl(null);
+  };
+
+  const displayIsland = Boolean(activeIsland);
+
   const handleLogout = () => {
     setAnchorElAccount(null);
     logout();
   };
 
-
   return (
-    <AppBar 
-      position="fixed" 
+    <AppBar
+      position="fixed"
       elevation={0}
       className={className}
-      sx={{ 
+      sx={{
         zIndex: 1201,
         bgcolor: 'var(--color-surface)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         backgroundImage: 'none',
-        boxShadow: 'inset 0 -1px 0 rgba(0, 0, 0, 0.4)'
+        boxShadow: 'inset 0 -1px 0 rgba(0, 0, 0, 0.4)',
       }}
     >
-      <Toolbar sx={{ 
-        gap: 3, 
-        px: { xs: 2, md: 4 }, 
-        minHeight: '88px' 
-      }}>
-        {/* Left: Logo */}
-        <Logo 
-          app="note" 
-          size={40} 
-          variant="full"
-          sx={{ 
-            cursor: 'pointer', 
-            '&:hover': { opacity: 0.8 }
-          }}
-          component="a"
-          href="/"
-        />
-
-        {/* Center: Search */}
-        <Box sx={{ flexGrow: 1, maxWidth: 600, display: { xs: 'none', md: 'block' } }}>
-          <TopBarSearch />
-        </Box>
-
-        {/* Right: Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-          <Tooltip title="Cognitive Link (AI)">
-            <IconButton 
-              onClick={() => setIsAIModalOpen(true)}
-              sx={{ 
-                color: '#6366F1',
-                bgcolor: 'rgba(99, 102, 241, 0.05)',
-                border: '1px solid',
-                borderColor: 'rgba(99, 102, 241, 0.1)',
-                borderRadius: '12px',
-                width: 44,
-                height: 44,
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                '&:hover': { 
-                  bgcolor: 'rgba(99, 102, 241, 0.08)', 
-                  borderColor: '#6366F1',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(99, 102, 241, 0.2)' 
-                }
-              }}
-            >
-              <Sparkles size={20} strokeWidth={1.5} />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Secure Wallet">
-            <IconButton 
-              onClick={() => setIsWalletOpen(true)}
-              sx={{ 
-                color: '#EC4899',
-                bgcolor: '#161412',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '12px',
-                width: 44,
-                height: 44,
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                '&:hover': { 
-                  bgcolor: '#1C1A18', 
-                  borderColor: '#EC4899',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(236, 72, 153, 0.1)' 
-                }
-              }}
-            >
-              <Wallet size={20} strokeWidth={1.5} />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Kylrix Portal (Ctrl+Space)">
-            <IconButton 
-              onClick={() => setIsEcosystemPortalOpen(true)}
-              sx={{ 
-                color: '#6366F1',
-                bgcolor: '#161412',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '12px',
-                width: 44,
-                height: 44,
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                '&:hover': { 
-                  bgcolor: '#1C1A18', 
-                  borderColor: '#6366F1',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 15px rgba(99, 102, 241, 0.1)' 
-                }
-              }}
-            >
-              <LayoutGrid size={22} strokeWidth={1.5} />
-            </IconButton>
-          </Tooltip>
-
-          {isAuthenticated ? (
-            <IconButton 
-              onClick={(e) => setAnchorElAccount(e.currentTarget)}
-              sx={{ 
-                p: 0.5,
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                borderRadius: '14px',
-                bgcolor: '#161412',
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                '&:hover': { borderColor: 'rgba(99, 102, 241, 0.3)', bgcolor: '#1C1A18' },
-                transition: 'all 0.2s'
-              }}
-            >
-              <IdentityAvatar
-                src={smallProfileUrl || undefined}
-                alt={user?.name || user?.email || 'profile'}
-                fallback={user?.name ? user.name[0].toUpperCase() : 'U'}
-                verified={identitySignals.verified}
-                pro={identitySignals.pro}
-                size={34}
-                borderRadius="10px"
-              />
-            </IconButton>
-          ) : (
-            <Button
-              href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
-              variant="contained"
-              size="large"
+      <Toolbar sx={{ gap: 2, px: { xs: 2, md: 4 }, minHeight: '88px' }}>
+        {displayIsland ? (
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+            <Box
+              onClick={(e) => setIslandAnchorEl(e.currentTarget)}
               sx={{
-                ml: 1,
-                background: 'linear-gradient(135deg, #EC4899 0%, #A855F7 100%)',
-                color: '#fff',
-                fontWeight: 800,
-                fontFamily: 'var(--font-satoshi)',
-                borderRadius: '14px',
-                textTransform: 'none',
-                px: 4,
-                boxShadow: '0 8px 20px rgba(236, 72, 153, 0.15)',
-                '&:hover': { background: 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)', transform: 'translateY(-1px)' }
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                px: 2,
+                py: 1.1,
+                borderRadius: '999px',
+                bgcolor: 'rgba(11, 9, 8, 0.92)',
+                border: `1px solid ${alpha(islandColor, 0.35)}`,
+                boxShadow: `0 0 0 1px ${alpha(islandColor, 0.08)}, 0 0 22px ${alpha(islandColor, 0.18)}`,
+                cursor: 'pointer',
+                maxWidth: 'min(92vw, 680px)',
               }}
             >
-              Connect
-            </Button>
-          )}
-        </Box>
+              <Logo app={activeIsland?.app === 'connect' ? 'connect' : 'note'} size={28} variant="icon" />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1 }}>
+                  {activeIsland?.title || 'Notification'}
+                </Typography>
+                <Typography variant="caption" noWrap sx={{ color: 'rgba(255,255,255,0.68)', display: 'block', lineHeight: 1.15, maxWidth: '56ch' }}>
+                  {activeIsland?.message || 'Tap to expand'}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        ) : (
+          <>
+            <IconButton
+              edge="start"
+              aria-label="toggle sidebar"
+              onClick={() => setIsCollapsed((prev) => !prev)}
+              sx={{
+                color: '#F2F2F2',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)' },
+              }}
+            >
+              <MenuIcon size={20} strokeWidth={1.5} />
+            </IconButton>
 
-        {/* Account Menu */}
+            <Logo
+              app="note"
+              size={40}
+              variant="full"
+              sx={{ cursor: 'pointer', '&:hover': { opacity: 0.82 } }}
+              component="a"
+              href="/notes"
+            />
+
+            <Box
+              ref={searchRef}
+              sx={{ flexGrow: 1, maxWidth: 720, display: { xs: 'none', md: 'block' }, position: 'relative' }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '14px',
+                  px: 2,
+                  py: 0.75,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: alpha('#EC4899', 0.25),
+                    boxShadow: '0 0 18px rgba(236, 72, 153, 0.08)',
+                  },
+                  '&:focus-within': {
+                    borderColor: '#EC4899',
+                    boxShadow: '0 0 0 4px rgba(236, 72, 153, 0.08)',
+                  },
+                }}
+              >
+                <Search size={18} strokeWidth={1.5} color="#A1A1AA" />
+                <Box sx={{ width: 12 }} />
+                <InputBase
+                  inputRef={searchInputRef}
+                  placeholder={`Search ${searchSurface.routeLabel.toLowerCase()}...`}
+                  value={searchQuery}
+                  onFocus={() => setSearchOpen(true)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{
+                    flex: 1,
+                    color: '#F2F2F2',
+                    fontFamily: 'var(--font-mono)',
+                    '& .MuiInputBase-input': {
+                      padding: 0,
+                      fontSize: '0.88rem',
+                      fontWeight: 500,
+                    },
+                  }}
+                />
+                {searchQuery && (
+                  <IconButton size="small" onClick={() => setSearchQuery('')} sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <ChevronDown size={16} strokeWidth={1.5} />
+                  </IconButton>
+                )}
+              </Box>
+
+              {searchOpen && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 'calc(100% + 12px)',
+                    bgcolor: 'rgba(11, 9, 8, 0.98)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    zIndex: 1400,
+                    maxHeight: '50vh',
+                    overflowY: 'auto',
+                    boxShadow: '0 24px 60px rgba(0,0,0,0.65)',
+                  }}
+                >
+                  <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                      Potato Engine
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 900, color: '#fff' }}>
+                      {searchSurface.routeLabel}
+                    </Typography>
+                  </Box>
+                  <Stack spacing={1} sx={{ p: 1.5 }}>
+                    {searchItems.map((item) => (
+                      <Box
+                        key={item.id}
+                        onClick={() => {
+                          item.onSelect();
+                          setSearchOpen(false);
+                        }}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 1.5,
+                          p: 1.6,
+                          borderRadius: '16px',
+                          cursor: 'pointer',
+                          bgcolor: 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${alpha(item.accent, 0.12)}`,
+                          '&:hover': {
+                            bgcolor: 'rgba(255,255,255,0.05)',
+                            borderColor: alpha(item.accent, 0.28),
+                          },
+                        }}
+                      >
+                        <Box sx={{ width: 12, height: 12, borderRadius: '999px', bgcolor: item.accent, mt: 0.7, flexShrink: 0 }} />
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography sx={{ color: '#fff', fontWeight: 800, lineHeight: 1.2 }}>{item.title}</Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
+                            {item.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Paper>
+              )}
+            </Box>
+
+            <Box sx={{ flexGrow: 1 }} />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+              <Tooltip title="Cognitive Link (AI)">
+                <IconButton
+                  onClick={() => setIsAIModalOpen(true)}
+                  sx={{
+                    color: '#EC4899',
+                    bgcolor: 'rgba(236, 72, 153, 0.05)',
+                    border: '1px solid rgba(236, 72, 153, 0.12)',
+                    borderRadius: '12px',
+                    width: 44,
+                    height: 44,
+                    '&:hover': {
+                      bgcolor: 'rgba(236, 72, 153, 0.09)',
+                      borderColor: '#EC4899',
+                      boxShadow: '0 0 15px rgba(236, 72, 153, 0.18)',
+                    },
+                  }}
+                >
+                  <Sparkles size={20} strokeWidth={1.5} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Secure Wallet">
+                <IconButton
+                  onClick={() => setIsWalletOpen(true)}
+                  sx={{
+                    color: '#10B981',
+                    bgcolor: '#161412',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '12px',
+                    width: 44,
+                    height: 44,
+                    '&:hover': {
+                      bgcolor: '#1C1A18',
+                      borderColor: '#10B981',
+                      boxShadow: '0 0 15px rgba(16, 185, 129, 0.1)',
+                    },
+                  }}
+                >
+                  <Wallet size={20} strokeWidth={1.5} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Kylrix Portal (Ctrl+Space)">
+                <IconButton
+                  onClick={() => setIsEcosystemPortalOpen(true)}
+                  sx={{
+                    color: '#EC4899',
+                    bgcolor: '#161412',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '12px',
+                    width: 44,
+                    height: 44,
+                    '&:hover': {
+                      bgcolor: '#1C1A18',
+                      borderColor: '#EC4899',
+                      boxShadow: '0 0 15px rgba(236, 72, 153, 0.1)',
+                    },
+                  }}
+                >
+                  <LayoutGrid size={22} strokeWidth={1.5} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Notifications">
+                <IconButton
+                  onClick={(e) => setAnchorElNotifications(e.currentTarget)}
+                  sx={{
+                    color: unreadCount > 0 ? '#EC4899' : 'rgba(255,255,255,0.45)',
+                    bgcolor: unreadCount > 0 ? 'rgba(236, 72, 153, 0.04)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${unreadCount > 0 ? alpha('#EC4899', 0.25) : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: '12px',
+                    width: 44,
+                    height: 44,
+                    '&:hover': {
+                      bgcolor: 'rgba(236, 72, 153, 0.08)',
+                      borderColor: '#EC4899',
+                    },
+                  }}
+                >
+                  <Badge badgeContent={unreadCount} color="primary" sx={{ '& .MuiBadge-badge': { backgroundColor: '#FF4D4D', color: '#fff' } }}>
+                    <Bell size={18} strokeWidth={1.5} />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
+              {isAuthenticated ? (
+                <Tooltip title="User Profile">
+                  <IconButton
+                    onClick={(e) => setAnchorElAccount(e.currentTarget)}
+                    sx={{
+                      p: 0.5,
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderRadius: '14px',
+                      bgcolor: '#161412',
+                      '&:hover': { borderColor: 'rgba(236, 72, 153, 0.3)', bgcolor: '#1C1A18' },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <IdentityAvatar
+                      src={smallProfileUrl || undefined}
+                      alt={user?.name || user?.email || 'profile'}
+                      fallback={user?.name ? user.name[0].toUpperCase() : 'U'}
+                      verified={identitySignals.verified}
+                      pro={identitySignals.pro}
+                      size={34}
+                      borderRadius="10px"
+                    />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Button
+                  href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    ml: 1,
+                    background: 'linear-gradient(135deg, #EC4899 0%, #A855F7 100%)',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-satoshi)',
+                    borderRadius: '14px',
+                    textTransform: 'none',
+                    px: 4,
+                    boxShadow: '0 8px 20px rgba(236, 72, 153, 0.15)',
+                    '&:hover': { background: 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)', transform: 'translateY(-1px)' },
+                  }}
+                >
+                  Connect
+                </Button>
+              )}
+            </Box>
+          </>
+        )}
+
         <Menu
           anchorEl={anchorElAccount}
           open={Boolean(anchorElAccount)}
-          onClose={() => setAnchorElAccount(null)}
+          onClose={handleCloseMenus}
           PaperProps={{
             sx: {
               mt: 2,
@@ -328,14 +576,14 @@ export default function AppHeader({ className }: AppHeaderProps) {
               backgroundImage: 'none',
               boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 25px 50px rgba(0,0,0,0.7)',
               p: 1,
-              color: 'white'
-            }
+              color: 'white',
+            },
           }}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           <Box sx={{ px: 2.5, py: 2.5, bgcolor: '#0A0908', borderRadius: '20px', mb: 1 }}>
-            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
               Identity
             </Typography>
             <Box sx={{ mt: 1 }}>
@@ -343,38 +591,33 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 {user?.name || user?.email}
               </IdentityName>
             </Box>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', mt: 0.5, fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', display: 'block', mt: 0.5, fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
               {user?.email}
             </Typography>
-            <Box sx={{ mt: 2 }}>
-              <SubscriptionBadge showFree />
-            </Box>
           </Box>
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
-          <Box sx={{ py: 0.5 }}>
-            <MenuItem 
-              onClick={() => {
-                setAnchorElAccount(null);
-                const domain = process.env.NEXT_PUBLIC_DOMAIN || 'kylrix.space';
-                const idSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN || 'accounts';
-                window.location.href = `https://${idSubdomain}.${domain}/settings?source=${encodeURIComponent(window.location.origin)}&tab=profile`;
-              }}
-              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} strokeWidth={1.5} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
-              <ListItemText primary="Account Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
-            </MenuItem>
-            <MenuItem 
-              onClick={() => {
-                alert('Exporting your data to Markdown...');
-                setAnchorElAccount(null);
-              }}
-              sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}><Download size={18} strokeWidth={1.5} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
-              <ListItemText primary="Export Vault" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
-            </MenuItem>
-          </Box>
+          <MenuItem
+            onClick={() => {
+              setAnchorElAccount(null);
+              const domain = process.env.NEXT_PUBLIC_DOMAIN || 'kylrix.space';
+              const idSubdomain = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN || 'accounts';
+              window.location.href = `https://${idSubdomain}.${domain}/settings?source=${encodeURIComponent(window.location.origin)}&tab=profile`;
+            }}
+            sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} strokeWidth={1.5} color="rgba(255,255,255,0.6)" /></ListItemIcon>
+            <ListItemText primary="Account Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              alert('Exporting your notes...');
+              setAnchorElAccount(null);
+            }}
+            sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: '#1C1A18' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}><Download size={18} strokeWidth={1.5} color="rgba(255,255,255,0.6)" /></ListItemIcon>
+            <ListItemText primary="Export Notes" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
+          </MenuItem>
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
           <MenuItem onClick={handleLogout} sx={{ py: 2, px: 2.5, borderRadius: '16px', color: '#FF4D4D', '&:hover': { bgcolor: alpha('#FF4D4D', 0.05) } }}>
             <ListItemIcon sx={{ minWidth: 40 }}><LogOut size={18} strokeWidth={1.5} color="#FF4D4D" /></ListItemIcon>
@@ -382,21 +625,125 @@ export default function AppHeader({ className }: AppHeaderProps) {
           </MenuItem>
         </Menu>
 
-        <AICommandModal 
-          isOpen={isAIModalOpen} 
-          onClose={() => setIsAIModalOpen(false)} 
-        />
+        <Menu
+          anchorEl={anchorElNotifications}
+          open={Boolean(anchorElNotifications)}
+          onClose={handleCloseMenus}
+          PaperProps={{
+            sx: {
+              mt: 2,
+              width: 380,
+              bgcolor: '#161412',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderRadius: '28px',
+              backgroundImage: 'none',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 25px 50px rgba(0,0,0,0.7)',
+              p: 1,
+              color: 'white',
+            },
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <Box sx={{ px: 2.5, py: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em' }}>
+              Intelligence Feed
+            </Typography>
+            {unreadCount > 0 && (
+              <Typography
+                variant="caption"
+                onClick={() => { void markAllAsRead(); handleCloseMenus(); }}
+                sx={{ cursor: 'pointer', color: '#EC4899', fontWeight: 700, '&:hover': { textDecoration: 'underline' } }}
+              >
+                Clear all
+              </Typography>
+            )}
+          </Box>
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)', mb: 1 }} />
+          <Box sx={{ maxHeight: 440, overflowY: 'auto', px: 1 }}>
+            {notifications.length === 0 ? (
+              <Box sx={{ p: 6, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }}>
+                  Silence in the void
+                </Typography>
+              </Box>
+            ) : (
+              notifications.slice(0, 10).map((notif) => {
+                const isRead = typeof window !== 'undefined' && !!localStorage.getItem(`read_notif_${notif.$id}`);
+                return (
+                  <MenuItem
+                    key={notif.$id}
+                    onClick={() => { void markAsRead(notif.$id); handleCloseMenus(); }}
+                    sx={{
+                      py: 2.5,
+                      px: 2,
+                      mb: 1,
+                      borderRadius: '16px',
+                      borderLeft: isRead ? '1px solid rgba(255,255,255,0.05)' : '3px solid #EC4899',
+                      backgroundColor: isRead ? 'transparent' : 'rgba(236, 72, 153, 0.02)',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+                      <Box sx={{ width: 40, height: 40, borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Bell size={18} color={isRead ? 'rgba(255,255,255,0.4)' : '#EC4899'} />
+                      </Box>
+                      <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', lineHeight: 1.2, fontFamily: 'var(--font-satoshi)' }}>
+                          {notif.action}
+                        </Typography>
+                        <Typography variant="body2" noWrap sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {notif.targetType}: {notif.details || notif.targetId}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)', mt: 0.5, display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
+                          {new Date(notif.timestamp).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                );
+              })
+            )}
+          </Box>
+        </Menu>
 
-        <EcosystemPortal 
-          open={isEcosystemPortalOpen} 
-          onClose={() => setIsEcosystemPortalOpen(false)} 
-        />
-
-        <WalletSidebar
-          isOpen={isWalletOpen}
-          onClose={() => setIsWalletOpen(false)}
-        />
+        <Menu
+          anchorEl={islandAnchorEl}
+          open={Boolean(islandAnchorEl && activeIsland)}
+          onClose={handleCloseMenus}
+          PaperProps={{
+            sx: {
+              width: 420,
+              mt: 2,
+              borderRadius: '28px',
+              bgcolor: '#161412',
+              border: `1px solid ${alpha(islandColor, 0.25)}`,
+              backgroundImage: 'none',
+              color: 'white',
+              p: 1,
+              boxShadow: `0 0 28px ${alpha(islandColor, 0.12)}`,
+            },
+          }}
+          transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+        >
+          <Box sx={{ px: 2.5, py: 2.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+              <Logo app={activeIsland?.app === 'connect' ? 'connect' : 'note'} size={28} variant="icon" />
+              <Typography variant="subtitle1" sx={{ fontWeight: 900, fontFamily: 'var(--font-clash)', letterSpacing: '-0.02em' }}>
+                {activeIsland?.title || 'Notification'}
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.7 }}>
+              {activeIsland?.message || 'No message provided.'}
+            </Typography>
+          </Box>
+        </Menu>
       </Toolbar>
+
+      <AICommandModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
+      <EcosystemPortal open={isEcosystemPortalOpen} onClose={() => setIsEcosystemPortalOpen(false)} />
+      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
     </AppBar>
   );
 }

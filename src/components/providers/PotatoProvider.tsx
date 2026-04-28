@@ -3,7 +3,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/ui/AuthContext';
-import { getEcosystemUrl } from '@/constants/ecosystem';
 
 export type PotatoSnippetKind = 'note' | 'tag' | 'shared' | 'extension' | 'settings' | 'context';
 
@@ -359,7 +358,7 @@ export function PotatoProvider({ children }: { children: React.ReactNode }) {
     pushSnippet,
     clearSnippets,
     buildSearchSurface: (query: string) => buildSurface(query, routeLabelFromPath(pathname), snippets),
-  }), [clearSnippets, pathname, pushSnippet, snippets, user]);
+  }), [clearSnippets, pathname, pushSnippet, snippets]);
 
   return <PotatoContext.Provider value={value}>{children}</PotatoContext.Provider>;
 }
