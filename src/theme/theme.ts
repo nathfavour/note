@@ -2,8 +2,6 @@ import { createTheme, ThemeOptions, alpha } from '@mui/material/styles';
 
 const SURFACE_BACKGROUND = '#000000';
 const SURFACE = '#161514';
-const SURFACE_ELEVATED = '#1F1D1B';
-
 /**
  * KYLRIX ECOSYSTEM DESIGN SYSTEM v3
  * Intelligent Theme Architecture

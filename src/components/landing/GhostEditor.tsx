@@ -370,6 +370,8 @@ const GhostSparkShelf = React.memo(({
     );
 });
 
+GhostSparkShelf.displayName = 'GhostSparkShelf';
+
 interface GhostSparkDetailPanelProps {
     note: GhostNoteRef;
     onRecreate: (title: string, content: string) => void;
@@ -441,7 +443,7 @@ const GhostSparkDetailPanel = ({ note, onRecreate, onOpenPublicLink }: GhostSpar
         return () => {
             cancelled = true;
         };
-    }, [note.id, note.decryptionKey, retryToken]);
+    }, [note.id, note.title, note.decryptionKey, retryToken]);
 
     const displayTitle = loadedNote?.title || note.title;
     const displayContent = loadedNote?.content || '';
@@ -699,12 +701,12 @@ export const GhostEditor = () => {
         return () => window.removeEventListener('storage', loadHistory);
     }, []);
 
-    const saveLifespanPref = (ms: number) => {
+    const saveLifespanPref = useCallback((ms: number) => {
         setLifespanMs(ms);
         localStorage.setItem(GHOST_PREF_LIFESPAN, ms.toString());
-    };
+    }, []);
 
-    const saveHistory = (history: GhostNoteRef[]) => {
+    const saveHistory = useCallback((history: GhostNoteRef[]) => {
         try {
             localStorage.setItem(GHOST_STORAGE_KEY, JSON.stringify(history));
             setPrevNotes(history);
@@ -713,7 +715,7 @@ export const GhostEditor = () => {
         } catch (e) {
             console.error('Failed to save ghost history', e);
         }
-    };
+    }, []);
 
     // Seamless auto-title logic
     useEffect(() => {
@@ -850,6 +852,11 @@ export const GhostEditor = () => {
         saveHistory(updatedHistory);
         setContextMenu(null);
     }, [prevNotes]);
+
+    const handleDeleteAll = useCallback(() => {
+        setPrevNotes([]);
+        saveHistory([]);
+    }, [saveHistory]);
 
     const handleOpenIDMWindow = useCallback(() => openIDMWindow(), [openIDMWindow]);
 
