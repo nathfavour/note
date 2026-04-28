@@ -72,20 +72,6 @@ export const IslandProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     setNotifications(prev => [...prev, newNotif]);
 
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('kylrix:island-notification', {
-        detail: {
-          id: newNotif.id,
-          type: newNotif.type,
-          title: newNotif.title,
-          message: newNotif.message,
-          duration: newNotif.duration,
-          majestic: newNotif.majestic,
-          app: newNotif.type === 'connect' ? 'connect' : 'note',
-        }
-      }));
-    }
-
     // Add to history if not a duplicate (by title and message)
     setAllNotifications(prev => {
       const isDuplicate = prev.some(n => n.title === notification.title && n.message === notification.message);
