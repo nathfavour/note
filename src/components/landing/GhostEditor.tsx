@@ -851,7 +851,7 @@ export const GhostEditor = () => {
         const updatedHistory = prevNotes.filter((note) => note.id !== noteId);
         saveHistory(updatedHistory);
         setContextMenu(null);
-    }, [prevNotes]);
+    }, [prevNotes, saveHistory]);
 
     const handleDeleteAll = useCallback(() => {
         setPrevNotes([]);
