@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback, type ChangeEvent, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, type ChangeEvent, type ReactNode, type MouseEvent as ReactMouseEvent } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider, IconButton, Collapse, Avatar, Link, Popover, Tooltip, ListItemAvatar, ListItemButton, CircularProgress, alpha } from '@mui/material';
 import { Reply as ReplyIcon, ExpandMore, ExpandLess, Edit as EditIcon, Delete as DeleteIcon, MoreVert as MoreIcon, Block as BlockIcon, EmojiEmotionsOutlined } from '@mui/icons-material';
 import { listComments, createComment, getUsersByIds, updateComment, deleteComment, deleteReactionsForTarget } from '@/lib/appwrite';
@@ -58,7 +58,7 @@ function toDisplayUsername(value?: string | null) {
   return String(value || '').replace(/^@+/, '').trim().toLowerCase() || null;
 }
 
-function isRenderableImageSrc(value?: string | null) {
+function isRenderableImageSrc(value?: string | null): value is string {
   if (!value) return false;
   return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:');
 }
@@ -326,7 +326,7 @@ function MentionComposer({
             borderRadius: 4,
             overflow: 'hidden',
           },
-          onMouseDown: (event) => event.preventDefault(),
+          onMouseDown: (event: ReactMouseEvent) => event.preventDefault(),
         }}
       >
         <Box sx={{ p: 1.25, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -425,9 +425,9 @@ function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0, userMap,
   const avatarSrc = isDeleted
     ? undefined
     : isRenderableImageSrc(commentUser?.avatar)
-      ? commentUser?.avatar
+      ? commentUser.avatar
       : profilePicId
-        ? getCachedProfilePreview(profilePicId) || undefined
+        ? (getCachedProfilePreview(profilePicId) || undefined)
         : undefined;
 
   // Efficient identity fallback using canonized helpers

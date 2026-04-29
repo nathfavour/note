@@ -1142,8 +1142,8 @@ export default function AppHeader({ className }: AppHeaderProps) {
         </MenuItem>
       </Menu>
 
-      <WalletSidebar open={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
-      <AICommandModal open={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
+      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
+      <AICommandModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
     </>
   );
 }
