@@ -82,6 +82,11 @@ function decodeUrlSafeBase64ToBuffer(key: string): Uint8Array {
   return Uint8Array.from(Buffer.from(padded, 'base64'));
 }
 
+function isRenderableImageSrc(value?: string | null) {
+  if (!value) return false;
+  return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:');
+}
+
 interface SharedNoteHeaderProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
@@ -325,6 +330,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const key = initialKey || (Array.isArray(rawKey) ? rawKey.join('/') : (rawKey as string));
   const [verifiedNote, setVerifiedNote] = useState<Notes | null>(null);
   const [authorProfile, setAuthorProfile] = useState<any>(null);
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingNote, setIsLoadingNote] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -339,6 +345,47 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const SHARED_NOTE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days standard
   const GHOST_NOTE_TTL = 1000 * 60 * 60 * 24 * 30; // 30 days "infinite" for ghosts
   const isEditableByAnyone = useMemo(() => isNoteEditableByAnyone(verifiedNote as Notes), [verifiedNote]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const resolveAuthorAvatar = async () => {
+      if (!authorProfile) {
+        if (mounted) setAuthorAvatarUrl(null);
+        return;
+      }
+
+      const rawAvatar = authorProfile.avatar || authorProfile.profilePicId || null;
+      if (!rawAvatar) {
+        if (mounted) setAuthorAvatarUrl(null);
+        return;
+      }
+
+      if (isRenderableImageSrc(rawAvatar)) {
+        if (mounted) setAuthorAvatarUrl(rawAvatar);
+        return;
+      }
+
+      const cached = getCachedProfilePreview(rawAvatar);
+      if (cached !== undefined) {
+        if (mounted) setAuthorAvatarUrl(cached);
+        return;
+      }
+
+      try {
+        const preview = await fetchProfilePreview(rawAvatar, 64, 64);
+        if (mounted) setAuthorAvatarUrl(preview);
+      } catch {
+        if (mounted) setAuthorAvatarUrl(null);
+      }
+    };
+
+    resolveAuthorAvatar();
+
+    return () => {
+      mounted = false;
+    };
+  }, [authorProfile]);
 
   const parseSharedNoteMeta = useCallback((note: Notes) => {
     const meta = (() => {
@@ -888,7 +935,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
                 }}
               >
                 <Avatar 
-                  src={authorProfile.avatar} 
+                  src={authorAvatarUrl || undefined}
                   sx={{ width: 20, height: 20, fontSize: '0.65rem', fontWeight: 900, bgcolor: '#6366F1', color: '#000' }}
                 >
                   {getEffectiveDisplayName(authorProfile)[0].toUpperCase()}
