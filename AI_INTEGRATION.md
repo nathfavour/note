@@ -8,7 +8,6 @@
 - **Ultra Mode**: Most advanced AI (Pro+ tier)
 
 ### 2. Global AI Mode Selector
-- Located in top header (right side)
 - Dropdown with mode descriptions
 - Locked modes show upgrade prompts
 - Persists user selection to database
@@ -33,7 +32,6 @@
 ## 🔧 Usage
 
 ### Global AI Selector
-- Appears in top header for authenticated users
 - Shows current mode with sparkles icon
 - Click to open dropdown with all modes
 - Locked modes show lock icon and tier requirement
@@ -68,7 +66,6 @@ All AI features will automatically respect the user's selected mode and subscrip
 
 - `/src/types/ai.ts` - AI types and configurations
 - `/src/components/AIModeSelect.tsx` - Mode selector component
-- `/src/components/AppHeader.tsx` - Global header with AI selector
 - `/src/components/ui/SubscriptionContext.tsx` - Subscription management
 - `/src/lib/appwrite.ts` - AI mode database functions
 - `/src/app/(app)/settings/page.tsx` - Settings integration

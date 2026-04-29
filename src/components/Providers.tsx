@@ -6,15 +6,12 @@ import { LoadingProvider } from "@/components/ui/LoadingContext";
 import { RouteGuard } from "@/components/ui/RouteGuard";
 import { ThemeProvider as AppThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
-import { IslandProvider } from "@/components/ui/DynamicIsland";
-import { PotatoProvider } from "@/components/providers/PotatoProvider";
 import Overlay from "@/components/ui/Overlay";
 import { ContextMenuProvider } from "@/components/ui/ContextMenuContext";
 import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
 import GlobalShortcuts from "@/components/GlobalShortcuts";
 import { KernelProvider } from "@/ecosystem/kernel/EcosystemKernel";
 import { EcosystemPortal } from "@/components/common/EcosystemPortal";
-import { EcosystemEvents } from "@/components/common/EcosystemEvents";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { SudoProvider } from "@/context/SudoContext";
 import { NotesProvider } from "@/context/NotesContext";
@@ -51,26 +48,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                     <NotesProvider>
                                         <MuiThemeWrapper>
                                             <SudoProvider>
-                                                <IslandProvider>
-                                                    <PotatoProvider>
-                                                        <ToastProvider>
-                                                            <OverlayProvider>
-                                                                <LoadingProvider>
-                                                                    <ContextMenuProvider>
-                                                                        <RouteGuard>
-                                                                            {children}
-                                                                        </RouteGuard>
-                                                                        <Overlay />
-                                                                        <GlobalContextMenu />
-                                                                        <GlobalShortcuts />
-                                                                        <EcosystemPortal />
-                                                                        <EcosystemEvents />
-                                                                    </ContextMenuProvider>
-                                                                </LoadingProvider>
-                                                            </OverlayProvider>
-                                                        </ToastProvider>
-                                                    </PotatoProvider>
-                                                </IslandProvider>
+                                                <ToastProvider>
+                                                    <OverlayProvider>
+                                                        <LoadingProvider>
+                                                            <ContextMenuProvider>
+                                                                <RouteGuard>
+                                                                    {children}
+                                                                </RouteGuard>
+                                                                <Overlay />
+                                                                <GlobalContextMenu />
+                                                                <GlobalShortcuts />
+                                                                <EcosystemPortal />
+                                                            </ContextMenuProvider>
+                                                        </LoadingProvider>
+                                                    </OverlayProvider>
+                                                </ToastProvider>
                                             </SudoProvider>
                                         </MuiThemeWrapper>
                                     </NotesProvider>
