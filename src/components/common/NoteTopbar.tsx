@@ -19,10 +19,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   ChevronDown,
   Close as CloseIcon,
+  RefreshCw,
   Search,
   Settings,
   Wallet,
@@ -794,7 +794,7 @@ export default function NoteTopbar({
                       },
                     }}
                   >
-                    <RefreshIcon sx={{ fontSize: 18 }} />
+                    <RefreshCw size={18} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -854,7 +854,7 @@ export default function NoteTopbar({
         {renderAppPanel()}
         {renderProfilePanel()}
       </AppBar>
-      <WalletSidebar open={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
+      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
     </>
   );
 }
