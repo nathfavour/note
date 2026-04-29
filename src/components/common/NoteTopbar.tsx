@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   alpha,
@@ -9,14 +9,9 @@ import {
   Box,
   Button,
   ButtonBase,
-  Divider,
   IconButton,
   InputAdornment,
   InputBase,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
   Paper,
   Skeleton,
   Stack,
@@ -24,12 +19,11 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   ChevronDown,
   Close as CloseIcon,
-  LogOut,
   Search,
-  RefreshCw,
   Settings,
   Wallet,
 } from 'lucide-react';
@@ -76,6 +70,7 @@ export default function NoteTopbar({
   const [appMenuAnchorEl, setAppMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
 
   const profilePicId = getUserProfilePicId(user) || getSdkUserProfilePicId(user);
   const tone = getAppTone('note');
@@ -213,12 +208,12 @@ export default function NoteTopbar({
     setSearchOpen(true);
   }, []);
 
-  const openAppMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
+  const openAppMenu = useCallback((event: MouseEvent<HTMLElement>) => {
     setSearchOpen(false);
     setAppMenuAnchorEl(event.currentTarget);
   }, []);
 
-  const openProfileMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
+  const openProfileMenu = useCallback((event: MouseEvent<HTMLElement>) => {
     setSearchOpen(false);
     setProfileMenuAnchorEl(event.currentTarget);
   }, []);
@@ -233,6 +228,21 @@ export default function NoteTopbar({
     ],
     [],
   );
+
+  const activePanel = searchOpen ? 'search' : profileMenuAnchorEl ? 'profile' : appMenuAnchorEl ? 'ecosystem' : null;
+
+  useEffect(() => {
+    if (!activePanel) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target || (headerRef.current && headerRef.current.contains(target))) return;
+      handleCloseAll();
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    return () => window.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [activePanel, handleCloseAll]);
 
   const renderSearchPanel = () => {
     if (!searchOpen) return null;
@@ -415,108 +425,202 @@ export default function NoteTopbar({
     );
   };
 
-  const renderProfileMenu = () => {
-    const open = Boolean(profileMenuAnchorEl);
+  const renderProfilePanel = () => {
+    if (!profileMenuAnchorEl) return null;
+
     return (
-      <Menu
-        anchorEl={profileMenuAnchorEl}
-        open={open}
-        onClose={handleCloseAll}
-        PaperProps={{
-          sx: {
-            mt: 1.5,
-            width: 292,
-            bgcolor: '#161412',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '24px',
-            boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
-            p: 1,
-            color: 'white',
-          },
+      <Box
+        sx={{
+          width: '100%',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          bgcolor: '#161412',
+          overflow: 'hidden',
         }}
       >
-        <Box sx={{ px: 1, py: 0.5 }}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Avatar
-              src={
-                isRenderableImageSrc(profileAvatarUrl)
-                  ? profileAvatarUrl || undefined
-                  : undefined
-              }
-              sx={{
-                width: 44,
-                height: 44,
-                bgcolor: tone.secondary,
-                color: '#fff',
-                fontWeight: 900,
-                borderRadius: '14px',
-              }}
-            >
-              {profileName.slice(0, 1).toUpperCase()}
-            </Avatar>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 900, lineHeight: 1.1 }} noWrap>
-                {profileName}
-              </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.58)', fontSize: '0.82rem' }} noWrap>
-                {profileUsername ? `@${String(profileUsername).replace(/^@+/, '')}` : 'Signed in'}
-              </Typography>
+        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              width: '100%',
+              borderRadius: '30px',
+              bgcolor: '#161412',
+              border: '1px solid rgba(99,102,241,0.28)',
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ p: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 1.25 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', color: '#6366F1', bgcolor: alpha('#6366F1', 0.08), border: `1px solid ${alpha('#6366F1', 0.24)}` }}>
+                    <Settings size={18} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
+                      {profileName}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: alpha('#fff', 0.52), fontWeight: 700 }}>
+                      Profile commands
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton onClick={handleCloseAll} size="small" sx={{ width: 34, height: 34, borderRadius: '999px', color: alpha('#fff', 0.9), bgcolor: alpha('#fff', 0.06), border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <CloseIcon size={16} />
+                </IconButton>
+              </Box>
+
+              <Box sx={{ display: 'grid', gap: 1.25, maxHeight: '58vh', overflowY: 'auto', pr: 0.5, pb: 0.5 }}>
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                  <Avatar
+                    src={isRenderableImageSrc(profileAvatarUrl) ? profileAvatarUrl || undefined : undefined}
+                    sx={{ width: 104, height: 104, bgcolor: tone.secondary, color: '#fff', fontWeight: 900, borderRadius: '28px' }}
+                  >
+                    {profileName.slice(0, 1).toUpperCase()}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '1.15rem', lineHeight: 1.05 }} noWrap>
+                      {profileName}
+                    </Typography>
+                    <Typography sx={{ color: alpha('#fff', 0.62), fontWeight: 700, fontSize: '0.86rem', lineHeight: 1.35 }} noWrap>
+                      {profileUsername ? `@${String(profileUsername).replace(/^@+/, '')}` : 'profile'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ borderRadius: '22px', border: '1px solid rgba(255,255,255,0.05)', bgcolor: 'rgba(255,255,255,0.02)', p: 1.5 }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', mb: 0.75 }}>
+                    Identity
+                  </Typography>
+                  <Typography sx={{ color: 'white', fontSize: '0.88rem', lineHeight: 1.55, wordBreak: 'break-word' }}>
+                    {profileUsername ? `@${String(profileUsername).replace(/^@+/, '')}` : 'No username set.'}
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  <Button
+                    onClick={() => {
+                      handleCloseAll();
+                      router.push('/settings');
+                    }}
+                    sx={{
+                      minWidth: 0,
+                      flex: '1 1 180px',
+                      borderRadius: '16px',
+                      bgcolor: 'rgba(255,255,255,0.03)',
+                      color: 'white',
+                      px: 1.5,
+                      py: 1.15,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                    }}
+                  >
+                    Settings
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      handleCloseAll();
+                      void logout();
+                    }}
+                    sx={{
+                      minWidth: 0,
+                      flex: '1 1 180px',
+                      borderRadius: '16px',
+                      bgcolor: 'rgba(255, 77, 77, 0.08)',
+                      color: '#FF4D4D',
+                      px: 1.5,
+                      py: 1.15,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.14)' },
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                </Stack>
+              </Box>
             </Box>
-          </Stack>
+          </Paper>
         </Box>
-        <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
-        <MenuItem onClick={() => { handleCloseAll(); router.push('/settings'); }}>
-          <ListItemIcon>
-            <Settings size={16} />
-          </ListItemIcon>
-          <ListItemText primary="Settings" />
-        </MenuItem>
-        <MenuItem onClick={() => { handleCloseAll(); void logout(); }}>
-          <ListItemIcon>
-            <LogOut size={16} />
-          </ListItemIcon>
-          <ListItemText primary="Sign out" />
-        </MenuItem>
-      </Menu>
+      </Box>
     );
   };
 
-  const renderAppMenu = () => (
-    <Menu
-      anchorEl={appMenuAnchorEl}
-      open={Boolean(appMenuAnchorEl)}
-      onClose={handleCloseAll}
-      PaperProps={{
-        sx: {
-          mt: 1.5,
-          width: 260,
-          bgcolor: '#161412',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '22px',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
-          p: 1,
-          color: 'white',
-        },
-      }}
-    >
-      {noteApps.map((item) => (
-        <MenuItem
-          key={item.href}
-          onClick={() => {
-            handleCloseAll();
-            router.push(item.href);
-          }}
-          sx={{ borderRadius: '14px', mb: 0.5 }}
-        >
-          <ListItemText primary={item.label} secondary={item.description} />
-        </MenuItem>
-      ))}
-    </Menu>
-  );
+  const renderAppPanel = () => {
+    if (!appMenuAnchorEl) return null;
+
+    return (
+      <Box sx={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', bgcolor: '#161412', overflow: 'hidden' }}>
+        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              width: '100%',
+              borderRadius: '30px',
+              bgcolor: '#161412',
+              border: '1px solid rgba(245,158,11,0.28)',
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ p: 1.5, display: 'grid', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', color: '#F59E0B', bgcolor: alpha('#F59E0B', 0.08), border: `1px solid ${alpha('#F59E0B', 0.24)}` }}>
+                    <ChevronDown size={18} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
+                      Kylrix apps
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: alpha('#fff', 0.52), fontWeight: 700 }}>
+                      Jump between surfaces
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton onClick={handleCloseAll} size="small" sx={{ width: 34, height: 34, borderRadius: '999px', color: alpha('#fff', 0.9), bgcolor: alpha('#fff', 0.06), border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <CloseIcon size={16} />
+                </IconButton>
+              </Box>
+
+              {noteApps.map((item) => (
+                <Button
+                  key={item.href}
+                  fullWidth
+                  onClick={() => {
+                    handleCloseAll();
+                    router.push(item.href);
+                  }}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    px: 2,
+                    py: 1.25,
+                    borderRadius: '14px',
+                    color: 'white',
+                    bgcolor: alpha('#FFFFFF', 0.02),
+                    border: '1px solid transparent',
+                    '&:hover': {
+                      bgcolor: alpha('#FFFFFF', 0.05),
+                      borderColor: alpha('#FFFFFF', 0.08),
+                    },
+                  }}
+                >
+                  <Stack spacing={0.25} sx={{ width: '100%' }}>
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }}>{item.label}</Typography>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }}>
+                      {item.description}
+                    </Typography>
+                  </Stack>
+                </Button>
+              ))}
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+    );
+  };
 
   return (
     <>
       <AppBar
+        ref={headerRef}
         className={className}
         position="fixed"
         elevation={0}
@@ -528,6 +632,7 @@ export default function NoteTopbar({
           boxShadow: '0 16px 42px rgba(0,0,0,0.42)',
           backgroundImage: 'none',
           overflow: 'hidden',
+          height: activePanel ? 'auto' : '88px',
         }}
       >
         <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, md: 4 }, width: '100%' }}>
@@ -541,8 +646,17 @@ export default function NoteTopbar({
             }}
           >
             <Box
-              component="button"
+              component="div"
+              role="button"
+              tabIndex={0}
               onClick={openAppMenu}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setSearchOpen(false);
+                  setAppMenuAnchorEl(event.currentTarget as HTMLElement);
+                }
+              }}
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -680,7 +794,7 @@ export default function NoteTopbar({
                       },
                     }}
                   >
-                    <RefreshCw size={18} />
+                    <RefreshIcon sx={{ fontSize: 18 }} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -737,10 +851,9 @@ export default function NoteTopbar({
         </Box>
 
         {renderSearchPanel()}
+        {renderAppPanel()}
+        {renderProfilePanel()}
       </AppBar>
-
-      {renderAppMenu()}
-      {renderProfileMenu()}
       <WalletSidebar open={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
     </>
   );

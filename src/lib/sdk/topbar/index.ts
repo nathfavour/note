@@ -52,6 +52,12 @@ export interface ConnectTopbarSurface extends TopbarSurface {
   showConnectCta: boolean;
 }
 
+export interface TopbarPanelSurface extends TopbarSurface {
+  panel: TopbarPanel | null;
+  searchPlaceholder: string;
+  panelMaxHeight: string;
+}
+
 export function createTopbarAction(action: Omit<TopbarAction, 'accent'> & { app?: KylrixApp; accent?: string }): TopbarAction {
   const accent = action.accent || getAppTone(action.app || 'root').secondary;
   return {
@@ -86,6 +92,29 @@ export function createConnectTopbarSurface(params: {
     searchPlaceholder: params.searchPlaceholder || 'Search notes, goals, moments, calls, people, apps',
     walletLabel: params.walletLabel || 'Wallet',
     showConnectCta: params.showConnectCta ?? !params.identity.walletConnected,
+  };
+}
+
+export function createTopbarPanelSurface(params: {
+  routeLabel?: string;
+  currentApp?: KylrixApp;
+  snippets?: TopbarSnippet[];
+  quickActions?: TopbarAction[];
+  searchTargets?: TopbarAction[];
+  panel?: TopbarPanel | null;
+  searchPlaceholder?: string;
+  panelMaxHeight?: string;
+}): TopbarPanelSurface {
+  return {
+    routeLabel: params.routeLabel || 'Note',
+    currentApp: params.currentApp || 'note',
+    snippets: params.snippets || [],
+    quickActions: params.quickActions || [],
+    searchTargets: params.searchTargets || [],
+    layout: TOPBAR_LAYOUT,
+    panel: params.panel || null,
+    searchPlaceholder: params.searchPlaceholder || 'Search notes, tags, shared links, people',
+    panelMaxHeight: params.panelMaxHeight || TOPBAR_LAYOUT.searchDockMaxHeight,
   };
 }
 
