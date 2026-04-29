@@ -17,18 +17,16 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
-  Badge,
   Paper,
   Skeleton,
+  ListItemButton,
 } from '@mui/material';
 import {
   Search,
   X as CloseIcon,
   Wallet,
   Menu as MenuIcon,
-  LayoutGrid,
   Sparkles,
-  Bell,
   Settings,
   LogOut,
   Download,
@@ -43,7 +41,6 @@ import { WalletSidebar } from './overlays/WalletSidebar';
 import { AICommandModal } from '@/components/ai/AICommandModal';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { useSidebar } from '@/components/ui/SidebarContext';
-import { useNotifications } from '@/context/NotificationContext';
 import { usePotato } from '@/components/providers/PotatoProvider';
 import { searchUsers } from '@/lib/appwrite';
 import { getUserProfilePicId } from '@/lib/utils';
@@ -56,7 +53,6 @@ interface AppHeaderProps {
 export default function AppHeader({ className }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const { setIsCollapsed } = useSidebar();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const { activeNotification, panel, openPanel, closePanel } = useIsland();
   const potato = usePotato();
 
@@ -70,7 +66,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
   const [peopleResults, setPeopleResults] = useState<any[]>([]);
   const [searchingPeople, setSearchingPeople] = useState(false);
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null);
-  const [anchorElNotifications, setAnchorElNotifications] = useState<null | HTMLElement>(null);
   const [anchorElIsland, setAnchorElIsland] = useState<null | HTMLElement>(null);
   const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
@@ -450,77 +445,182 @@ export default function AppHeader({ className }: AppHeaderProps) {
   const renderProfileSurface = () => {
     if (panel !== 'profile') return null;
 
+    const userId = user?.$id || null;
+    const shortUserId = userId ? `${userId.slice(0, 6)}…${userId.slice(-4)}` : 'local';
+    const profileBio = String((user as any)?.bio || (user as any)?.prefs?.bio || '').trim();
+    const username = profileUsername ? String(profileUsername).replace(/^@+/, '').toLowerCase() : null;
+
     return (
       <Box
         sx={{
           width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
           borderTop: '1px solid rgba(255,255,255,0.05)',
           bgcolor: '#161412',
         }}
       >
-        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5 }}>
+        <Box sx={{ width: '100%', px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', justifyContent: 'center' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              borderRadius: '24px',
-              bgcolor: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              width: { xs: 'calc(100vw - 24px)', sm: 'min(680px, calc(100vw - 48px))' },
+              maxWidth: '100%',
+              borderRadius: '30px',
+              bgcolor: '#161412',
+              border: '1px solid rgba(99,102,241,0.28)',
+              overflow: 'hidden',
             }}
           >
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-              <IdentityAvatar
-                src={smallProfileUrl || undefined}
-                alt={profileName}
-                fallback={profileName.charAt(0).toUpperCase()}
-                verified={identitySignals.verified}
-                pro={identitySignals.pro}
-                size={56}
-                borderRadius="16px"
-              />
-              <Box sx={{ flex: 1 }}>
-                <IdentityName verified={identitySignals.verified}>
-                  <Typography component="span" sx={{ fontWeight: 900, fontSize: '1.05rem' }}>
-                    {profileName}
-                  </Typography>
-                </IdentityName>
-                <Typography sx={{ color: 'rgba(255,255,255,0.58)', mt: 0.5 }}>
-                  {profileUsername ? `@${profileUsername}` : 'Your Note profile'}
-                </Typography>
-                {user?.email && (
-                  <Typography sx={{ color: 'rgba(255,255,255,0.42)', fontSize: '0.9rem', mt: 0.25 }}>
-                    {user.email}
-                  </Typography>
-                )}
+            <Box sx={{ position: 'relative', zIndex: 1, p: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 1.25 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: '14px',
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: '#6366F1',
+                      bgcolor: alpha('#6366F1', 0.08),
+                      border: `1px solid ${alpha('#6366F1', 0.24)}`,
+                    }}
+                  >
+                    <Sparkles size={18} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
+                      {profileName}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: alpha('#fff', 0.52), fontWeight: 700 }}>
+                      Profile commands
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton
+                  onClick={closePanel}
+                  aria-label="Close profile panel"
+                  size="small"
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '999px',
+                    color: alpha('#fff', 0.9),
+                    bgcolor: alpha('#fff', 0.06),
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    flexShrink: 0,
+                    '&:hover': { bgcolor: alpha('#fff', 0.12) },
+                  }}
+                >
+                  <CloseIcon size={16} />
+                </IconButton>
               </Box>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
+
+              <Box sx={{ display: 'grid', gap: 1.25, minWidth: 0, overflowX: 'hidden', overflowY: 'auto', maxHeight: '58vh', pr: 0.5, pb: 0.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 0.25 }}>
+                  <Box sx={{ width: 56, height: 6, borderRadius: 999, bgcolor: alpha('#fff', 0.14) }} />
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', minWidth: 0 }}>
+                  <Box sx={{ flexShrink: 0 }}>
+                    <IdentityAvatar
+                      src={smallProfileUrl || undefined}
+                      alt={profileName}
+                      fallback={profileName.charAt(0).toUpperCase()}
+                      verified={identitySignals.verified}
+                      pro={identitySignals.pro}
+                      size={104}
+                      borderRadius="28px"
+                    />
+                  </Box>
+
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '1.15rem', lineHeight: 1.05 }} noWrap>
+                      {profileName}
+                    </Typography>
+                    <Typography sx={{ color: alpha('#fff', 0.62), fontWeight: 700, fontSize: '0.86rem', lineHeight: 1.35 }} noWrap>
+                      {username ? `@${username}` : 'profile'}
+                    </Typography>
+                    <Typography sx={{ color: alpha('#fff', 0.52), fontFamily: 'var(--font-mono)', fontSize: '0.72rem', mt: 0.75 }} noWrap>
+                      {shortUserId}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ borderRadius: '22px', border: '1px solid rgba(255,255,255,0.05)', bgcolor: 'rgba(255,255,255,0.02)', p: 1.5, minWidth: 0 }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', mb: 0.75 }}>
+                    Bio
+                  </Typography>
+                  <Typography sx={{ color: 'white', fontSize: '0.88rem', lineHeight: 1.55, minHeight: 22, wordBreak: 'break-word' }}>
+                    {profileBio || 'No bio yet.'}
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  <Button
+                    onClick={async () => {
+                      if (userId && navigator?.clipboard) {
+                        await navigator.clipboard.writeText(userId);
+                      }
+                    }}
+                    sx={{
+                      minWidth: 0,
+                      flex: '1 1 180px',
+                      justifyContent: 'flex-start',
+                      borderRadius: '16px',
+                      bgcolor: 'rgba(255,255,255,0.03)',
+                      color: 'white',
+                      px: 1.5,
+                      py: 1.15,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                    }}
+                  >
+                    {userId ? `Copy ${shortUserId}` : 'Copy profile id'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      closePanel();
+                      void logout();
+                    }}
+                    sx={{
+                      minWidth: 0,
+                      flex: '1 1 180px',
+                      borderRadius: '16px',
+                      bgcolor: 'rgba(255, 77, 77, 0.08)',
+                      color: '#FF4D4D',
+                      px: 1.5,
+                      py: 1.15,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.14)' },
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                </Stack>
+
                 <Button
-                  variant="outlined"
                   onClick={() => {
                     closePanel();
                     router.push('/settings');
                   }}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255,255,255,0.12)',
-                    '&:hover': { borderColor: 'rgba(255,255,255,0.22)' },
-                  }}
-                >
-                  Settings
-                </Button>
-                <Button
                   variant="contained"
-                  onClick={() => void logout()}
                   sx={{
-                    bgcolor: '#EC4899',
-                    color: '#fff',
-                    '&:hover': { bgcolor: alpha('#EC4899', 0.85) },
+                    borderRadius: '16px',
+                    px: 2,
+                    py: 1.25,
+                    textTransform: 'none',
+                    fontWeight: 900,
+                    bgcolor: '#6366F1',
+                    color: '#000',
+                    '&:hover': { bgcolor: alpha('#6366F1', 0.86) },
                   }}
                 >
-                  Sign out
+                  See full profile
                 </Button>
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </Paper>
         </Box>
       </Box>
