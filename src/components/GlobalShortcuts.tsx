@@ -53,17 +53,6 @@ export default function GlobalShortcuts() {
       // Avoid interfering with typing for other combos
       const typing = isTypingTarget(e.target);
 
-      // Cmd/Ctrl + K => focus top bar search
-      if (key === "k" && !e.altKey) {
-        e.preventDefault();
-        const input = document.getElementById("topbar-search-input") as HTMLInputElement | null;
-        if (input) {
-          input.focus();
-          input.select?.();
-        }
-        return;
-      }
-
       // Cmd/Ctrl + N => create new note (navigate to /notes if not there)
       if (key === "n" && !e.altKey && !typing) {
         e.preventDefault();

@@ -114,7 +114,7 @@ export default function AppShell({ children }: AppShellProps) {
             // Desktop: account for sidebar width
             width: { xs: '100%', md: 'calc(100% - 280px)' },
             ml: { xs: 0, md: '280px' },
-            // Mobile: account for top header and bottom nav
+            // Mobile: account for bottom nav
             pt: { xs: 0, md: 0 },
             pb: { xs: '100px', md: 2 }, // Space for mobile bottom nav
             minHeight: '100vh',
