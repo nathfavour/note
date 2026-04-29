@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, type ChangeEvent, type ReactNode } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider, IconButton, Collapse, Avatar, Link, Popover, Tooltip, ListItemAvatar, ListItemButton, CircularProgress, alpha } from '@mui/material';
 import { Reply as ReplyIcon, ExpandMore, ExpandLess, Edit as EditIcon, Delete as DeleteIcon, MoreVert as MoreIcon, Block as BlockIcon, EmojiEmotionsOutlined } from '@mui/icons-material';
 import { listComments, createComment, getUsersByIds, updateComment, deleteComment, deleteReactionsForTarget } from '@/lib/appwrite';
@@ -231,10 +231,11 @@ function MentionComposer({
               avatar,
             };
           }),
-        ).then((items) => items.filter((item): item is MentionResult => Boolean(item)));
-        setResults(mapped);
+        );
+        const filtered = mapped.filter((item): item is MentionResult => Boolean(item));
+        setResults(filtered);
         upsertCommentIdentities(
-          mapped.map((item) => ({
+          filtered.map((item) => ({
             $id: item.id,
             id: item.id,
             username: item.username,
@@ -257,7 +258,7 @@ function MentionComposer({
     };
   }, [query]);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const nextValue = event.target.value;
     onChange(nextValue);
 
