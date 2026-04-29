@@ -10,7 +10,7 @@ const rateLimiter = createRateLimiter({
 
 const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
-const APPWRITE_DATABASE_ID = APPWRITE_CONFIG.DATABASES.NOTE;
+const APPWRITE_DATABASE_ID = APPWRITE_CONFIG.DATABASES.CHAT;
 const APPWRITE_TABLE_ID_PROFILES = APPWRITE_CONFIG.TABLES.CHAT.PROFILES;
 
 export async function POST(req: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       [
         Query.equal('$id', targetIds),
         Query.limit(targetIds.length),
-        Query.select(['$id', 'name', 'username', 'avatar', 'profilePicId']),
+        Query.select(['$id', 'username', 'displayName', 'bio', 'avatar', 'walletAddress', 'publicKey']),
       ]
     );
 
@@ -58,9 +58,13 @@ export async function POST(req: NextRequest) {
     // we want to be explicit about what we expose in a public-ish endpoint)
     const publicProfiles = res.documents.map(doc => ({
       $id: doc.$id,
-      name: doc.name,
+      name: doc.displayName || doc.username,
+      displayName: doc.displayName || null,
       username: doc.username,
-      avatar: doc.avatar || doc.profilePicId || null,
+      avatar: doc.avatar || null,
+      bio: doc.bio || null,
+      walletAddress: doc.walletAddress || null,
+      publicKey: doc.publicKey || null,
       // Do NOT include email or other private data
     }));
 

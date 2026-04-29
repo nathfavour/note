@@ -12,7 +12,7 @@ import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import NoteReactions from './NoteReactions';
 import { TargetType } from '@/types/appwrite';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
-import { getCachedCommentIdentities, upsertCommentIdentity, upsertCommentIdentities } from '@/lib/commentIdentityCache';
+import { getCachedCommentIdentity, getCachedCommentIdentities, upsertCommentIdentity, upsertCommentIdentities } from '@/lib/commentIdentityCache';
 import { searchGlobalUsers } from '@/lib/ecosystem/identity';
 
 interface CommentsProps {
@@ -56,6 +56,11 @@ interface MentionResult {
 
 function toDisplayUsername(value?: string | null) {
   return String(value || '').replace(/^@+/, '').trim().toLowerCase() || null;
+}
+
+function isRenderableImageSrc(value?: string | null) {
+  if (!value) return false;
+  return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:');
 }
 
 function getActiveMentionToken(value: string, caret: number | null | undefined) {
@@ -386,9 +391,6 @@ function MentionComposer({
         <Button size="small" variant="contained" onClick={onSubmit} disabled={disabled || !value.trim()}>
           {submitLabel}
         </Button>
-        <Button size="small" onClick={closeSuggestions} disabled={!anchorEl && !results.length}>
-          Hide matches
-        </Button>
       </Box>
     </Box>
   );
@@ -416,14 +418,17 @@ function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0, userMap,
   const [isReactionsHover, setIsReactionsHover] = useState(false);
   const closeReactionsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const commentUser = userMap[comment.userId];
+  const commentUser = userMap[comment.userId] || getCachedCommentIdentity(comment.userId) || undefined;
   const isOwner = user?.$id === comment.userId;
   const isDeleted = comment.content === '[Deleted]';
   const profilePicId = getUserProfilePicId(commentUser);
   const avatarSrc = isDeleted
     ? undefined
-    : commentUser?.avatar ||
-      (profilePicId ? getCachedProfilePreview(profilePicId) || undefined : undefined);
+    : isRenderableImageSrc(commentUser?.avatar)
+      ? commentUser?.avatar
+      : profilePicId
+        ? getCachedProfilePreview(profilePicId) || undefined
+        : undefined;
 
   // Efficient identity fallback using canonized helpers
   const displayName = isDeleted ? 'Deleted' : getEffectiveDisplayName(commentUser);
@@ -725,6 +730,21 @@ export default function CommentsSection({ noteId }: CommentsProps) {
     return normalized.filter((item): item is Users => Boolean(item && item.$id));
   }, []);
 
+  const normalizeAndStoreUsers = useCallback(async (users: Users[]) => {
+    const normalized = await normalizeUsersForComments(users);
+    if (!normalized.length) return;
+
+    const map: Record<string, Users> = {};
+    normalized.forEach((u) => {
+      if (u.$id) map[u.$id] = u;
+    });
+
+    if (Object.keys(map).length > 0) {
+      setUserMap((prev) => ({ ...prev, ...map }));
+      upsertCommentIdentities(normalized);
+    }
+  }, [normalizeUsersForComments]);
+
   const fetchComments = useCallback(async () => {
     setCommentsError(null);
     try {
@@ -741,8 +761,9 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       const uniqueUserIds = Array.from(new Set(docs.map(c => c.userId)));
       if (uniqueUserIds.length > 0) {
         const cachedUsers = getCachedCommentIdentities(uniqueUserIds);
-        if (Object.keys(cachedUsers).length > 0) {
-          setUserMap((prev) => ({ ...prev, ...cachedUsers }));
+        const cachedUserList = Object.values(cachedUsers);
+        if (cachedUserList.length > 0) {
+          await normalizeAndStoreUsers(cachedUserList);
         }
 
         let users: Users[] = [];
@@ -761,15 +782,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
           }
         }
 
-        const normalizedUsers = await normalizeUsersForComments(users);
-        const map: Record<string, Users> = {};
-        normalizedUsers.forEach(u => {
-          if (u.$id) map[u.$id] = u;
-        });
-        if (Object.keys(map).length > 0) {
-          setUserMap((prev) => ({ ...prev, ...map }));
-          upsertCommentIdentities(normalizedUsers);
-        }
+        await normalizeAndStoreUsers(users);
       }
       return;
     } catch (error: any) {
@@ -790,8 +803,9 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       const uniqueUserIds = Array.from(new Set(docs.map(c => c.userId)));
       if (uniqueUserIds.length > 0) {
         const cachedUsers = getCachedCommentIdentities(uniqueUserIds);
-        if (Object.keys(cachedUsers).length > 0) {
-          setUserMap((prev) => ({ ...prev, ...cachedUsers }));
+        const cachedUserList = Object.values(cachedUsers);
+        if (cachedUserList.length > 0) {
+          await normalizeAndStoreUsers(cachedUserList);
         }
 
         let users: Users[] = [];
@@ -810,15 +824,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
           }
         }
 
-        const normalizedUsers = await normalizeUsersForComments(users);
-        const map: Record<string, Users> = {};
-        normalizedUsers.forEach(u => {
-          if (u.$id) map[u.$id] = u;
-        });
-        if (Object.keys(map).length > 0) {
-          setUserMap((prev) => ({ ...prev, ...map }));
-          upsertCommentIdentities(normalizedUsers);
-        }
+        await normalizeAndStoreUsers(users);
       }
     } catch (fallbackError) {
       console.error('Failed to fetch comments via shared API:', fallbackError);
