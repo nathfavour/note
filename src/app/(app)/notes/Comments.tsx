@@ -50,7 +50,7 @@ interface MentionResult {
   title: string;
   subtitle?: string | null;
   username?: string | null;
-  avatar?: string | null;
+  avatar: string | null;
   profilePicId?: string | null;
 }
 
@@ -830,7 +830,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       console.error('Failed to fetch comments via shared API:', fallbackError);
       setCommentsError('Comments are unavailable right now.');
     }
-  }, [noteId, normalizeUsersForComments]);
+  }, [noteId, normalizeAndStoreUsers]);
 
   useEffect(() => {
     fetchComments();

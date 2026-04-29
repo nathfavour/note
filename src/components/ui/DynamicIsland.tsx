@@ -105,11 +105,12 @@ export function IslandProvider({ children }: { children: React.ReactNode }) {
   }, [showIsland]);
 
   useEffect(() => {
+    const currentTimers = timersRef.current;
     return () => {
-      for (const timer of timersRef.current.values()) {
+      for (const timer of currentTimers.values()) {
         window.clearTimeout(timer);
       }
-      timersRef.current.clear();
+      currentTimers.clear();
     };
   }, []);
 
