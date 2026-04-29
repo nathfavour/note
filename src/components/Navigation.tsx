@@ -124,7 +124,8 @@ export const DesktopSidebar: React.FC = () => {
         boxShadow: '10px 0 30px rgba(0,0,0,0.5), inset -1px 0 0 rgba(0, 0, 0, 0.4)',
         transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         width: isCollapsed ? '80px' : '280px',
-        zIndex: 1200
+        zIndex: 1200,
+        pt: '88px'
       }}
     >
       <Box sx={{ 

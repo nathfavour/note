@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
+import AppHeader from '@/components/AppHeader';
 import { Box } from '@mui/material';
 
 export default function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,7 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', overflowX: 'hidden' }}>
       {/* Main layout container */}
+      <AppHeader />
       <DesktopSidebar />
       
       {/* Main content area - offset to account for fixed sidebar and dynamic sidebar */}
@@ -32,7 +34,7 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
         component="main"
         sx={{
           minWidth: 0,
-          pt: 0,
+          pt: '88px',
           pb: { xs: 12, md: 4 },
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           ml: {

@@ -43,6 +43,17 @@ export default function GlobalShortcuts() {
 
       if (!hasMeta) return;
 
+      // Cmd/Ctrl + K => focus top bar search
+      if (key === "k" && !e.altKey) {
+        e.preventDefault();
+        const input = document.getElementById("topbar-search-input") as HTMLInputElement | null;
+        if (input) {
+          input.focus();
+          input.select?.();
+        }
+        return;
+      }
+
       // Cmd/Ctrl + / => open shortcuts
       if ((key === "/" || key === "?") && !e.altKey) {
         e.preventDefault();

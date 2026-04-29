@@ -6,6 +6,8 @@ import { LoadingProvider } from "@/components/ui/LoadingContext";
 import { RouteGuard } from "@/components/ui/RouteGuard";
 import { ThemeProvider as AppThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { IslandProvider } from "@/components/ui/DynamicIsland";
+import { PotatoProvider } from "@/components/providers/PotatoProvider";
 import Overlay from "@/components/ui/Overlay";
 import { ContextMenuProvider } from "@/components/ui/ContextMenuContext";
 import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
@@ -48,21 +50,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                     <NotesProvider>
                                         <MuiThemeWrapper>
                                             <SudoProvider>
-                                                <ToastProvider>
-                                                    <OverlayProvider>
-                                                        <LoadingProvider>
-                                                            <ContextMenuProvider>
-                                                                <RouteGuard>
-                                                                    {children}
-                                                                </RouteGuard>
-                                                                <Overlay />
-                                                                <GlobalContextMenu />
-                                                                <GlobalShortcuts />
-                                                                <EcosystemPortal />
-                                                            </ContextMenuProvider>
-                                                        </LoadingProvider>
-                                                    </OverlayProvider>
-                                                </ToastProvider>
+                                                <IslandProvider>
+                                                    <PotatoProvider>
+                                                        <ToastProvider>
+                                                            <OverlayProvider>
+                                                                <LoadingProvider>
+                                                                    <ContextMenuProvider>
+                                                                        <RouteGuard>
+                                                                            {children}
+                                                                        </RouteGuard>
+                                                                        <Overlay />
+                                                                        <GlobalContextMenu />
+                                                                        <GlobalShortcuts />
+                                                                        <EcosystemPortal />
+                                                                    </ContextMenuProvider>
+                                                                </LoadingProvider>
+                                                            </OverlayProvider>
+                                                        </ToastProvider>
+                                                    </PotatoProvider>
+                                                </IslandProvider>
                                             </SudoProvider>
                                         </MuiThemeWrapper>
                                     </NotesProvider>

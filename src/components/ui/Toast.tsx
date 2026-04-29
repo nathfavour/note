@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
+import { useIsland, IslandType } from './DynamicIsland';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -36,13 +37,17 @@ interface ToastProviderProps {
 }
 
 export function ToastProvider({ children }: ToastProviderProps) {
+  const { showIsland } = useIsland();
+
   const showToast = useCallback((type: ToastType, title: string, message?: string, duration = 5000, defaultExpanded = false) => {
-    void type;
-    void title;
-    void message;
-    void duration;
-    void defaultExpanded;
-  }, []);
+    showIsland({
+      type: type as IslandType,
+      title,
+      message,
+      duration,
+      defaultExpanded,
+    });
+  }, [showIsland]);
 
   const dismissToast = useCallback((_id: string) => {
     void _id;
