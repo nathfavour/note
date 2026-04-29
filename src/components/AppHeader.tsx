@@ -20,6 +20,8 @@ import {
   Paper,
   Skeleton,
   ListItemButton,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import {
   Search,
@@ -35,7 +37,7 @@ import {
 import { useAuth } from '@/components/ui/AuthContext';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
-import { IdentityAvatar, IdentityName, computeIdentityFlags } from './common/IdentityBadge';
+import { IdentityAvatar, computeIdentityFlags } from './common/IdentityBadge';
 import Logo from './common/Logo';
 import { WalletSidebar } from './overlays/WalletSidebar';
 import { AICommandModal } from '@/components/ai/AICommandModal';
@@ -244,47 +246,47 @@ export default function AppHeader({ className }: AppHeaderProps) {
             overflowY: 'auto',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1.25 }}>
-            <Box
-              sx={{
-                width: 38,
-                height: 38,
-                borderRadius: '14px',
-                display: 'grid',
-                placeItems: 'center',
-                bgcolor: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                flexShrink: 0,
-              }}
-            >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
               <Search size={16} />
             </Box>
-            <InputBase
-              id="topbar-search-input"
+            <TextField
               inputRef={searchInputRef}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search notes, tags, shared links, extensions, people"
-              sx={{
-                flex: 1,
-                minWidth: 220,
-                color: 'white',
-                fontWeight: 800,
-                '& input::placeholder': {
-                  color: 'rgba(255,255,255,0.42)',
-                  opacity: 1,
+              variant="standard"
+              fullWidth
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  color: 'white',
+                  fontWeight: 800,
+                  fontSize: '0.98rem',
+                  '& input::placeholder': { color: 'rgba(255,255,255,0.42)', opacity: 1 },
                 },
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography sx={{ color: 'rgba(255,255,255,0.42)', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', mr: 0.5 }}>
+                      Search
+                    </Typography>
+                  </InputAdornment>
+                ),
+                endAdornment: searchQuery ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearchQuery('')} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <CloseIcon size={16} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+              sx={{ flex: 1, minWidth: { xs: '100%', md: 320 } }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  closePanel();
+                }
               }}
             />
-            {searchQuery && (
-              <IconButton
-                size="small"
-                onClick={() => setSearchQuery('')}
-                sx={{ color: 'rgba(255,255,255,0.4)' }}
-              >
-                <CloseIcon size={16} />
-              </IconButton>
-            )}
           </Box>
 
           <Stack spacing={1.25}>
@@ -631,48 +633,108 @@ export default function AppHeader({ className }: AppHeaderProps) {
     if (panel !== 'ecosystem') return null;
 
     const apps = [
-      { label: 'Note', href: getEcosystemUrl('note'), tone: '#EC4899' },
-      { label: 'Vault', href: getEcosystemUrl('vault'), tone: '#10B981' },
-      { label: 'Flow', href: getEcosystemUrl('flow'), tone: '#A855F7' },
-      { label: 'Connect', href: getEcosystemUrl('connect'), tone: '#F59E0B' },
-      { label: 'Accounts', href: getEcosystemUrl('accounts'), tone: '#6366F1' },
+      { app: 'note' as const, label: 'Note', description: 'Secure notes and research.', href: getEcosystemUrl('note'), tone: '#EC4899' },
+      { app: 'vault' as const, label: 'Vault', description: 'Passwords, 2FA, and keys.', href: getEcosystemUrl('vault'), tone: '#10B981' },
+      { app: 'flow' as const, label: 'Flow', description: 'Tasks, plans, and follow-through.', href: getEcosystemUrl('flow'), tone: '#A855F7' },
+      { app: 'connect' as const, label: 'Connect', description: 'Secure messages and sharing.', href: getEcosystemUrl('connect'), tone: '#F59E0B' },
+      { app: 'root' as const, label: 'Accounts', description: 'Your Kylrix account.', href: getEcosystemUrl('accounts'), tone: '#6366F1' },
     ];
 
     return (
-      <Box sx={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', bgcolor: '#161412' }}>
-        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5 }}>
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', bgcolor: '#161412' }}>
+        <Box sx={{ width: '100%', px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', justifyContent: 'center' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              borderRadius: '24px',
-              bgcolor: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              width: { xs: 'calc(100vw - 24px)', sm: 'min(680px, calc(100vw - 48px))' },
+              maxWidth: '100%',
+              borderRadius: '30px',
+              bgcolor: '#161412',
+              border: '1px solid rgba(245,158,11,0.28)',
+              overflow: 'hidden',
             }}
           >
-            <Stack spacing={1.25}>
-              <Typography sx={{ fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
-                Kylrix Ecosystem
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {apps.map((app) => (
-                  <Button
-                    key={app.label}
-                    component="a"
-                    href={app.href}
-                    onClick={() => closePanel()}
+            <Box sx={{ position: 'relative', zIndex: 1, p: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 1.25 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
                     sx={{
-                      color: 'white',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      bgcolor: alpha(app.tone, 0.12),
-                      '&:hover': { bgcolor: alpha(app.tone, 0.18) },
+                      width: 38,
+                      height: 38,
+                      borderRadius: '14px',
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: '#F59E0B',
+                      bgcolor: alpha('#F59E0B', 0.08),
+                      border: `1px solid ${alpha('#F59E0B', 0.24)}`,
                     }}
                   >
-                    {app.label}
-                  </Button>
+                    <Sparkles size={18} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
+                      Ecosystem apps
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: alpha('#fff', 0.52), fontWeight: 700 }}>
+                      Jump between apps
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton
+                  onClick={closePanel}
+                  aria-label="Close ecosystem panel"
+                  size="small"
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '999px',
+                    color: alpha('#fff', 0.9),
+                    bgcolor: alpha('#fff', 0.06),
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    flexShrink: 0,
+                    '&:hover': { bgcolor: alpha('#fff', 0.12) },
+                  }}
+                >
+                  <CloseIcon size={16} />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: 'grid', gap: 0.75 }}>
+                {apps.map((app) => (
+                  <ListItemButton
+                    key={app.label}
+                    onClick={() => {
+                      closePanel();
+                      window.location.assign(app.href);
+                    }}
+                    sx={{
+                      borderRadius: '18px',
+                      bgcolor: app.app === 'note' ? alpha(app.tone, 0.1) : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${app.app === 'note' ? alpha(app.tone, 0.28) : 'rgba(255,255,255,0.05)'}`,
+                      px: 1.5,
+                      py: 1.25,
+                      gap: 1.25,
+                      '&:hover': {
+                        bgcolor: alpha(app.tone, 0.12),
+                        borderColor: alpha(app.tone, 0.32),
+                      },
+                    }}
+                  >
+                    <Box sx={{ width: 34, height: 34, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: alpha(app.tone, 0.12), color: app.tone, flexShrink: 0 }}>
+                      <Logo app={app.app} size={16} variant="icon" />
+                    </Box>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }}>
+                        {app.label}
+                        {app.app === 'note' ? ' • Current app' : ''}
+                      </Typography>
+                      <Typography sx={{ color: alpha('#fff', 0.56), fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }}>
+                        {app.description}
+                      </Typography>
+                    </Box>
+                  </ListItemButton>
                 ))}
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </Paper>
         </Box>
       </Box>
@@ -952,44 +1014,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
                 </Tooltip>
               )}
 
-              {isAuthenticated && (
-                <Tooltip title="Kylrix Portal">
-                  <IconButton
-                    onClick={() => openPanel('ecosystem')}
-                    sx={{
-                      color: 'rgba(255,255,255,0.7)',
-                      bgcolor: alpha('#6366F1', 0.06),
-                      border: '1px solid rgba(99,102,241,0.16)',
-                      borderRadius: '12px',
-                      width: { xs: 36, sm: 42 },
-                      height: { xs: 36, sm: 42 },
-                    }}
-                  >
-                    <LayoutGrid size={18} strokeWidth={1.75} />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              {isAuthenticated && (
-                <Tooltip title="Notifications">
-                  <IconButton
-                    onClick={(event) => setAnchorElNotifications(event.currentTarget)}
-                    sx={{
-                      color: unreadCount > 0 ? '#EC4899' : 'rgba(255,255,255,0.4)',
-                      bgcolor: alpha('#EC4899', 0.04),
-                      border: '1px solid rgba(236,72,153,0.1)',
-                      borderRadius: '12px',
-                      width: { xs: 36, sm: 42 },
-                      height: { xs: 36, sm: 42 },
-                    }}
-                  >
-                    <Badge badgeContent={unreadCount} color="error">
-                      <Bell size={18} strokeWidth={1.75} />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-              )}
-
               {isAuthenticated ? (
                 <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Button
@@ -1116,54 +1140,6 @@ export default function AppHeader({ className }: AppHeaderProps) {
           <ListItemIcon><Download size={16} /></ListItemIcon>
           <ListItemText>Export / backup</ListItemText>
         </MenuItem>
-      </Menu>
-
-      <Menu
-        anchorEl={anchorElNotifications}
-        open={Boolean(anchorElNotifications)}
-        onClose={() => setAnchorElNotifications(null)}
-        PaperProps={{
-          sx: {
-            mt: 1.5,
-            bgcolor: '#161412',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '20px',
-            minWidth: 320,
-            color: 'white',
-          },
-        }}
-      >
-        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-          <Typography sx={{ fontWeight: 900 }}>Notifications</Typography>
-          {unreadCount > 0 && (
-            <Button size="small" onClick={() => void markAllAsRead()} sx={{ color: '#F59E0B' }}>
-              Mark all read
-            </Button>
-          )}
-        </Box>
-        <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
-        {notifications.slice(0, 6).map((notification: any) => (
-          <MenuItem
-            key={notification.$id}
-            onClick={() => {
-              void markAsRead(notification.$id);
-              setAnchorElNotifications(null);
-            }}
-            sx={{ whiteSpace: 'normal', alignItems: 'flex-start', py: 1.25 }}
-          >
-            <ListItemText
-              primary={notification.action || notification.targetType || notification.title || 'Update'}
-              secondary={notification.details || notification.message || ''}
-              primaryTypographyProps={{ sx: { fontWeight: 800 } }}
-              secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.55)' } }}
-            />
-          </MenuItem>
-        ))}
-        {notifications.length === 0 && (
-          <Box sx={{ px: 2, py: 2, color: 'rgba(255,255,255,0.55)' }}>
-            No notifications yet.
-          </Box>
-        )}
       </Menu>
 
       <WalletSidebar open={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
