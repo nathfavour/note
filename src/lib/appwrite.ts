@@ -1261,7 +1261,6 @@ export async function createComment(noteId: string, content: string, parentComme
 
   if (isPublicNote) {
     permissions.push(Permission.read(Role.any()));
-    permissions.push(Permission.read(Role.guests()));
   }
 
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, ID.unique(), data, permissions);
