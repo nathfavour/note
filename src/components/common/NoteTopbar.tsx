@@ -39,6 +39,7 @@ import { createEcosystemPanelItems, createTopbarPanelMotion, createTopbarSearchS
 import { createProfilePreviewManager, getUserProfilePicId as getSdkUserProfilePicId } from '@/lib/sdk/appwrite';
 import { searchGlobalUsers } from '@/lib/ecosystem/identity';
 import { stageProfileView } from '@/lib/profile-handoff';
+import { getAppColor } from '@/lib/ecosystem-app-colors';
 
 interface NoteTopbarProps {
   className?: string;
@@ -944,14 +945,14 @@ export default function NoteTopbar({
                     <IconButton
                       onClick={() => setIsWalletOpen(true)}
                       sx={{
-                        color: '#F59E0B',
-                        bgcolor: alpha('#F59E0B', 0.03),
+                        color: getAppColor('note'),
+                        bgcolor: alpha(getAppColor('note'), 0.03),
                         border: '1px solid',
-                        borderColor: alpha('#F59E0B', 0.1),
+                        borderColor: alpha(getAppColor('note'), 0.1),
                         borderRadius: '12px',
                         width: 42,
                         height: 42,
-                        '&:hover': { bgcolor: alpha('#F59E0B', 0.08) },
+                        '&:hover': { bgcolor: alpha(getAppColor('note'), 0.08) },
                       }}
                     >
                       <Wallet size={18} strokeWidth={1.5} />
