@@ -67,6 +67,7 @@ import { useDataNexus } from '@/context/DataNexusContext';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
 import { useParams } from 'next/navigation';
+import { getConnectPrimaryColor } from '@/lib/ecosystem-app-colors';
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -835,14 +836,17 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
                 variant="outlined"
                 sx={{
                   borderRadius: '14px',
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
-                  color: '#6366F1',
+                  borderColor: getConnectPrimaryColor(),
+                  color: getConnectPrimaryColor(),
                   fontWeight: 800,
                   textTransform: 'none',
                   px: 3,
                   height: 44,
                   whiteSpace: 'nowrap',
-                  '&:hover': { borderColor: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.05)' }
+                  '&:hover': { 
+                    borderColor: getConnectPrimaryColor(), 
+                    bgcolor: `${getConnectPrimaryColor()}0d`
+                  }
                 }}
               >
                 Start Huddle
