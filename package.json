@@ -64,5 +64,5 @@
     "eslint-config-next": "15.1.6",
     "typescript": "5.9.3"
   },
-  "license": "MIT"
+  "license": "AGPL-3.0"
 }
