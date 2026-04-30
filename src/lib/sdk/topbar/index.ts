@@ -15,6 +15,16 @@ export interface TopbarAction extends TopbarSnippet {
   accent: string;
   terms: string[];
   onSelect: () => void;
+  app?: KylrixApp;
+}
+
+export interface TopbarPanelItem {
+  id: string;
+  app: KylrixApp;
+  label: string;
+  description: string;
+  href?: string | null;
+  selected?: boolean;
 }
 
 export interface TopbarSurface {
@@ -54,6 +64,7 @@ export interface ConnectTopbarSurface extends TopbarSurface {
 
 export interface TopbarPanelSurface extends TopbarSurface {
   panel: TopbarPanel | null;
+  panelItems: TopbarPanelItem[];
   searchPlaceholder: string;
   panelMaxHeight: string;
 }
@@ -63,6 +74,7 @@ export function createTopbarAction(action: Omit<TopbarAction, 'accent'> & { app?
   return {
     ...action,
     accent,
+    app: action.app,
   };
 }
 
@@ -102,6 +114,7 @@ export function createTopbarPanelSurface(params: {
   quickActions?: TopbarAction[];
   searchTargets?: TopbarAction[];
   panel?: TopbarPanel | null;
+  panelItems?: TopbarPanelItem[];
   searchPlaceholder?: string;
   panelMaxHeight?: string;
 }): TopbarPanelSurface {
@@ -113,6 +126,7 @@ export function createTopbarPanelSurface(params: {
     searchTargets: params.searchTargets || [],
     layout: TOPBAR_LAYOUT,
     panel: params.panel || null,
+    panelItems: params.panelItems || [],
     searchPlaceholder: params.searchPlaceholder || 'Search notes, tags, shared links, people',
     panelMaxHeight: params.panelMaxHeight || TOPBAR_LAYOUT.searchDockMaxHeight,
   };

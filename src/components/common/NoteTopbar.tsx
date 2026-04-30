@@ -23,7 +23,6 @@ import {
   ChevronDown,
   RefreshCw,
   Search,
-  Settings,
   X as CloseIcon,
   Wallet,
 } from 'lucide-react';
@@ -220,13 +219,13 @@ export default function NoteTopbar({
 
   const noteApps = useMemo(
     () => [
-      { label: 'Notes', href: '/notes', description: 'Your private graph' },
-      { label: 'Shared', href: '/shared', description: 'Links and public notes' },
-      { label: 'Tags', href: '/tags', description: 'Organize by topic' },
-      { label: 'Extensions', href: '/extensions', description: 'Tools and add-ons' },
-      { label: 'Settings', href: '/settings', description: 'Identity and privacy' },
+      { label: 'Notes', href: '/notes', description: 'Your private graph', app: 'note' as const, selected: pathname.startsWith('/notes') },
+      { label: 'Shared', href: '/shared', description: 'Links and public notes', app: 'connect' as const, selected: pathname.startsWith('/shared') },
+      { label: 'Tags', href: '/tags', description: 'Organize by topic', app: 'note' as const, selected: pathname.startsWith('/tags') },
+      { label: 'Extensions', href: '/extensions', description: 'Tools and add-ons', app: 'note' as const, selected: pathname.startsWith('/extensions') },
+      { label: 'Settings', href: '/settings', description: 'Identity and privacy', app: 'root' as const, selected: pathname.startsWith('/settings') },
     ],
-    [],
+    [pathname],
   );
 
   const activePanel = searchOpen ? 'search' : profileMenuAnchorEl ? 'profile' : appMenuAnchorEl ? 'ecosystem' : null;
@@ -271,7 +270,7 @@ export default function NoteTopbar({
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-              <Search size={16} />
+              <Logo app="note" size={18} variant="icon" />
             </Box>
             <TextField
               inputRef={searchInputRef}
@@ -409,11 +408,18 @@ export default function NoteTopbar({
                       },
                     }}
                   >
-                    <Stack spacing={0.25} sx={{ width: '100%' }}>
-                      <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }}>{item.label}</Typography>
-                      <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }}>
-                        {item.description}
-                      </Typography>
+                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
+                        <Logo app={item.app} size={16} variant="icon" />
+                      </Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }} noWrap>
+                          {item.label}
+                        </Typography>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }} noWrap>
+                          {item.description}
+                        </Typography>
+                      </Box>
                     </Stack>
                   </Button>
                 ))}
@@ -452,7 +458,7 @@ export default function NoteTopbar({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 1.25 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', color: '#6366F1', bgcolor: alpha('#6366F1', 0.08), border: `1px solid ${alpha('#6366F1', 0.24)}` }}>
-                    <Settings size={18} />
+                    <Logo app="note" size={18} variant="icon" />
                   </Box>
                   <Box>
                     <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
@@ -563,7 +569,7 @@ export default function NoteTopbar({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 0.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', color: '#F59E0B', bgcolor: alpha('#F59E0B', 0.08), border: `1px solid ${alpha('#F59E0B', 0.24)}` }}>
-                    <ChevronDown size={18} />
+                    <Logo app="note" size={18} variant="icon" />
                   </Box>
                   <Box>
                     <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
@@ -594,11 +600,11 @@ export default function NoteTopbar({
                     py: 1.25,
                     borderRadius: '14px',
                     color: 'white',
-                    bgcolor: alpha('#FFFFFF', 0.02),
-                    border: '1px solid transparent',
+                    bgcolor: item.selected ? alpha('#6366F1', 0.08) : alpha('#FFFFFF', 0.02),
+                    border: `1px solid ${item.selected ? alpha('#6366F1', 0.24) : 'transparent'}`,
                     '&:hover': {
-                      bgcolor: alpha('#FFFFFF', 0.05),
-                      borderColor: alpha('#FFFFFF', 0.08),
+                      bgcolor: item.selected ? alpha('#6366F1', 0.12) : alpha('#FFFFFF', 0.05),
+                      borderColor: item.selected ? alpha('#6366F1', 0.32) : alpha('#FFFFFF', 0.08),
                     },
                   }}
                 >
@@ -639,7 +645,7 @@ export default function NoteTopbar({
           <Box
             sx={{
               minHeight: TOPBAR_LAYOUT.height,
-              display: 'flex',
+                  display: activePanel ? 'none' : 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: { xs: 1.25, md: 2 },
