@@ -14,7 +14,6 @@ import {
   InputAdornment,
   InputBase,
   Paper,
-  Skeleton,
   Stack,
   TextField,
   Tooltip,
@@ -31,14 +30,15 @@ import {
 import Logo from '@/components/common/Logo';
 import { WalletSidebar } from '@/components/overlays/WalletSidebar';
 import { useAuth } from '@/components/ui/AuthContext';
-import { searchUsers } from '@/lib/appwrite';
 import { getProfilePicturePreview } from '@/lib/appwrite';
 import { IdentityAvatar } from '@/components/common/IdentityBadge';
 import { getUserProfilePicId } from '@/lib/utils';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { TOPBAR_LAYOUT, getAppTone } from '@/lib/sdk/design';
-import { createEcosystemPanelItems } from '@/lib/sdk/topbar';
+import { createEcosystemPanelItems, createTopbarPanelMotion, createTopbarSearchSurface, isTopbarScrollAtBottom, isTopbarScrollAtTop } from '@/lib/sdk/topbar';
 import { createProfilePreviewManager, getUserProfilePicId as getSdkUserProfilePicId } from '@/lib/sdk/appwrite';
+import { searchGlobalUsers } from '@/lib/ecosystem/identity';
+import { stageProfileView } from '@/lib/profile-handoff';
 
 interface NoteTopbarProps {
   className?: string;
@@ -78,6 +78,15 @@ export default function NoteTopbar({
   const tone = getAppTone('note');
   const profileName = user?.name || user?.email || 'Note user';
   const profileUsername = (user as any)?.username || (user as any)?.prefs?.username || null;
+  const profileSeed = useMemo(
+    () => ({
+      username: profileUsername ? String(profileUsername).replace(/^@+/, '').toLowerCase() : null,
+      displayName: profileName,
+      avatar: profileAvatarUrl || profilePicId || null,
+      userId: (user as any)?.$id || null,
+    }),
+    [profileAvatarUrl, profileName, profilePicId, profileUsername, user],
+  );
 
   const previewManager = useMemo(
     () =>
@@ -156,10 +165,20 @@ export default function NoteTopbar({
     const timer = window.setTimeout(async () => {
       setSearchingPeople(true);
       try {
-        const result = await searchUsers(text, 5);
+        const result = await searchGlobalUsers(text, 5);
         if (!active) return;
         const rows = Array.isArray(result)
-          ? result.filter((candidate: any) => candidate.id !== user?.$id)
+          ? result
+              .map((candidate: any) => ({
+                id: candidate.id || candidate.$id || candidate.userId,
+                userId: candidate.userId || candidate.id || candidate.$id || null,
+                username: candidate.username || candidate.subtitle?.replace(/^@/, '') || null,
+                displayName: candidate.displayName || candidate.title || candidate.username || candidate.name || null,
+                name: candidate.displayName || candidate.title || candidate.username || candidate.name || null,
+                avatar: candidate.avatar || null,
+                email: candidate.email || null,
+              }))
+              .filter((candidate: any) => candidate.userId !== user?.$id)
           : [];
         const resolved = await Promise.all(
           rows.slice(0, 5).map(async (candidate: any) => {
@@ -228,6 +247,18 @@ export default function NoteTopbar({
       })),
     [],
   );
+  const searchSurface = useMemo(
+    () =>
+      createTopbarSearchSurface({
+        query: searchQuery,
+        routeLabel: 'Note',
+        currentApp: 'note',
+        snippets: [],
+        resolveUrl: (app, path = '') => `${getEcosystemUrl(app === 'root' ? 'accounts' : app)}${path}`,
+      }),
+    [searchQuery],
+  );
+  const appPanelMotion = useMemo(() => createTopbarPanelMotion(), []);
 
   const activePanel = searchOpen ? 'search' : profileMenuAnchorEl ? 'profile' : appMenuAnchorEl ? 'ecosystem' : null;
 
@@ -261,6 +292,13 @@ export default function NoteTopbar({
         }}
       >
         <Box
+          onWheel={(event) => {
+            const node = event.currentTarget;
+            if (event.deltaY < 0 && isTopbarScrollAtTop(node)) {
+              event.preventDefault();
+              handleCloseAll();
+            }
+          }}
           sx={{
             width: '100%',
             px: { xs: 2, md: 4 },
@@ -313,119 +351,169 @@ export default function NoteTopbar({
           </Box>
 
           <Stack spacing={1.25} sx={{ mt: 1.25 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 1,
-                bgcolor: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: '20px',
-              }}
-            >
-              <Stack spacing={0.75}>
-                {!hasQuery && (
-                  <Box sx={{ px: 1.25, py: 1 }}>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.84rem' }}>
-                      Start typing to search notes, tags, shared links, and people.
-                    </Typography>
-                  </Box>
-                )}
+            <Box sx={{ display: 'grid', gap: 1 }}>
+              {!hasQuery && (
+                <Box sx={{ px: 0.5, py: 0.5 }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.84rem' }}>
+                    Start typing to search notes, goals, moments, calls, people, and apps.
+                  </Typography>
+                </Box>
+              )}
 
-                {hasQuery && (
-                  <>
-                    {searchingPeople ? (
-                      <Stack spacing={1} sx={{ p: 1 }}>
-                        <Skeleton variant="rounded" height={48} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
-                        <Skeleton variant="rounded" height={48} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
-                      </Stack>
-                    ) : (
-                      peopleResults.map((person) => (
-                        <Button
-                          key={person.id}
-                          onClick={() => {
-                            handleCloseAll();
-                            setSearchQuery('');
-                          }}
-                          sx={{
-                            justifyContent: 'flex-start',
-                            textAlign: 'left',
-                            px: 2,
-                            py: 1.25,
-                            borderRadius: '14px',
-                            color: 'white',
-                            bgcolor: alpha('#FFFFFF', 0.02),
-                            border: '1px solid transparent',
-                            '&:hover': {
-                              bgcolor: alpha('#FFFFFF', 0.05),
-                              borderColor: alpha('#FFFFFF', 0.08),
-                            },
-                          }}
-                        >
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            <IdentityAvatar
-                              src={person.avatar || undefined}
-                              alt={person.name}
-                              fallback={(person.name || 'U').charAt(0).toUpperCase()}
-                              size={34}
-                              borderRadius="50%"
-                            />
-                            <Box>
-                              <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }}>
-                                {person.name}
-                              </Typography>
-                              {person.email && (
-                                <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }}>
-                                  {person.email}
-                                </Typography>
-                              )}
-                            </Box>
-                          </Stack>
-                        </Button>
-                      ))
-                    )}
-                  </>
-                )}
+              {searchSurface.snippets.length > 0 && (
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {searchSurface.snippets.slice(0, 4).map((snippet) => (
+                    <Box
+                      key={snippet.id}
+                      sx={{
+                        px: 1.25,
+                        py: 0.75,
+                        borderRadius: '999px',
+                        bgcolor: 'rgba(255,255,255,0.04)',
+                        color: 'rgba(255,255,255,0.84)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {snippet.title}
+                    </Box>
+                  ))}
+                </Stack>
+              )}
 
-                {noteApps.map((item) => (
-                  <Button
-                    key={item.href}
-                    fullWidth
-                    onClick={() => {
-                      handleCloseAll();
-                      router.push(item.href);
-                    }}
-                    sx={{
-                      justifyContent: 'flex-start',
-                      textAlign: 'left',
-                      px: 2,
-                      py: 1.25,
-                      borderRadius: '14px',
-                      color: 'white',
-                      bgcolor: alpha('#FFFFFF', 0.02),
-                      border: '1px solid transparent',
-                      '&:hover': {
-                        bgcolor: alpha('#FFFFFF', 0.05),
-                        borderColor: alpha('#FFFFFF', 0.08),
-                      },
-                    }}
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-                      <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
-                        <Logo app={item.app} size={16} variant="icon" />
+              <Box sx={{ display: 'grid', gap: 0.75 }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.52)', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  {searchSurface.quickActionLabel}
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 0.75 }}>
+                  {searchSurface.quickActions.slice(0, 3).map((action) => (
+                    <Box
+                      key={action.id}
+                      component="button"
+                      onClick={() => window.location.assign(action.href)}
+                      sx={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.25,
+                        px: 1.5,
+                        py: 1.1,
+                        borderRadius: '18px',
+                        bgcolor: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        color: 'white',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: `${action.accent}1F`, color: action.accent, flexShrink: 0 }}>
+                        <Logo app="connect" size={16} variant="icon" />
                       </Box>
                       <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }} noWrap>
-                          {item.label}
+                        <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
+                          {action.title}
                         </Typography>
-                        <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }} noWrap>
-                          {item.description}
+                        <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
+                          {action.description}
                         </Typography>
                       </Box>
-                    </Stack>
-                  </Button>
-                ))}
-              </Stack>
-            </Paper>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'grid', gap: 0.75 }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.52)', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  {searchSurface.searchAcrossLabel}
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 0.75 }}>
+                  {searchSurface.searchTargets.slice(0, 4).map((action) => (
+                    <Box
+                      key={action.id}
+                      component="button"
+                      onClick={() => window.location.assign(action.href)}
+                      sx={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.25,
+                        px: 1.5,
+                        py: 1.1,
+                        borderRadius: '18px',
+                        bgcolor: action.kind === 'note' ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${action.kind === 'note' ? 'rgba(99,102,241,0.28)' : 'rgba(255,255,255,0.05)'}`,
+                        color: 'white',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: `${action.accent}1F`, color: action.accent, flexShrink: 0 }}>
+                        <Logo app="connect" size={16} variant="icon" />
+                      </Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
+                          {action.title}
+                        </Typography>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
+                          {action.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+
+              {searchingPeople || peopleResults.length > 0 ? (
+                <Box sx={{ display: 'grid', gap: 0.75 }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.52)', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {searchSurface.peopleLabel}
+                  </Typography>
+                  {searchingPeople ? (
+                    <Typography sx={{ color: 'rgba(255,255,255,0.52)', fontSize: '0.84rem' }}>
+                      Searching people...
+                    </Typography>
+                  ) : (
+                    peopleResults.slice(0, 3).map((person) => (
+                      <Box
+                        key={person.$id || person.id}
+                        component="button"
+                        onClick={() => {
+                          setSearchQuery(person.displayName || person.username || person.name || '');
+                        }}
+                        sx={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.25,
+                          px: 1.5,
+                          py: 1.1,
+                          borderRadius: '18px',
+                          bgcolor: 'rgba(255,255,255,0.02)',
+                          border: '1px solid rgba(255,255,255,0.05)',
+                          color: 'white',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <IdentityAvatar
+                          src={person.avatar || undefined}
+                          alt={person.displayName || person.username || person.name || 'person'}
+                          fallback={(person.displayName || person.username || person.name || 'U')[0]?.toUpperCase() || 'U'}
+                          size={32}
+                          borderRadius="12px"
+                        />
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
+                            {person.displayName || person.username || person.name || 'Person'}
+                          </Typography>
+                          <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
+                            {person.username ? `@${String(person.username).replace(/^@/, '')}` : 'Direct chat target'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))
+                  )}
+                </Box>
+              ) : null}
+            </Box>
           </Stack>
         </Box>
       </Box>
@@ -434,6 +522,27 @@ export default function NoteTopbar({
 
   const renderProfilePanel = () => {
     if (!profileMenuAnchorEl) return null;
+    const handleProfileWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+      const node = event.currentTarget;
+      const atTop = node.scrollTop <= 0;
+
+      if (event.deltaY < 0 && atTop) {
+        event.preventDefault();
+        handleCloseAll();
+        return;
+      }
+
+      if (event.deltaY > 0 && isTopbarScrollAtBottom(node)) {
+        event.preventDefault();
+        const username = profileSeed.username;
+        if (username) {
+          stageProfileView(profileSeed as any, profileSeed.avatar || null);
+          void router.prefetch(`/u/${encodeURIComponent(username)}`);
+          handleCloseAll();
+          router.push(`/u/${encodeURIComponent(username)}?transition=profile`);
+        }
+      }
+    };
 
     return (
       <Box
@@ -444,7 +553,10 @@ export default function NoteTopbar({
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}>
+        <Box
+          onWheel={handleProfileWheel}
+          sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}
+        >
           <Paper
             elevation={0}
             sx={{
@@ -542,6 +654,28 @@ export default function NoteTopbar({
                     Sign out
                   </Button>
                 </Stack>
+
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 0.5, pb: 0.25 }}>
+                  <motion.div
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 140 }}
+                    dragElastic={0.14}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.y > 64) {
+                        const username = profileUsername ? String(profileUsername).replace(/^@+/, '').toLowerCase() : null;
+                        if (username) {
+                        stageProfileView(profileSeed as any, profileSeed.avatar || null);
+                          void router.prefetch(`/u/${encodeURIComponent(username)}`);
+                          handleCloseAll();
+                          router.push(`/u/${encodeURIComponent(username)}?transition=profile`);
+                        }
+                      }
+                    }}
+                    style={{ touchAction: 'pan-y', cursor: 'grab' }}
+                  >
+                    <Box sx={{ width: 56, height: 6, borderRadius: 999, bgcolor: alpha('#fff', 0.14) }} />
+                  </motion.div>
+                </Box>
               </Box>
             </Box>
           </Paper>
@@ -554,90 +688,71 @@ export default function NoteTopbar({
     if (!appMenuAnchorEl) return null;
 
     return (
-      <Box sx={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', bgcolor: '#161412', overflow: 'hidden' }}>
-        <Box sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}>
-          <Paper
-            elevation={0}
-            sx={{
-              width: '100%',
-              borderRadius: '30px',
-              bgcolor: '#161412',
-              border: '1px solid rgba(245,158,11,0.28)',
-              overflow: 'hidden',
+      <motion.div
+        key="app-panel"
+        initial={appPanelMotion.initial}
+        animate={appPanelMotion.animate}
+        exit={appPanelMotion.exit}
+        transition={appPanelMotion.transition}
+        style={{ width: '100%', transformOrigin: 'top center' }}
+      >
+        <Box sx={{ width: '100%', bgcolor: '#161412', overflow: 'hidden' }}>
+          <Box
+            onWheel={(event) => {
+              const node = event.currentTarget;
+              if (event.deltaY < 0 && isTopbarScrollAtTop(node)) {
+                event.preventDefault();
+                handleCloseAll();
+              }
             }}
+            sx={{ px: { xs: 2, md: 4 }, py: 1.5, maxHeight: TOPBAR_LAYOUT.searchDockMaxHeight, overflowY: 'auto' }}
           >
-            <Box sx={{ p: 1.5, display: 'grid', gap: 0.75 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, px: 0.5, mb: 0.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 38, height: 38, borderRadius: '14px', display: 'grid', placeItems: 'center', color: '#F59E0B', bgcolor: alpha('#F59E0B', 0.08), border: `1px solid ${alpha('#F59E0B', 0.24)}` }}>
-                    <Logo app="note" size={18} variant="icon" />
-                  </Box>
-                  <Box>
-                    <Typography sx={{ color: 'white', fontWeight: 900, fontSize: '0.9rem', lineHeight: 1.1 }}>
-                      Kylrix apps
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: alpha('#fff', 0.52), fontWeight: 700 }}>
-                      Jump between surfaces
-                    </Typography>
-                  </Box>
-                </Box>
-                <IconButton onClick={handleCloseAll} size="small" sx={{ width: 34, height: 34, borderRadius: '999px', color: alpha('#fff', 0.9), bgcolor: alpha('#fff', 0.06), border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <CloseIcon size={16} />
-                </IconButton>
-              </Box>
-
-              {noteApps.map((item, index) => {
+            <Box sx={{ display: 'grid', gap: 0.75 }}>
+              {noteApps.map((item) => {
                 const tone = getAppTone(item.app);
                 return (
-                  <motion.div
+                  <Button
                     key={item.href}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.18, delay: index * 0.03, ease: 'easeOut' }}
+                    fullWidth
+                    onClick={() => {
+                      handleCloseAll();
+                      window.location.assign(item.href);
+                    }}
+                    sx={{
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      px: 1.5,
+                      py: 1.1,
+                      borderRadius: '18px',
+                      color: 'white',
+                      bgcolor: item.selected ? alpha('#6366F1', 0.08) : 'rgba(255,255,255,0.02)',
+                      border: '1px solid transparent',
+                      '&:hover': {
+                        bgcolor: alpha('#6366F1', 0.12),
+                        borderColor: alpha('#6366F1', 0.24),
+                      },
+                    }}
                   >
-                    <Button
-                      fullWidth
-                      onClick={() => {
-                        handleCloseAll();
-                        window.location.assign(item.href);
-                      }}
-                      sx={{
-                        justifyContent: 'flex-start',
-                        textAlign: 'left',
-                        px: 1.5,
-                        py: 1.1,
-                        borderRadius: '18px',
-                        color: 'white',
-                        bgcolor: item.selected ? alpha('#6366F1', 0.08) : 'rgba(255,255,255,0.02)',
-                        border: `1px solid ${item.selected ? alpha('#6366F1', 0.28) : 'rgba(255,255,255,0.05)'}`,
-                        '&:hover': {
-                          bgcolor: alpha('#6366F1', 0.12),
-                          borderColor: alpha('#6366F1', 0.32),
-                        },
-                      }}
-                    >
-                      <Stack direction="row" spacing={1.25} alignItems="center" sx={{ width: '100%' }}>
-                        <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: alpha(tone.secondary, 0.08), color: tone.secondary, border: `1px solid ${alpha(tone.secondary, 0.24)}`, flexShrink: 0 }}>
-                          <Logo app={item.app} size={16} variant="icon" />
-                        </Box>
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                          <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
-                            {item.label}
-                            {item.selected ? ' • Current app' : ''}
-                          </Typography>
-                          <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
-                            {item.description}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </Button>
-                  </motion.div>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ width: '100%' }}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: alpha(tone.secondary, 0.08), color: tone.secondary, flexShrink: 0 }}>
+                        <Logo app={item.app} size={16} variant="icon" />
+                      </Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
+                          {item.label}
+                        </Typography>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
+                          {item.description}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Button>
                 );
               })}
             </Box>
-          </Paper>
+          </Box>
         </Box>
-      </Box>
+      </motion.div>
     );
   };
 
