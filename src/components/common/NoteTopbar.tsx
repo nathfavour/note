@@ -21,10 +21,10 @@ import {
 } from '@mui/material';
 import {
   ChevronDown,
-  Close as CloseIcon,
   RefreshCw,
   Search,
   Settings,
+  X as CloseIcon,
   Wallet,
 } from 'lucide-react';
 
@@ -854,7 +854,7 @@ export default function NoteTopbar({
         {renderAppPanel()}
         {renderProfilePanel()}
       </AppBar>
-      <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
+      {isWalletOpen ? <WalletSidebar isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} /> : null}
     </>
   );
 }
