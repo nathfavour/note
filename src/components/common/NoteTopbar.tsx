@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   alpha,
@@ -34,7 +35,9 @@ import { searchUsers } from '@/lib/appwrite';
 import { getProfilePicturePreview } from '@/lib/appwrite';
 import { IdentityAvatar } from '@/components/common/IdentityBadge';
 import { getUserProfilePicId } from '@/lib/utils';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 import { TOPBAR_LAYOUT, getAppTone } from '@/lib/sdk/design';
+import { createEcosystemPanelItems } from '@/lib/sdk/topbar';
 import { createProfilePreviewManager, getUserProfilePicId as getSdkUserProfilePicId } from '@/lib/sdk/appwrite';
 
 interface NoteTopbarProps {
@@ -218,14 +221,12 @@ export default function NoteTopbar({
   }, []);
 
   const noteApps = useMemo(
-    () => [
-      { label: 'Notes', href: '/notes', description: 'Your private graph', app: 'note' as const, selected: pathname.startsWith('/notes') },
-      { label: 'Shared', href: '/shared', description: 'Links and public notes', app: 'connect' as const, selected: pathname.startsWith('/shared') },
-      { label: 'Tags', href: '/tags', description: 'Organize by topic', app: 'note' as const, selected: pathname.startsWith('/tags') },
-      { label: 'Extensions', href: '/extensions', description: 'Tools and add-ons', app: 'note' as const, selected: pathname.startsWith('/extensions') },
-      { label: 'Settings', href: '/settings', description: 'Identity and privacy', app: 'root' as const, selected: pathname.startsWith('/settings') },
-    ],
-    [pathname],
+    () =>
+      createEcosystemPanelItems('note').map((item) => ({
+        ...item,
+        href: getEcosystemUrl(item.app === 'root' ? 'accounts' : item.app),
+      })),
+    [],
   );
 
   const activePanel = searchOpen ? 'search' : profileMenuAnchorEl ? 'profile' : appMenuAnchorEl ? 'ecosystem' : null;
@@ -585,37 +586,54 @@ export default function NoteTopbar({
                 </IconButton>
               </Box>
 
-              {noteApps.map((item) => (
-                <Button
-                  key={item.href}
-                  fullWidth
-                  onClick={() => {
-                    handleCloseAll();
-                    router.push(item.href);
-                  }}
-                  sx={{
-                    justifyContent: 'flex-start',
-                    textAlign: 'left',
-                    px: 2,
-                    py: 1.25,
-                    borderRadius: '14px',
-                    color: 'white',
-                    bgcolor: item.selected ? alpha('#6366F1', 0.08) : alpha('#FFFFFF', 0.02),
-                    border: `1px solid ${item.selected ? alpha('#6366F1', 0.24) : 'transparent'}`,
-                    '&:hover': {
-                      bgcolor: item.selected ? alpha('#6366F1', 0.12) : alpha('#FFFFFF', 0.05),
-                      borderColor: item.selected ? alpha('#6366F1', 0.32) : alpha('#FFFFFF', 0.08),
-                    },
-                  }}
-                >
-                  <Stack spacing={0.25} sx={{ width: '100%' }}>
-                    <Typography sx={{ fontWeight: 800, fontSize: '0.94rem' }}>{item.label}</Typography>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontSize: '0.82rem' }}>
-                      {item.description}
-                    </Typography>
-                  </Stack>
-                </Button>
-              ))}
+              {noteApps.map((item, index) => {
+                const tone = getAppTone(item.app);
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, delay: index * 0.03, ease: 'easeOut' }}
+                  >
+                    <Button
+                      fullWidth
+                      onClick={() => {
+                        handleCloseAll();
+                        window.location.assign(item.href);
+                      }}
+                      sx={{
+                        justifyContent: 'flex-start',
+                        textAlign: 'left',
+                        px: 1.5,
+                        py: 1.1,
+                        borderRadius: '18px',
+                        color: 'white',
+                        bgcolor: item.selected ? alpha('#6366F1', 0.08) : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${item.selected ? alpha('#6366F1', 0.28) : 'rgba(255,255,255,0.05)'}`,
+                        '&:hover': {
+                          bgcolor: alpha('#6366F1', 0.12),
+                          borderColor: alpha('#6366F1', 0.32),
+                        },
+                      }}
+                    >
+                      <Stack direction="row" spacing={1.25} alignItems="center" sx={{ width: '100%' }}>
+                        <Box sx={{ width: 32, height: 32, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: alpha(tone.secondary, 0.08), color: tone.secondary, border: `1px solid ${alpha(tone.secondary, 0.24)}`, flexShrink: 0 }}>
+                          <Logo app={item.app} size={16} variant="icon" />
+                        </Box>
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.15 }} noWrap>
+                            {item.label}
+                            {item.selected ? ' • Current app' : ''}
+                          </Typography>
+                          <Typography sx={{ color: 'rgba(255,255,255,0.56)', fontWeight: 600, fontSize: '0.76rem', lineHeight: 1.35 }} noWrap>
+                            {item.description}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </Box>
           </Paper>
         </Box>

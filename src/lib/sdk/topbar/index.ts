@@ -132,6 +132,16 @@ export function createTopbarPanelSurface(params: {
   };
 }
 
+export function createEcosystemPanelItems(currentApp: KylrixApp = 'note'): TopbarPanelItem[] {
+  return [
+    { id: 'note', app: 'note', label: 'Note', description: 'Secure notes and research.', selected: currentApp === 'note' },
+    { id: 'vault', app: 'vault', label: 'Vault', description: 'Passwords, 2FA, and keys.', selected: currentApp === 'vault' },
+    { id: 'flow', app: 'flow', label: 'Goals', description: 'Tasks, plans, and follow-through.', selected: currentApp === 'flow' },
+    { id: 'connect', app: 'connect', label: 'Connect', description: 'Secure messages and sharing.', selected: currentApp === 'connect' },
+    { id: 'accounts', app: 'root', label: 'Accounts', description: 'Your Kylrix account.', selected: currentApp === 'root' },
+  ];
+}
+
 export function topbarMatches(query: string, terms: string[]) {
   const normalized = query.trim().toLowerCase();
   return terms.some((term) => term.includes(normalized) || normalized.includes(term));
