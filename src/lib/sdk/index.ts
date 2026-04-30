@@ -1,4 +1,5 @@
 export * from './design';
+export * from './bottombar';
 export * from './identity';
 export * from './appwrite';
 export * from './topbar';

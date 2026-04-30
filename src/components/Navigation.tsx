@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useSidebar } from '@/components/ui/SidebarContext';
+import { createBottomBarSurface, getBottomBarViewportOffset } from '@/lib/sdk/bottombar';
 
 import { 
   Box, 
@@ -29,21 +30,22 @@ import {
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
-
-  const navLinks = [
-    { icon: FileText, href: '/notes', label: 'Notes' },
-    { icon: Link2, href: '/shared', label: 'Links' },
-    { icon: Tag, href: '/tags', label: 'Tags' },
-    { icon: Puzzle, href: '/extensions', label: 'Caps' },
-  ];
+  const surface = createBottomBarSurface({
+    activeHref: pathname || '/notes',
+    items: [
+      { id: 'notes', label: 'Notes', href: '/notes' },
+      { id: 'shared', label: 'Links', href: '/shared' },
+      { id: 'tags', label: 'Tags', href: '/tags' },
+      { id: 'extensions', label: 'Caps', href: '/extensions' },
+    ],
+  });
 
   return (
     <Box
       component="footer"
       sx={{
         position: 'fixed',
-        bottom: 20,
+        bottom: `calc(${getBottomBarViewportOffset()}px + ${surface.mobileInset}px)`,
         left: 20,
         right: 20,
         zIndex: 1300,
@@ -58,6 +60,7 @@ export const MobileBottomNav: React.FC = () => {
           borderRadius: '24px',
           px: 2,
           py: 1.5,
+          minHeight: surface.mobileDockHeight,
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
@@ -65,22 +68,26 @@ export const MobileBottomNav: React.FC = () => {
           backgroundImage: 'none'
         }}
       >
-        {navLinks.map(({ icon: Icon, href }) => (
+        {surface.items.map(({ href, active }) => {
+          const navIcon = href === '/notes' ? FileText : href === '/shared' ? Link2 : href === '/tags' ? Tag : Puzzle;
+          const Icon = navIcon;
+
+          return (
           <IconButton
             key={href}
             component={Link}
             href={href}
             sx={{
-              color: isActive(href) ? '#000' : 'rgba(255, 255, 255, 0.6)',
-              bgcolor: isActive(href) ? '#EC4899' : 'transparent',
+              color: active ? '#000' : 'rgba(255, 255, 255, 0.6)',
+              bgcolor: active ? '#EC4899' : 'transparent',
               borderRadius: '16px',
               p: 1.5,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                bgcolor: isActive(href) ? '#EC4899' : 'rgba(255, 255, 255, 0.05)',
+                bgcolor: active ? '#EC4899' : 'rgba(255, 255, 255, 0.05)',
                 transform: 'translateY(-2px)'
               },
-              ...(isActive(href) && {
+              ...(active && {
                 boxShadow: '0 0 15px rgba(236, 72, 153, 0.4)',
                 transform: 'translateY(-4px)'
               })
@@ -88,7 +95,8 @@ export const MobileBottomNav: React.FC = () => {
           >
             <Icon size={24} strokeWidth={1.5} />
           </IconButton>
-        ))}
+          );
+        })}
       </Paper>
     </Box>
   );

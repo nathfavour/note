@@ -16,7 +16,8 @@ import {
 import { 
   LayoutGrid, 
   LogOut, 
-  Settings 
+  Settings,
+  PhoneCall
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
@@ -823,8 +824,31 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
             </Typography>
 
             {/* Duplicate Button Logic */}
-            {(!user || user.$id !== verifiedNote.userId) && (
-              <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              <Button
+                component={MuiLink}
+                href={isAuthenticated
+                  ? `${getEcosystemUrl('connect')}/calls?source=shared-note&noteId=${verifiedNote.$id}&title=${encodeURIComponent(verifiedNote.title || 'Shared Note')}`
+                  : `${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin + window.location.pathname) : ''}`
+                }
+                startIcon={<PhoneCall size={18} />}
+                variant="outlined"
+                sx={{
+                  borderRadius: '14px',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#6366F1',
+                  fontWeight: 800,
+                  textTransform: 'none',
+                  px: 3,
+                  height: 44,
+                  whiteSpace: 'nowrap',
+                  '&:hover': { borderColor: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.05)' }
+                }}
+              >
+                Start Huddle
+              </Button>
+              {(!user || user.$id !== verifiedNote.userId) && (
+                <Box>
                 {isAuthenticated ? (
                   alreadyDuplicated ? (
                     <Chip 
@@ -885,8 +909,9 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
                     </Button>
                   </Tooltip>
                 )}
-              </Box>
-            )}
+                </Box>
+              )}
+            </Box>
           </Box>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 3 }}>
