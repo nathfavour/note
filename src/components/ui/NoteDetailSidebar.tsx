@@ -19,6 +19,7 @@ import {
   ToggleButton,
   Chip,
   Tooltip,
+  Drawer,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -45,13 +46,16 @@ import { useSudo } from '@/context/SudoContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { useNotes } from '@/context/NotesContext';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
-import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl, getCurrentPublicNoteDecryptionKey, getNotePublicState, decryptPublicEncryptedNote } from '@/lib/appwrite';
+import { updateNote, listFlowTasks, listFlowEvents, listKeepCredentials, Query, toggleNoteVisibility, rotatePublicNoteLink, getShareableUrl, getCurrentPublicNoteShareUrl, getCurrentPublicNoteDecryptionKey, getNotePublicState, decryptPublicEncryptedNote, createTaskFromNote } from '@/lib/appwrite';
 import { formatFileSize } from '@/lib/utils';
 import {
   PlaylistAddCheck as TaskIcon,
   OpenInNew as OpenIcon,
   Event as EventIcon,
   VpnKey as KeyIcon,
+  RocketLaunch as ActionIcon,
+  Close as CloseIcon,
+  Share as ShareIcon,
 } from '@mui/icons-material';
 import { useAutosave } from '@/hooks/useAutosave';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
@@ -132,6 +136,9 @@ export function NoteDetailSidebar({
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
+  const [showActionHub, setShowActionHub] = useState(false);
+  const [crossSuggestions, setCrossSuggestions] = useState<Array<{ id: string; label: string; description: string }>>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const isEncryptedNote = !!noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4' && !noteMeta?.clientDecrypted;
   const isT4EncryptedPublicNote = !!isPublic && noteMeta?.isEncrypted && noteMeta?.encryptionVersion === 'T4';
@@ -652,6 +659,48 @@ export function NoteDetailSidebar({
     setShowDeleteConfirm(false);
   };
 
+  const loadCrossSuggestions = useCallback(async () => {
+    if (!liveNote.$id) return;
+    setIsLoadingSuggestions(true);
+    try {
+      const response = await fetch(
+        `/api/cross/suggest?sourceApp=note&sourceType=note&sourceId=${encodeURIComponent(liveNote.$id)}`
+      );
+      const data = await response.json().catch(() => null);
+      setCrossSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
+    } catch (error: unknown) {
+      console.error('Failed to load cross-app suggestions:', error);
+      setCrossSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, [liveNote.$id]);
+
+  useEffect(() => {
+    if (showActionHub) {
+      void loadCrossSuggestions();
+    }
+  }, [showActionHub, loadCrossSuggestions]);
+
+  const handleCreateTaskFromNote = useCallback(async () => {
+    try {
+      const task = await createTaskFromNote(liveNote);
+      onUpdate({ ...liveNote, linkedTaskId: task.$id } as Notes);
+      setShowActionHub(false);
+      showSuccess('Task created from note');
+    } catch (error: any) {
+      if (error?.message === 'User not authenticated') {
+        showError('Auth Required', 'Unlock your vault before creating a task from this note.');
+        const unlocked = await promptSudo();
+        if (unlocked) {
+          await handleCreateTaskFromNote();
+        }
+        return;
+      }
+      showError('Create Task Failed', error?.message || 'Failed to create task from note.');
+    }
+  }, [liveNote, onUpdate, promptSudo, showError, showSuccess]);
+
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
@@ -666,6 +715,18 @@ export function NoteDetailSidebar({
         </IconButton>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Tooltip title="Action hub">
+            <IconButton
+              onClick={() => setShowActionHub(true)}
+              sx={{
+                color: theme.palette.primary.main,
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.14) }
+              }}
+            >
+              <ActionIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           {showExpandButton && (
             <Tooltip title="Open full page">
               <IconButton
@@ -1481,6 +1542,157 @@ export function NoteDetailSidebar({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Drawer
+        anchor="top"
+        open={showActionHub}
+        onClose={() => setShowActionHub(false)}
+        PaperProps={{
+          sx: {
+            borderBottomLeftRadius: '32px',
+            borderBottomRightRadius: '32px',
+            bgcolor: '#161412',
+            border: '1px solid #1C1A18',
+            backgroundImage: 'none',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
+          }
+        }}
+      >
+        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <Box>
+              <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                Action Hub
+              </Typography>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontFamily: 'var(--font-satoshi)' }}>
+                Keep this note in one tab and branch out only when needed.
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setShowActionHub(false)} sx={{ color: theme.palette.text.secondary }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<TaskIcon />}
+              onClick={handleCreateTaskFromNote}
+              sx={{
+                borderRadius: '999px',
+                bgcolor: theme.palette.primary.main,
+                fontWeight: 800,
+                textTransform: 'none',
+              }}
+            >
+              Create Flow Task
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ShareIcon />}
+              onClick={() => {
+                handleCopyShareLink();
+                setShowActionHub(false);
+              }}
+              sx={{
+                borderRadius: '999px',
+                borderColor: alpha(theme.palette.text.primary, 0.15),
+                color: theme.palette.text.primary,
+                fontWeight: 800,
+                textTransform: 'none',
+              }}
+            >
+              Copy Share Link
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<LockIcon />}
+              onClick={() => {
+                handleRotatePublicLink();
+                setShowActionHub(false);
+              }}
+              sx={{
+                borderRadius: '999px',
+                borderColor: alpha(theme.palette.text.primary, 0.15),
+                color: theme.palette.text.primary,
+                fontWeight: 800,
+                textTransform: 'none',
+              }}
+            >
+              Rotate Link
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<OpenIcon />}
+              onClick={() => {
+                window.open(`https://flow.kylrix.space/tasks?source=note&noteId=${encodeURIComponent(liveNote.$id)}`, '_blank');
+                setShowActionHub(false);
+              }}
+              sx={{
+                borderRadius: '999px',
+                borderColor: alpha(theme.palette.text.primary, 0.15),
+                color: theme.palette.text.primary,
+                fontWeight: 800,
+                textTransform: 'none',
+              }}
+            >
+              Open Flow
+            </Button>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Cross-app suggestions
+            </Typography>
+            {isLoadingSuggestions ? (
+              <CircularProgress size={18} sx={{ color: theme.palette.primary.main }} />
+            ) : crossSuggestions.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {crossSuggestions.map((suggestion) => (
+                  <Box
+                    key={suggestion.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 2,
+                      p: 1.5,
+                      borderRadius: '16px',
+                      bgcolor: alpha(theme.palette.primary.main, 0.04),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: theme.palette.text.primary }}>
+                        {suggestion.label}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                        {suggestion.description}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => {
+                        window.open(`https://kylrix.space/integrations?source=note&action=${encodeURIComponent(suggestion.id)}`, '_blank');
+                        setShowActionHub(false);
+                      }}
+                      sx={{ color: theme.palette.primary.main, fontWeight: 800 }}
+                    >
+                      Use
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                No suggestions available right now.
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </Drawer>
+
     </Box>
   );
 }
