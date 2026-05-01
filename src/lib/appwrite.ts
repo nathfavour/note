@@ -20,6 +20,7 @@ import { KYLRIX_AUTH_URI, getEcosystemUrl } from '@/constants/ecosystem';
 import { ecosystemSecurity } from './ecosystem/security';
 import { sendKylrixEmailNotification } from './email-notifications';
 import { createNoteCreationService } from './sdk';
+import { buildSourceNoteTags } from './sdk/crosslinks';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 export const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
@@ -1700,6 +1701,7 @@ export async function createTaskFromNote(note: Notes) {
       status: 'todo',
       priority: 'medium',
       userId: user.$id,
+      tags: buildSourceNoteTags([note.$id]),
       createdAt: now,
       updatedAt: now,
       // No metadata column in tasks collection, using description to reference note

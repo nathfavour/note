@@ -7,6 +7,7 @@ export * from './fab';
 export * from './ecosystem';
 export * from './notes';
 export * from './orchestration';
+export * from './crosslinks';
 export * from './security';
 export * from './social';
 export * from './messaging';

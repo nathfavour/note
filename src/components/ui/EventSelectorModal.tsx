@@ -9,14 +9,17 @@ import {
   ListItemText, 
   CircularProgress, 
   TextField,
-  InputAdornment
+  InputAdornment,
+  Drawer,
+  IconButton,
+  Divider
 } from '@mui/material';
 import { 
   Search as SearchIcon,
   Event as EventIcon,
-  Schedule as TimeIcon
+  Schedule as TimeIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
-import { Modal } from './modal';
 import { listFlowEvents } from '@/lib/appwrite';
 import { useToast } from './Toast';
 
@@ -63,8 +66,36 @@ export function EventSelectorModal({ isOpen, onClose, onSelect }: EventSelectorM
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Attach Event">
-      <Box sx={{ minHeight: '300px', maxHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+    <Drawer
+      anchor="bottom"
+      open={isOpen}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          borderRadius: '24px 24px 0 0',
+          bgcolor: 'rgba(15, 13, 12, 0.98)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 -24px 60px rgba(0,0,0,0.65)',
+          maxHeight: { xs: '88dvh', sm: '72vh' },
+        }
+      }}
+    >
+      <Box sx={{ minHeight: '300px', maxHeight: '72vh', display: 'flex', flexDirection: 'column', p: 3, gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', color: 'white', fontFamily: 'var(--font-clash-display)' }}>
+              Attach Event
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Pick from Flow
+            </Typography>
+          </Box>
+          <IconButton onClick={onClose} sx={{ color: 'rgba(255,255,255,0.6)', bgcolor: 'rgba(255,255,255,0.03)' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
         <TextField
           fullWidth
           size="small"
@@ -139,6 +170,6 @@ export function EventSelectorModal({ isOpen, onClose, onSelect }: EventSelectorM
           </List>
         )}
       </Box>
-    </Modal>
+    </Drawer>
   );
 }
