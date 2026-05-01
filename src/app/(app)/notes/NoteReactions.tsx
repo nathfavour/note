@@ -32,13 +32,22 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
       const docs = await fetchOptimized<Reactions[]>(
         `note_reactions_${targetType}_${targetId}`,
         async () => {
-          const res = await listReactions([
-            Query.equal('targetType', targetType),
-            Query.equal('targetId', targetId),
-            Query.orderAsc('createdAt'),
-            Query.limit(500),
-          ]);
-          return res.documents as unknown as Reactions[];
+          try {
+            const res = await listReactions([
+              Query.equal('targetType', targetType),
+              Query.equal('targetId', targetId),
+              Query.orderAsc('createdAt'),
+              Query.limit(500),
+            ]);
+            return res.documents as unknown as Reactions[];
+          } catch (sdkError) {
+            const effectiveNoteId = targetType === TargetType.NOTE ? targetId : noteId;
+            if (!effectiveNoteId) throw sdkError;
+            const res = await fetch(`/api/shared/${effectiveNoteId}/reactions?targetId=${targetId}&targetType=${targetType}`);
+            if (!res.ok) throw sdkError;
+            const payload = await res.json();
+            return (payload?.documents || []) as Reactions[];
+          }
         },
         1000 * 60 * 10
       );
@@ -46,26 +55,10 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
       setIsLoading(false);
       return;
     } catch (err: any) {
-      console.error('Failed to fetch reactions via client SDK:', err);
+      console.error('Failed to fetch reactions:', err);
+      setError('Reactions are unavailable right now.');
     }
-
-    // Try shared API fallback for guests/public notes
-    const effectiveNoteId = targetType === TargetType.NOTE ? targetId : noteId;
-    if (effectiveNoteId) {
-      try {
-        const res = await fetch(`/api/shared/${effectiveNoteId}/reactions?targetId=${targetId}&targetType=${targetType}`);
-        if (!res.ok) throw new Error('Failed to fetch shared reactions');
-        const payload = await res.json();
-        setReactions((payload?.documents || []) as Reactions[]);
-      } catch (fallbackErr) {
-        console.error('Failed to fetch reactions via shared API:', fallbackErr);
-        setError('Reactions are unavailable right now.');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   }, [targetId, targetType, noteId, fetchOptimized]);
 
   useEffect(() => {

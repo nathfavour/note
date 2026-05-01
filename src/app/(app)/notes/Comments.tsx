@@ -753,8 +753,16 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       const docs = await fetchOptimized<Comments[]>(
         `note_comments_${noteId}`,
         async () => {
-          const res = await listComments(noteId);
-          return res.documents as unknown as Comments[];
+          try {
+            const res = await listComments(noteId);
+            return res.documents as unknown as Comments[];
+          } catch (sdkError) {
+            console.warn('Comments fetch: SDK path failed, trying shared API fallback');
+            const res = await fetch(`/api/shared/${noteId}/comments`);
+            if (!res.ok) throw sdkError;
+            const payload = await res.json();
+            return (payload?.documents || []) as Comments[];
+          }
         },
         1000 * 60 * 10
       );
@@ -792,50 +800,8 @@ export default function CommentsSection({ noteId }: CommentsProps) {
 
         await normalizeAndStoreUsers(users);
       }
-      return;
     } catch (error: any) {
-      console.error('Failed to fetch comments via client SDK:', error);
-    }
-
-    // Fallback for shared notes where public permissions may block client SDK
-    try {
-      const res = await fetch(`/api/shared/${noteId}/comments`);
-      if (!res.ok) throw new Error('Failed to fetch shared comments');
-      const payload = await res.json();
-      const docs = (payload?.documents || []) as Comments[];
-      const sorted = [...docs].sort(
-        (a, b) => new Date(a.$createdAt).getTime() - new Date(b.$createdAt).getTime()
-      );
-      setComments(sorted);
-
-      const uniqueUserIds = Array.from(new Set(docs.map(c => c.userId)));
-      if (uniqueUserIds.length > 0) {
-        const cachedUsers = getCachedCommentIdentities(uniqueUserIds);
-        const cachedUserList = Object.values(cachedUsers);
-        if (cachedUserList.length > 0) {
-          await normalizeAndStoreUsers(cachedUserList);
-        }
-
-        let users: Users[] = [];
-        try {
-          users = await getUsersByIds(uniqueUserIds);
-        } catch (_sdkError) {
-          console.warn('Comments fetch (fallback): SDK profile resolution failed, trying shared API');
-          const profilesRes = await fetch('/api/shared/profiles', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userIds: uniqueUserIds }),
-          });
-          if (profilesRes.ok) {
-            const profilesPayload = await profilesRes.json();
-            users = profilesPayload.documents || [];
-          }
-        }
-
-        await normalizeAndStoreUsers(users);
-      }
-    } catch (fallbackError) {
-      console.error('Failed to fetch comments via shared API:', fallbackError);
+      console.error('Failed to fetch comments:', error);
       setCommentsError('Comments are unavailable right now.');
     }
   }, [noteId, normalizeAndStoreUsers, fetchOptimized]);
