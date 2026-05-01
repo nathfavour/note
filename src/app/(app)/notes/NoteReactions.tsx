@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import { Query } from 'appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
+import { useDataNexus } from '@/context/DataNexusContext';
 import { createReaction, listReactions, deleteReaction } from '@/lib/appwrite';
 import type { Reactions } from '@/types/appwrite';
 import { TargetType } from '@/types/appwrite';
@@ -19,6 +20,7 @@ interface ReactionsProps {
 
 export default function NoteReactions({ targetId, targetType = TargetType.NOTE, size = 'medium', noteId }: ReactionsProps) {
   const { user } = useAuth();
+  const { fetchOptimized } = useDataNexus();
   const [reactions, setReactions] = useState<Reactions[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,13 +29,20 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
     setIsLoading(true);
     setError(null);
     try {
-      const res = await listReactions([
-        Query.equal('targetType', targetType),
-        Query.equal('targetId', targetId),
-        Query.orderAsc('createdAt'),
-        Query.limit(500),
-      ]);
-      setReactions(res.documents as unknown as Reactions[]);
+      const docs = await fetchOptimized<Reactions[]>(
+        `note_reactions_${targetType}_${targetId}`,
+        async () => {
+          const res = await listReactions([
+            Query.equal('targetType', targetType),
+            Query.equal('targetId', targetId),
+            Query.orderAsc('createdAt'),
+            Query.limit(500),
+          ]);
+          return res.documents as unknown as Reactions[];
+        },
+        1000 * 60 * 10
+      );
+      setReactions(docs);
       setIsLoading(false);
       return;
     } catch (err: any) {
@@ -57,7 +66,7 @@ export default function NoteReactions({ targetId, targetType = TargetType.NOTE, 
     } else {
       setIsLoading(false);
     }
-  }, [targetId, targetType, noteId]);
+  }, [targetId, targetType, noteId, fetchOptimized]);
 
   useEffect(() => {
     fetchReactions();

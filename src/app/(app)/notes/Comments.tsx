@@ -7,6 +7,7 @@ import { listComments, createComment, getUsersByIds, updateComment, deleteCommen
 import type { Comments, Users } from '@/types/appwrite';
 import { getEffectiveDisplayName, getEffectiveUsername, getUserProfilePicId } from '@/lib/utils';
 import { useAuth } from '@/components/ui/AuthContext';
+import { useDataNexus } from '@/context/DataNexusContext';
 import { getEcosystemUrl } from '@/constants/ecosystem';
 import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import NoteReactions from './NoteReactions';
@@ -690,6 +691,7 @@ function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0, userMap,
 
 export default function CommentsSection({ noteId }: CommentsProps) {
   const { user } = useAuth();
+  const { fetchOptimized } = useDataNexus();
   const [comments, setComments] = useState<Comments[]>([]);
   const [newComment, setNewComment] = useState('');
   const [userMap, setUserMap] = useState<Record<string, Users>>({});
@@ -748,11 +750,17 @@ export default function CommentsSection({ noteId }: CommentsProps) {
   const fetchComments = useCallback(async () => {
     setCommentsError(null);
     try {
-      const res = await listComments(noteId);
-      const docs = res.documents as unknown as Comments[];
+      const docs = await fetchOptimized<Comments[]>(
+        `note_comments_${noteId}`,
+        async () => {
+          const res = await listComments(noteId);
+          return res.documents as unknown as Comments[];
+        },
+        1000 * 60 * 10
+      );
 
       // Sort by date ascending
-      const sorted = docs.sort(
+      const sorted = [...docs].sort(
         (a, b) => new Date(a.$createdAt).getTime() - new Date(b.$createdAt).getTime()
       );
       setComments(sorted);
@@ -795,7 +803,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       if (!res.ok) throw new Error('Failed to fetch shared comments');
       const payload = await res.json();
       const docs = (payload?.documents || []) as Comments[];
-      const sorted = docs.sort(
+      const sorted = [...docs].sort(
         (a, b) => new Date(a.$createdAt).getTime() - new Date(b.$createdAt).getTime()
       );
       setComments(sorted);
@@ -830,7 +838,7 @@ export default function CommentsSection({ noteId }: CommentsProps) {
       console.error('Failed to fetch comments via shared API:', fallbackError);
       setCommentsError('Comments are unavailable right now.');
     }
-  }, [noteId, normalizeAndStoreUsers]);
+  }, [noteId, normalizeAndStoreUsers, fetchOptimized]);
 
   useEffect(() => {
     fetchComments();

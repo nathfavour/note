@@ -23,6 +23,7 @@ interface DataNexusContextType {
 const DataNexusContext = createContext<DataNexusContextType | undefined>(undefined);
 
 const DEFAULT_TTL = 1000 * 60 * 30; // 30 minutes default TTL for general data
+const STALE_TTL = DEFAULT_TTL * 8; // Prefer cached data for reload recovery before forcing a refetch
 
 export function DataNexusProvider({ children }: { children: ReactNode }) {
     // In-memory cache for ultra-fast access
@@ -93,6 +94,26 @@ export function DataNexusProvider({ children }: { children: ReactNode }) {
         // 1. Check if we already have valid data
         const cached = getCachedData<T>(key, ttl);
         if (cached) return cached;
+
+        // 1b. If we have older data, serve it immediately and refresh in the background.
+        const stale = getCachedData<T>(key, STALE_TTL);
+        if (stale) {
+            if (!activeRequests.current.has(key)) {
+                const request = (async () => {
+                    try {
+                        const data = await fetcher();
+                        setCachedData(key, data, ttl);
+                        return data;
+                    } finally {
+                        activeRequests.current.delete(key);
+                    }
+                })();
+
+                activeRequests.current.set(key, request);
+            }
+
+            return stale;
+        }
 
         // 2. Deduplication: Check if an identical request is already in flight
         const existingRequest = activeRequests.current.get(key);
