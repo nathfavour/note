@@ -20,7 +20,6 @@ import {
   Logout as ArrowLeftOnRectangleIcon,
   Login as ArrowRightOnRectangleIcon,
   PushPin as PinIcon,
-  Brush as PencilIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import CreateNoteForm from './CreateNoteForm';
@@ -221,10 +220,6 @@ export default function NotesPage() {
     openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
   };
 
-  const handleCreateDoodleClick = () => {
-    openOverlay(<CreateNoteForm initialFormat="doodle" onNoteCreated={handleNoteCreated} />);
-  };
-
   // Calculate available space and determine optimal card size
   const gridSx = useMemo(() => {
     if (!isCollapsed && isDynamicSidebarOpen) {
@@ -331,22 +326,6 @@ export default function NotesPage() {
               <RefreshIcon />
             </IconButton>
             <IconButton 
-              onClick={handleCreateDoodleClick} 
-              {...sidebarIgnoreProps} 
-              sx={{ 
-                color: 'primary.main',
-                bgcolor: 'rgba(99, 102, 241, 0.05)',
-                borderRadius: '12px',
-                border: '1px solid rgba(99, 102, 241, 0.1)',
-                '&:hover': {
-                  bgcolor: 'rgba(99, 102, 241, 0.1)',
-                  borderColor: 'rgba(99, 102, 241, 0.2)',
-                }
-              }}
-            >
-              <PencilIcon />
-            </IconButton>
-            <IconButton 
               onClick={handleCreateNoteClick} 
               {...sidebarIgnoreProps} 
               sx={{ 
@@ -449,22 +428,6 @@ export default function NotesPage() {
               disabled={isRefreshing}
             >
               <RefreshIcon />
-            </IconButton>
-            <IconButton
-              onClick={handleCreateDoodleClick}
-              {...sidebarIgnoreProps}
-              sx={{ 
-                color: 'secondary.main',
-                bgcolor: 'rgba(236, 72, 153, 0.05)',
-                borderRadius: '12px',
-                border: '1px solid rgba(236, 72, 153, 0.1)',
-                '&:hover': {
-                  bgcolor: 'rgba(236, 72, 153, 0.1)',
-                  borderColor: 'rgba(236, 72, 153, 0.2)',
-                }
-              }}
-            >
-              <PencilIcon />
             </IconButton>
             <IconButton
               onClick={handleToggleSidebar}
@@ -675,12 +638,12 @@ export default function NotesPage() {
                   Clear Search
                 </Button>
                 <Button onClick={handleCreateNoteClick} startIcon={<PlusCircleIcon />}>
-                  Create Note
+                  New Note
                 </Button>
               </Stack>
             ) : (
               <Button onClick={handleCreateNoteClick} startIcon={<PlusCircleIcon />}>
-                Create Your First Note
+                Open Composer
               </Button>
             )}
           </Box>

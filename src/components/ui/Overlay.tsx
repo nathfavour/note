@@ -2,36 +2,48 @@
 
 import React from 'react';
 import { 
-  Modal, 
+  Drawer,
   Box, 
   Fade, 
-  Backdrop
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { useOverlay } from './OverlayContext';
 
 const Overlay: React.FC = () => {
   const { isOpen, content, closeOverlay } = useOverlay();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Modal
+    <Drawer
+      anchor={isMobile ? 'bottom' : 'right'}
       open={isOpen}
       onClose={closeOverlay}
-      closeAfterTransition
-      slots={{ backdrop: Backdrop }}
+      ModalProps={{ keepMounted: true }}
+      PaperProps={{
+        sx: {
+          width: isMobile ? '100%' : 'min(100vw, 720px)',
+          maxWidth: isMobile ? '100%' : '720px',
+          height: isMobile ? '92dvh' : '100%',
+          maxHeight: '100dvh',
+          borderTopLeftRadius: isMobile ? '24px' : 0,
+          borderTopRightRadius: isMobile ? '24px' : 0,
+          borderLeft: isMobile ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+          backgroundImage: 'none',
+          bgcolor: '#161412',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.45)',
+          display: 'flex',
+          flexDirection: 'column',
+        }
+      }}
       slotProps={{
         backdrop: {
-          timeout: 400,
-          sx: { 
-            bgcolor: 'rgba(0, 0, 0, 0.7)', 
+          sx: {
+            bgcolor: 'rgba(0, 0, 0, 0.72)',
+            backdropFilter: 'blur(10px)',
           }
-        },
-      }}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: { xs: 0, sm: 2 },
-        zIndex: 1300
+        }
       }}
     >
       <Fade in={isOpen}>
@@ -40,10 +52,9 @@ const Overlay: React.FC = () => {
             outline: 'none',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '100%',
-            maxWidth: 'fit-content',
+            minHeight: 0,
+            flex: 1,
             maxHeight: '100vh',
           }}
           onClick={(e) => e.stopPropagation()}
@@ -51,7 +62,7 @@ const Overlay: React.FC = () => {
           {content}
         </Box>
       </Fade>
-    </Modal>
+    </Drawer>
   );
 };
 

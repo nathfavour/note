@@ -1,34 +1,44 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Stack, 
-  IconButton, 
-  TextField, 
-  Chip, 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Box,
+  Button,
+  Chip,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
-  useTheme,
+  Typography,
+  alpha,
   useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { 
+import {
   Close as CloseIcon,
+  Code as CodeIcon,
   Description as DescriptionIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  FormatBold as BoldIcon,
+  FormatItalic as ItalicIcon,
+  FormatUnderlined as UnderlineIcon,
   LocalOffer as TagIcon,
-  Add as PlusIcon,
-  Brush as PencilIcon,
-  Public as PublicIcon,
   Lock as PrivateIcon,
+  Public as PublicIcon,
+  Brush as PencilIcon,
 } from '@mui/icons-material';
-import { Button } from '@/components/ui/Button';
 import { buildAutoTitleFromContent } from '@/constants/noteTitle';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useToast } from '@/components/ui/Toast';
-import { createNote as appwriteCreateNote } from '@/lib/appwrite';
+import { createNote, getNote, updateNote } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
+import { useNotes } from '@/context/NotesContext';
+import { useDataNexus } from '@/context/DataNexusContext';
 
 interface CreateNoteFormProps {
   onNoteCreated: (note: Notes) => void;
@@ -38,569 +48,507 @@ interface CreateNoteFormProps {
     tags?: string[];
   };
   initialFormat?: 'text' | 'doodle';
+  noteId?: string;
 }
 
-export default function CreateNoteForm({ onNoteCreated, initialContent, initialFormat = 'text' }: CreateNoteFormProps) {
+const normalizeTags = (tags: string[] = []) => Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
+
+export default function CreateNoteForm({
+  onNoteCreated,
+  initialContent,
+  initialFormat = 'text',
+  noteId,
+}: CreateNoteFormProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { closeOverlay } = useOverlay();
+  const { showSuccess, showError } = useToast();
+  const { notes: allNotes } = useNotes();
+  const { fetchOptimized, getCachedData, setCachedData } = useDataNexus();
+
   const [title, setTitle] = useState(initialContent?.title || '');
   const [content, setContent] = useState(initialContent?.content || '');
   const [format, setFormat] = useState<'text' | 'doodle'>(initialFormat);
-  const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
+  const [tags, setTags] = useState<string[]>(normalizeTags(initialContent?.tags || []));
   const [isPublic, setIsPublic] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!isMobile);
+  const [isSaving, setIsSaving] = useState(false);
   const [showDoodleEditor, setShowDoodleEditor] = useState(initialFormat === 'doodle');
-  const { closeOverlay } = useOverlay();
-  const { showSuccess, showError } = useToast();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [isTitleManuallyEdited, setIsTitleManuallyEdited] = useState(Boolean(initialContent?.title));
-  const [showTitleInput, setShowTitleInput] = useState(Boolean(initialContent?.title));
+  const [resolvedNoteId, setResolvedNoteId] = useState<string | undefined>(noteId);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState('');
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const createdToastShown = useRef(false);
 
-  const handleAddTag = () => {
-    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
-      setTags([...tags, currentTag.trim()]);
-      setCurrentTag('');
-    }
-  };
+  const existingTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    (Array.isArray(allNotes) ? allNotes : []).forEach((note) => {
+      (note.tags || []).forEach((tag) => {
+        const cleaned = tag.trim();
+        if (cleaned) tagSet.add(cleaned);
+      });
+    });
+    return Array.from(tagSet).slice(0, 24);
+  }, [allNotes]);
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
+  const snapshot = useMemo(() => JSON.stringify({
+    title: title.trim(),
+    content: content.trim(),
+    format,
+    tags: normalizeTags(tags),
+    isPublic,
+    resolvedNoteId: resolvedNoteId || null,
+  }), [title, content, format, tags, isPublic, resolvedNoteId]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
-
-  const handleTitleChange = (value: string) => {
-    setIsTitleManuallyEdited(true);
-    setTitle(value);
-  };
-
-  const handleDoodleSave = (doodleData: string) => {
-    setContent(doodleData);
-    setFormat('doodle');
-    setShowDoodleEditor(false);
-  };
-
-  const handleDoodleClose = () => {
-    setShowDoodleEditor(false);
-    // If it was opened as a pure doodle and hasn't been saved/modified, close the whole overlay
-    if (initialFormat === 'doodle' && !content) {
-      closeOverlay();
-    }
-  };
+  const isDirty = snapshot !== lastSavedSnapshot;
 
   useEffect(() => {
-    if (format !== 'text') return;
-    if (isTitleManuallyEdited) return;
+    if (!isMobile) setIsExpanded(true);
+  }, [isMobile]);
 
-    const generatedTitle = buildAutoTitleFromContent(content);
-    if (generatedTitle !== title) {
-      setTitle(generatedTitle);
-    }
-  }, [content, format, isTitleManuallyEdited, title]);
+  useEffect(() => {
+    let cancelled = false;
 
-  const handleCreateNote = async () => {
-    let finalTitle = title.trim();
-    
-    // Auto-generate title if missing
-    if (!finalTitle) {
-      if (format === 'doodle') {
-        finalTitle = `Sketch ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      } else if (content.trim()) {
-        finalTitle = buildAutoTitleFromContent(content) || 'Untitled Thought';
+    const hydrate = async () => {
+      if (!noteId) {
+        setIsHydrated(true);
+        return;
       }
-    }
-    
-    if (!finalTitle || isLoading) return;
 
-    setIsLoading(true);
-    const newNoteData = {
-      title: finalTitle,
+      const cacheKey = `note_${noteId}`;
+      const cached = getCachedData<Notes>(cacheKey);
+      if (cached && !cancelled) {
+        setResolvedNoteId(cached.$id);
+        setTitle(cached.title || '');
+        setContent(cached.content || '');
+        setFormat((cached.format as 'text' | 'doodle') || initialFormat);
+        setTags(normalizeTags(cached.tags || []));
+        setIsPublic(!!cached.isPublic);
+        setLastSavedSnapshot(JSON.stringify({
+          title: cached.title || '',
+          content: cached.content || '',
+          format: (cached.format as 'text' | 'doodle') || 'text',
+          tags: normalizeTags(cached.tags || []),
+          isPublic: !!cached.isPublic,
+          resolvedNoteId: cached.$id,
+        }));
+      }
+
+      try {
+        const loaded = await fetchOptimized(cacheKey, () => getNote(noteId));
+        if (cancelled || !loaded) return;
+        setResolvedNoteId(loaded.$id);
+        setTitle(loaded.title || '');
+        setContent(loaded.content || '');
+        setFormat((loaded.format as 'text' | 'doodle') || initialFormat);
+        setTags(normalizeTags(loaded.tags || []));
+        setIsPublic(!!loaded.isPublic);
+        setLastSavedSnapshot(JSON.stringify({
+          title: loaded.title || '',
+          content: loaded.content || '',
+          format: (loaded.format as 'text' | 'doodle') || 'text',
+          tags: normalizeTags(loaded.tags || []),
+          isPublic: !!loaded.isPublic,
+          resolvedNoteId: loaded.$id,
+        }));
+      } catch (error) {
+        console.error('Failed to load note for composer', error);
+      } finally {
+        if (!cancelled) setIsHydrated(true);
+      }
+    };
+
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchOptimized, getCachedData, initialFormat, noteId]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isDirty) return;
+    if (!resolvedNoteId && !(title.trim() || content.trim())) return;
+
+    const timer = window.setTimeout(() => {
+      void persist(false);
+    }, 750);
+
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, isHydrated, isDirty]);
+
+  const appendTag = useCallback((tag: string) => {
+    const next = tag.trim();
+    if (!next) return;
+    setTags((prev) => normalizeTags([...prev, next]));
+    setCurrentTag('');
+  }, []);
+
+  const removeTag = useCallback((tag: string) => {
+    setTags((prev) => prev.filter((candidate) => candidate !== tag));
+  }, []);
+
+  const wrapSelection = useCallback((before: string, after = before) => {
+    const input = contentRef.current;
+    if (!input) return;
+
+    const start = input.selectionStart ?? content.length;
+    const end = input.selectionEnd ?? content.length;
+    const selected = content.slice(start, end) || 'text';
+    const nextValue = `${content.slice(0, start)}${before}${selected}${after}${content.slice(end)}`;
+    const cursor = start + before.length + selected.length + after.length;
+    setContent(nextValue);
+    window.requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(cursor, cursor);
+    });
+  }, [content]);
+
+  const persist = useCallback(async (showToast = true) => {
+    const normalizedTags = normalizeTags(tags);
+    const payload = {
+      title: title.trim(),
       content: content.trim(),
       format,
-      tags,
+      tags: normalizedTags,
       isPublic,
     };
 
-    try {
-      const newNote = await appwriteCreateNote(newNoteData);
-      if (newNote) {
-        showSuccess('Spark of Genius Capture', 'Your new note has been crystallized in the cloud.');
-        onNoteCreated(newNote);
-      }
-      closeOverlay();
-    } catch (error: any) {
-      console.error('Failed to create note:', error);
-      showError('Manifestation Failure', error.message || 'The cloud was unable to crystallize your thought. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const hasMeaningfulContent = Boolean(payload.title || payload.content || (resolvedNoteId && payload.tags.length));
+    if (!resolvedNoteId && !hasMeaningfulContent) {
+      return null;
     }
-  };
+
+    setIsSaving(true);
+    try {
+      let saved: Notes;
+      const generatedTitle = payload.title || (
+        format === 'doodle'
+          ? `Sketch ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+          : buildAutoTitleFromContent(payload.content) || 'Untitled Thought'
+      );
+
+      if (resolvedNoteId) {
+        saved = (await updateNote(resolvedNoteId, {
+          ...payload,
+          title: generatedTitle,
+        })) as Notes;
+      } else {
+        saved = (await createNote({
+          ...payload,
+          title: generatedTitle,
+        })) as Notes;
+        setResolvedNoteId(saved.$id);
+        onNoteCreated(saved);
+        if (showToast && !createdToastShown.current) {
+          createdToastShown.current = true;
+          showSuccess('Note saved', 'Your note has been created.');
+        }
+      }
+
+      if (saved?.$id) {
+        setCachedData(`note_${saved.$id}`, saved);
+        setLastSavedSnapshot(JSON.stringify({
+          title: saved.title || '',
+          content: saved.content || '',
+          format: (saved.format as 'text' | 'doodle') || format,
+          tags: normalizeTags((saved.tags || []) as string[]),
+          isPublic: !!saved.isPublic,
+          resolvedNoteId: saved.$id,
+        }));
+      }
+
+      return saved || null;
+    } catch (error: any) {
+      console.error('Failed to persist note:', error);
+      if (showToast) {
+        showError('Could not save note', error?.message || 'Please try again.');
+      }
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [content, format, isPublic, onNoteCreated, resolvedNoteId, setCachedData, showError, showSuccess, tags, title]);
+
+  const handleClose = useCallback(async () => {
+    const shouldPersist = Boolean((resolvedNoteId && isDirty) || (!resolvedNoteId && (title.trim() || content.trim())));
+    if (shouldPersist) {
+      try {
+        await persist(false);
+      } catch {
+        return;
+      }
+    }
+    closeOverlay();
+  }, [closeOverlay, content, isDirty, persist, resolvedNoteId, tags.length, title]);
+
+  const handleTagKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      appendTag(currentTag);
+    }
+  }, [appendTag, currentTag]);
 
   return (
     <>
       {showDoodleEditor && (
         <DoodleCanvas
           initialData={format === 'doodle' ? content : ''}
-          onSave={handleDoodleSave}
-          onClose={handleDoodleClose}
+          onSave={(doodleData) => {
+            setContent(doodleData);
+            setFormat('doodle');
+            setShowDoodleEditor(false);
+          }}
+          onClose={() => setShowDoodleEditor(false)}
         />
       )}
-      
+
       <Box
+        onContextMenu={(event) => event.preventDefault()}
         sx={{
           width: '100%',
-          maxWidth: '672px',
-          mx: 'auto',
-          bgcolor: 'rgba(255, 255, 255, 0.01)',
-          backdropFilter: 'blur(25px) saturate(180%)',
-          borderRadius: { xs: '24px', sm: '32px' },
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
-          overflow: 'hidden',
-          maxHeight: { xs: 'calc(100dvh - 1rem)', sm: 'calc(100vh - 4rem)' },
+          height: '100%',
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          position: 'relative'
+          bgcolor: '#161412',
+          color: 'white',
         }}
       >
-        {/* Header */}
         <Box
           sx={{
+            px: 2,
+            py: 1.5,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            p: { xs: 2.5, sm: 3 },
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(255, 255, 255, 0.01)'
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            backdropFilter: 'blur(18px)',
+            bgcolor: 'rgba(22, 20, 18, 0.95)',
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center">
             <Box
               sx={{
-                width: { xs: 40, sm: 48 },
-                height: { xs: 40, sm: 48 },
-                background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', // Ecosystem Primary
+                width: 40,
+                height: 40,
                 borderRadius: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)'
+                display: 'grid',
+                placeItems: 'center',
+                bgcolor: alpha('#EC4899', 0.12),
+                border: '1px solid rgba(236,72,153,0.2)',
               }}
             >
-              {format === 'doodle' ? (
-                <PencilIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: 'black' }} />
-              ) : (
-                <DescriptionIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: 'black' }} />
-              )}
+              {format === 'doodle' ? <PencilIcon sx={{ color: '#EC4899' }} /> : <DescriptionIcon sx={{ color: '#EC4899' }} />}
             </Box>
             <Box>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 800, 
-                  fontFamily: 'var(--font-clash-display)', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.15em', 
-                  fontSize: '0.75rem', 
-                  color: 'secondary.main',
-                }}
-              >
-                {format === 'doodle' ? 'Create Doodle' : 'New Thought'}
+              <Typography sx={{ fontWeight: 900, letterSpacing: '-0.03em' }}>
+                {resolvedNoteId ? 'Edit note' : 'New note'}
               </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.4)',
-                  fontWeight: 500,
-                  fontFamily: 'var(--font-satoshi)',
-                  display: { xs: 'none', sm: 'block' }
-                }}
-              >
-                {isPublic ? 'Visible to anyone with the link' : 'Only visible to you'}
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                {isSaving ? 'Saving…' : isDirty ? 'Unsaved changes' : 'Autosaves on close'}
               </Typography>
             </Box>
           </Stack>
-          <Stack direction="row" spacing={1} alignItems="center">
+
+          <Stack direction="row" spacing={0.5} alignItems="center">
             <ToggleButtonGroup
               value={isPublic}
               exclusive
-              onChange={(_, val) => val !== null && setIsPublic(val)}
               size="small"
+              onChange={(_, value) => value !== null && setIsPublic(value)}
               sx={{
-                bgcolor: 'rgba(255, 255, 255, 0.04)',
-                borderRadius: '12px',
-                p: 0.5,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: 'rgba(255,255,255,0.04)',
+                borderRadius: '14px',
                 '& .MuiToggleButton-root': {
                   border: 'none',
-                  borderRadius: '8px',
-                  px: 2,
-                  py: 0.5,
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  color: 'rgba(255,255,255,0.55)',
+                  px: 1.5,
                   '&.Mui-selected': {
-                    bgcolor: isPublic ? 'secondary.main' : 'rgba(255, 255, 255, 0.1)',
-                    color: isPublic ? 'white' : 'white',
-                    '&:hover': { bgcolor: isPublic ? 'secondary.dark' : 'rgba(255, 255, 255, 0.15)' }
+                    bgcolor: 'rgba(236,72,153,0.16)',
+                    color: 'white',
                   }
                 }
               }}
             >
-              <ToggleButton value={false}>
-                <PrivateIcon sx={{ fontSize: 18 }} />
-              </ToggleButton>
-              <ToggleButton value={true}>
-                <PublicIcon sx={{ fontSize: 18 }} />
-              </ToggleButton>
+              <ToggleButton value={false}><PrivateIcon fontSize="small" /></ToggleButton>
+              <ToggleButton value={true}><PublicIcon fontSize="small" /></ToggleButton>
             </ToggleButtonGroup>
-            
-            <IconButton
-              onClick={closeOverlay}
-              sx={{
-                color: 'rgba(255, 255, 255, 0.4)',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.08)',
-                  color: 'white'
-                }
-              }}
-            >
-              <CloseIcon fontSize="small" />
+
+            <IconButton onClick={() => setIsExpanded((prev) => !prev)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+
+            <IconButton onClick={handleClose} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              <CloseIcon />
             </IconButton>
           </Stack>
         </Box>
 
-      {/* Form Content - Scrollable */}
-      <Box sx={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        p: { xs: 2.5, sm: 3 },
-        '&::-webkit-scrollbar': { width: '4px' },
-        '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '10px' }
-      }}>
-        <Stack sx={{ gap: { xs: 3, sm: 4 } }}>
-          {/* Title Input (Animated) */}
-          <Box sx={{ 
-            opacity: showTitleInput ? 1 : 0, 
-            maxHeight: showTitleInput ? '200px' : '0px',
-            transform: showTitleInput ? 'translateY(0)' : 'translateY(-10px)',
-            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            visibility: showTitleInput ? 'visible' : 'hidden',
-            pointerEvents: showTitleInput ? 'all' : 'none',
-            mb: showTitleInput ? 0 : -4
-          }}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 800,
-                color: 'secondary.main',
-                mb: 1.5,
-                fontSize: '0.7rem',
-                fontFamily: 'var(--font-jetbrains-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.15em'
-              }}
-            >
-              Title
-            </Typography>
+        <Box sx={{ px: 2, py: 2, overflowY: 'auto', minHeight: 0, flex: 1 }}>
+          <Stack spacing={2.25}>
             <TextField
               fullWidth
-              placeholder="Give your note a title..."
               value={title}
-              onChange={ (e) => handleTitleChange(e.target.value)}
-              variant="outlined"
-              inputProps={{ maxLength: 255 }}
-              autoComplete="off"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.02)',
-                  borderRadius: '16px',
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Title"
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  fontSize: '1.4rem',
+                  fontWeight: 900,
                   color: 'white',
-                  fontFamily: 'var(--font-satoshi)',
-                  fontWeight: 800,
-                  fontSize: '1.1rem',
-                  '& fieldset': {
-                    borderColor: 'rgba(236, 72, 153, 0.1)',
-                    borderWidth: '1.5px'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(236, 72, 153, 0.3)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'secondary.main',
-                    borderWidth: '2px',
-                    boxShadow: '0 0 20px rgba(236, 72, 153, 0.15)'
-                  }
+                  '& input::placeholder': { color: 'rgba(255,255,255,0.22)', opacity: 1 },
                 }
+              }}
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.02)',
+                borderRadius: '18px',
+                px: 2,
+                py: 1.5,
+                border: '1px solid rgba(255,255,255,0.05)',
               }}
             />
-          </Box>
 
-          {/* Content Input */}
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 800,
-                color: 'rgba(255, 255, 255, 0.5)',
-                mb: 1.5,
-                fontSize: '0.75rem',
-                fontFamily: 'var(--font-jetbrains-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em'
-              }}
-            >
-              Content
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={isMobile ? 5 : 8}
-              placeholder="What's on your mind?..."
-              value={content}
-              onChange={ (e) => {
-                setContent(e.target.value);
-                if (e.target.value.length > 5 && !showTitleInput) {
-                  setShowTitleInput(true);
-                } else if (e.target.value.length <= 5 && showTitleInput && !isTitleManuallyEdited) {
-                  setShowTitleInput(false);
-                }
-              }}
-              variant="outlined"
-              inputProps={{ maxLength: 65000 }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '20px',
-                  color: 'white',
-                  fontFamily: 'var(--font-satoshi)',
-                  lineHeight: 1.6,
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.08)',
-                    borderWidth: '1.5px'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'primary.main',
-                    borderWidth: '2px',
-                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.15)'
-                  }
-                }
-              }}
-            />
-            <Typography
-                variant="caption"
-                sx={{
-                  display: 'block',
-                  textAlign: 'right',
-                  mt: 0.5,
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  fontWeight: 600
-                }}
-              >
-                {content.length.toLocaleString()} / 65,000
-              </Typography>
-            </Box>
-
-          {/* Tags Section */}
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 700,
-                color: 'rgba(255, 255, 255, 0.9)',
-                mb: 1.5,
-                fontFamily: 'var(--font-space-grotesk)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <TagIcon sx={{ fontSize: 18 }} />
-              Tags
-            </Typography>
-            
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Add a tag..."
-                value={currentTag}
-                onChange={ (e) => setCurrentTag(e.target.value)}
-                onKeyPress={handleKeyPress}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: '12px',
-                    color: 'white',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                      borderWidth: '2px'
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)'
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#EC4899'
-                    }
-                  }
-                }}
-              />
-              <IconButton
-                onClick={handleAddTag}
-                disabled={!currentTag.trim()}
-                sx={{
-                  bgcolor: 'primary.main',
-                  color: 'black',
-                  borderRadius: '12px',
-                  width: 40,
-                  height: 40,
-                  '&:hover': { bgcolor: 'primary.dark' },
-                  '&.Mui-disabled': {
-                    bgcolor: 'rgba(99, 102, 241, 0.3)',
-                    color: 'rgba(0, 0, 0, 0.3)'
-                  }
-                }}
-              >
-                <PlusIcon />
-              </IconButton>
-            </Stack>
-
-            {tags.length > 0 && (
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <TagIcon sx={{ fontSize: 18, color: 'rgba(255,255,255,0.5)' }} />
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Tags
+                </Typography>
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
                 {tags.map((tag) => (
                   <Chip
                     key={tag}
                     label={tag}
-                    onDelete={() => handleRemoveTag(tag)}
-                    deleteIcon={<CloseIcon sx={{ fontSize: '12px !important' }} />}
+                    onDelete={() => removeTag(tag)}
                     sx={{
-                      bgcolor: 'rgba(236, 72, 153, 0.1)',
-                      color: '#EC4899',
-                      border: '1px solid rgba(236, 72, 153, 0.2)',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      '& .MuiChip-deleteIcon': {
-                        color: '#EC4899',
-                        '&:hover': { color: 'white' }
-                      }
+                      bgcolor: 'rgba(99,102,241,0.12)',
+                      color: 'white',
+                      border: '1px solid rgba(99,102,241,0.18)',
                     }}
                   />
                 ))}
               </Stack>
-            )}
-          </Box>
-        </Stack>
-      </Box>
-
-      {/* Footer Actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'end',
-          gap: 2,
-          p: { xs: 2.5, sm: 3 },
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          bgcolor: 'rgba(255, 255, 255, 0.02)',
-          backdropFilter: 'blur(10px)',
-          mt: 'auto'
-        }}
-      >
-        <Button 
-          variant="outlined" 
-          onClick={closeOverlay}
-          disabled={isLoading}
-          sx={{ 
-            px: { xs: 2.5, sm: 4 }, 
-            borderRadius: '14px',
-            borderColor: 'rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.4)',
-            fontFamily: 'var(--font-jetbrains-mono)',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            '&:hover': {
-              borderColor: 'rgba(255,255,255,0.2)',
-              bgcolor: 'rgba(255,255,255,0.03)',
-              color: 'white'
-            }
-          }}
-        >
-          Discard
-        </Button>
-        <Button 
-          onClick={ (e) => {
-            e.preventDefault();
-            handleCreateNote();
-          }}
-          disabled={!content.trim() || isLoading}
-          sx={{ 
-            px: { xs: 4, sm: 6 }, 
-            py: { xs: 1.5, sm: 2 },
-            borderRadius: '16px',
-            bgcolor: 'secondary.main', // App Secondary
-            color: 'white',
-            fontWeight: 900,
-            fontFamily: 'var(--font-satoshi)',
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-            boxShadow: '0 8px 32px rgba(236, 72, 153, 0.25)',
-            transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            '&:hover': { 
-              bgcolor: 'secondary.dark',
-              boxShadow: '0 12px 40px rgba(236, 72, 153, 0.4)',
-              transform: 'translateY(-2px)'
-            },
-            '&:active': {
-              transform: 'translateY(0)',
-              filter: 'brightness(0.9)'
-            },
-            '&.Mui-disabled': {
-              bgcolor: 'rgba(236, 72, 153, 0.1)',
-              color: 'rgba(255, 255, 255, 0.3)',
-              boxShadow: 'none'
-            }
-          }}
-        >
-          {isLoading ? (
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box
-                sx={{
-                  width: 18,
-                  height: 18,
-                  border: '2px solid rgba(255, 255, 255, 0.1)',
-                  borderTopColor: 'white',
-                  borderRadius: '50%',
-                  animation: 'spin 0.8s linear infinite',
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  }
-                }}
-              />
-              <Typography variant="button" sx={{ fontWeight: 900 }}>
-                Synthesizing
-              </Typography>
-            </Stack>
-          ) : (
-            <Stack direction="row" spacing={1} alignItems="center">
-              {format === 'doodle' ? (
-                <PencilIcon sx={{ fontSize: 20 }} />
-              ) : (
-                <DescriptionIcon sx={{ fontSize: 20 }} />
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={currentTag}
+                  onChange={(event) => setCurrentTag(event.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder="Add a tag"
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => appendTag(currentTag)}
+                  sx={{ minWidth: 120, borderColor: 'rgba(255,255,255,0.1)', color: 'white' }}
+                >
+                  Add tag
+                </Button>
+              </Stack>
+              {existingTags.length > 0 && (
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {existingTags
+                    .filter((tag) => !tags.includes(tag))
+                    .slice(0, 10)
+                    .map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => appendTag(tag)}
+                        clickable
+                        variant="outlined"
+                        sx={{
+                          color: 'rgba(255,255,255,0.82)',
+                          borderColor: 'rgba(255,255,255,0.08)',
+                        }}
+                      />
+                    ))}
+                </Stack>
               )}
-              <Typography variant="button" sx={{ fontWeight: 900 }}>
-                {`Publish ${format === 'doodle' ? 'Doodle' : 'Note'}`}
+            </Box>
+
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
+
+            {format === 'text' ? (
+              <>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  <Button size="small" onClick={() => wrapSelection('**')} startIcon={<BoldIcon />} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }} variant="outlined">Bold</Button>
+                  <Button size="small" onClick={() => wrapSelection('*')} startIcon={<ItalicIcon />} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }} variant="outlined">Italic</Button>
+                  <Button size="small" onClick={() => wrapSelection('<u>', '</u>')} startIcon={<UnderlineIcon />} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }} variant="outlined">Underline</Button>
+                  <Button size="small" onClick={() => wrapSelection('`')} startIcon={<CodeIcon />} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }} variant="outlined">Code</Button>
+                </Stack>
+
+                <TextField
+                  multiline
+                  minRows={isExpanded ? 14 : 8}
+                  fullWidth
+                  value={content}
+                  onChange={(event) => setContent(event.target.value)}
+                  placeholder="Write your note..."
+                  inputRef={contentRef}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '22px',
+                      bgcolor: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }
+                  }}
+                />
+              </>
+            ) : (
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  borderRadius: '22px',
+                  borderColor: 'rgba(255,255,255,0.08)',
+                  bgcolor: 'rgba(255,255,255,0.03)',
+                }}
+              >
+                {content ? (
+                  <Typography sx={{ whiteSpace: 'pre-wrap', minHeight: 120 }}>
+                    {content.slice(0, 300)}
+                  </Typography>
+                ) : (
+                  <Typography sx={{ color: 'rgba(255,255,255,0.45)' }}>
+                    No doodle yet. Open the canvas to sketch.
+                  </Typography>
+                )}
+                <Stack direction="row" spacing={1.5} sx={{ mt: 2 }} flexWrap="wrap">
+                  <Button variant="contained" onClick={() => { setShowDoodleEditor(true); setFormat('doodle'); }} sx={{ bgcolor: '#EC4899', color: 'black', fontWeight: 800 }}>
+                    {content ? 'Edit doodle' : 'Create doodle'}
+                  </Button>
+                  <Button variant="outlined" onClick={() => setFormat('text')} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }}>
+                    Switch to text
+                  </Button>
+                </Stack>
+              </Paper>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)' }}>
+                Right click is handled here so copy, cut, paste, and shortcuts stay local.
               </Typography>
-            </Stack>
-          )}
-        </Button>
+              <Button
+                variant="text"
+                onClick={handleClose}
+                disabled={isSaving}
+                sx={{ color: '#EC4899', fontWeight: 800 }}
+              >
+                Done
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
       </Box>
-    </Box>
     </>
   );
 }
-
