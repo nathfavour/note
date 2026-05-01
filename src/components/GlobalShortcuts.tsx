@@ -4,6 +4,7 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useNotes } from "@/context/NotesContext";
+import { createNavigationPolicy } from "@/lib/sdk";
 
 // Lazy load heavy components
 const KeyboardShortcuts = lazy(() => import("@/components/KeyboardShortcuts"));
@@ -29,10 +30,16 @@ export default function GlobalShortcuts() {
 
 
   useEffect(() => {
+    const navigationPolicy = createNavigationPolicy({ suppressBrowserMenu: true, suppressReload: true });
     const handler = (e: KeyboardEvent) => {
       const hasMeta = e.metaKey || e.ctrlKey;
       
       const key = e.key.toLowerCase();
+
+      if (navigationPolicy.shouldSuppressReload(e)) {
+        e.preventDefault();
+        return;
+      }
 
       // Cmd/Ctrl + Space => open ecosystem portal
       if (hasMeta && key === " ") {
@@ -83,7 +90,18 @@ export default function GlobalShortcuts() {
     };
 
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    const contextMenuHandler = (event: MouseEvent) => {
+      if (navigationPolicy.shouldSuppressContextMenu(event)) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('contextmenu', contextMenuHandler, true);
+
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener('contextmenu', contextMenuHandler, true);
+    };
   }, [openOverlay, router, upsertNote]);
 
   return (

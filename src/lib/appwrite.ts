@@ -19,6 +19,7 @@ import { APPWRITE_CONFIG } from './appwrite/config';
 import { KYLRIX_AUTH_URI, getEcosystemUrl } from '@/constants/ecosystem';
 import { ecosystemSecurity } from './ecosystem/security';
 import { sendKylrixEmailNotification } from './email-notifications';
+import { createNoteCreationService } from './sdk';
 
 export const APPWRITE_ENDPOINT = APPWRITE_CONFIG.ENDPOINT;
 export const APPWRITE_PROJECT_ID = APPWRITE_CONFIG.PROJECT_ID;
@@ -678,114 +679,99 @@ export async function completePasswordReset(userId: string, secret: string, pass
 
 // --- NOTES CRUD ---
 
-export async function createNote(data: Partial<Notes>) {
-  // Plan limit enforcement removed: notes are now unlimited across all plans.
-  // (Previous enforcement block retained in git history for reference.)
-  const user = await getCurrentUser();
-  if (!user || !user.$id) throw new Error("User not authenticated");
-  const now = new Date().toISOString();
-  // Remove attachments from creation payload as it's initialized separately
-  const cleanData = cleanDocumentData(data);
-  const noteData = { ...cleanData };
-  delete noteData.attachments;
-
-  const initialPermissions = getNotePermissions(user.$id, !!data.isPublic);
-
-  const docId = ID.unique();
-  const doc = await databases.createDocument(    APPWRITE_DATABASE_ID,
-    APPWRITE_TABLE_ID_NOTES,
-    docId,
-    filterNoteData({
-      ...noteData,
-      id: docId, // Sync custom id attribute with Appwrite $id
-      userId: user.$id,
-      createdAt: now,
-      updatedAt: now,
-      attachments: null
-    }),
-    initialPermissions
-  );
-  // Re-sync tag logic if needed, but keeping existing structure for now.
-  // Dual-write tags to note_tags pivot including tagId resolution
+async function syncTagsForCreatedNote(noteId: string, rawTags: string[], userId: string, now: string) {
   try {
     const noteTagsCollection = APPWRITE_CONFIG.TABLES.NOTE.NOTE_TAGS || 'note_tags';
     const tagsCollection = APPWRITE_TABLE_ID_TAGS;
-    const rawTags: string[] = Array.isArray((data as any).tags) ? (data as any).tags.filter(Boolean) : [];
-    if (rawTags.length) {
-      const unique = Array.from(new Set(rawTags.map(t => t.trim()))).filter(Boolean);
-      if (unique.length) {
-        // Preload existing tag docs for user (only those needed)
-        const existingTagDocs: Record<string, any> = {};
+    const unique = Array.from(new Set(rawTags.map((tag) => tag.trim()))).filter(Boolean);
+    if (!unique.length) return;
+
+    const existingTagDocs: Record<string, any> = {};
+    try {
+      const existingTagsRes = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        tagsCollection,
+        [Query.equal('userId', userId), Query.equal('nameLower', unique.map((tag) => tag.toLowerCase())), Query.limit(unique.length)] as any
+      );
+      for (const td of existingTagsRes.documents as any[]) {
+        if (td.nameLower) existingTagDocs[td.nameLower] = td;
+      }
+    } catch (tagListErr) {
+      console.error('tag preload failed', tagListErr);
+    }
+
+    for (const tagName of unique) {
+      const key = tagName.toLowerCase();
+      if (!existingTagDocs[key]) {
         try {
-          const existingTagsRes = await databases.listDocuments(
+          const created = await databases.createDocument(
             APPWRITE_DATABASE_ID,
             tagsCollection,
-            [Query.equal('userId', user.$id), Query.equal('nameLower', unique.map(t => t.toLowerCase())), Query.limit(unique.length)] as any
+            ID.unique(),
+            { name: tagName, nameLower: key, userId, createdAt: now, usageCount: 0 }
           );
-          for (const td of existingTagsRes.documents as any[]) {
-            if (td.nameLower) existingTagDocs[td.nameLower] = td;
-          }
-        } catch (tagListErr) {
-          console.error('tag preload failed', tagListErr);
+          existingTagDocs[key] = created;
+        } catch (createTagErr: any) {
+          try {
+            const retry = await databases.listDocuments(
+              APPWRITE_DATABASE_ID,
+              tagsCollection,
+              [Query.equal('userId', userId), Query.equal('nameLower', key), Query.limit(1)] as any
+            );
+            if (retry.documents.length) existingTagDocs[key] = retry.documents[0];
+          } catch {}
         }
-        // Create missing tag docs (best-effort, ignoring races)
-        for (const tagName of unique) {
-          const key = tagName.toLowerCase();
-          if (!existingTagDocs[key]) {
-            try {
-              const created = await databases.createDocument(
-                APPWRITE_DATABASE_ID,
-                tagsCollection,
-                ID.unique(),
-                { name: tagName, nameLower: key, userId: user.$id, createdAt: now, usageCount: 0 }
-              );
-              existingTagDocs[key] = created;
-            } catch (createTagErr: any) {
-              // Possible race: re-fetch single
-              try {
-                const retry = await databases.listDocuments(
-                  APPWRITE_DATABASE_ID,
-                  tagsCollection,
-                  [Query.equal('userId', user.$id), Query.equal('nameLower', key), Query.limit(1)] as any
-                );
-                if (retry.documents.length) existingTagDocs[key] = retry.documents[0];
-              } catch {}
-            }
-          }
-        }
-        // Fetch existing pivot rows once
-        const existingPivot = await databases.listDocuments(
+      }
+    }
+
+    const existingPivot = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('noteId', noteId), Query.limit(500)] as any
+    );
+    const existingPairs = new Set(existingPivot.documents.map((p: any) => `${p.tagId || ''}::${p.tag || ''}`));
+    for (const tagName of unique) {
+      const key = tagName.toLowerCase();
+      const tagDoc = existingTagDocs[key];
+      const tagId = tagDoc ? (tagDoc.$id || tagDoc.id) : undefined;
+      if (!tagId) continue;
+      const pairKey = `${tagId}::${tagName}`;
+      adjustTagUsage(userId, tagName, 1);
+      if (existingPairs.has(pairKey)) continue;
+      try {
+        await databases.createDocument(
           APPWRITE_DATABASE_ID,
           noteTagsCollection,
-          [Query.equal('noteId', doc.$id), Query.limit(500)] as any
+          ID.unique(),
+          { noteId, tagId, tag: tagName, userId, createdAt: now }
         );
-        const existingPairs = new Set(existingPivot.documents.map((p: any) => `${p.tagId || ''}::${p.tag || ''}`));
-        for (const tagName of unique) {
-          const key = tagName.toLowerCase();
-          const tagDoc = existingTagDocs[key];
-          const tagId = tagDoc ? (tagDoc.$id || tagDoc.id) : undefined;
-          if (!tagId) continue; // must have tagId for unique index
-          const pairKey = `${tagId}::${tagName}`;
-          // Increment usage count (best-effort)
-          adjustTagUsage(user.$id, tagName, 1);
-          if (existingPairs.has(pairKey)) continue;
-          try {
-            await databases.createDocument(
-              APPWRITE_DATABASE_ID,
-              noteTagsCollection,
-              ID.unique(),
-              { noteId: doc.$id, tagId, tag: tagName, userId: user.$id, createdAt: now }
-            );
-          } catch (e: any) {
-            console.error('note_tags create failed', e?.message || e);
-          }
-        }
+      } catch (e: any) {
+        console.error('note_tags create failed', e?.message || e);
       }
     }
   } catch (e: any) {
     console.error('dual-write note_tags error', e);
   }
-  return await getNote(doc.$id);
+}
+
+const noteCreationService = createNoteCreationService({
+  databaseId: APPWRITE_DATABASE_ID,
+  tableId: APPWRITE_TABLE_ID_NOTES,
+  getCurrentUser,
+  createRow: async (databaseId, tableId, data, rowId, permissions) => {
+    return databases.createDocument(databaseId, tableId, rowId || ID.unique(), data as any, permissions);
+  },
+  getNote,
+  getNotePermissions,
+  cleanDocumentData,
+  filterNoteData,
+  syncTags: async ({ noteId, rawTags, userId, now }) => {
+    await syncTagsForCreatedNote(noteId, rawTags, userId, now);
+  },
+});
+
+export async function createNote(data: Partial<Notes>) {
+  return noteCreationService.createNote(data as any);
 }
 
 export async function getNote(noteId: string): Promise<Notes> {

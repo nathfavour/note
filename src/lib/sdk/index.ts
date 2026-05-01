@@ -5,6 +5,8 @@ export * from './appwrite';
 export * from './topbar';
 export * from './fab';
 export * from './ecosystem';
+export * from './notes';
+export * from './orchestration';
 export * from './security';
 export * from './social';
 export * from './messaging';
