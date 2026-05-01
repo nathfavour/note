@@ -51,7 +51,10 @@ import CommentsSection from '@/app/(app)/notes/Comments';
 import NoteReactions from '@/app/(app)/notes/NoteReactions';
 import NoteTopbar from '@/components/common/NoteTopbar';
 
+import Logo from '@/components/common/Logo';
+import { getEcosystemUrl } from '@/constants/ecosystem';
 import { getEffectiveDisplayName } from '@/lib/utils';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { useDataNexus } from '@/context/DataNexusContext';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
