@@ -137,6 +137,8 @@ export function NoteDetailSidebar({
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
   const [showActionHub, setShowActionHub] = useState(false);
+  const [pendingHubAction, setPendingHubAction] = useState<null | 'rotate'>(null);
+  const [isCreatingTaskFromNote, setIsCreatingTaskFromNote] = useState(false);
   const [crossSuggestions, setCrossSuggestions] = useState<Array<{ id: string; label: string; description: string }>>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -598,7 +600,10 @@ export function NoteDetailSidebar({
   };
 
   const handleCopyShareLink = async () => {
-    if (!isPublic) return;
+    if (!isPublic) {
+      showError('Private note', 'Make the note public first to copy a share link.');
+      return;
+    }
 
     if (isLegacyPublicNote) {
       navigator.clipboard.writeText(getShareableUrl(liveNote.$id));
@@ -615,8 +620,8 @@ export function NoteDetailSidebar({
     showSuccess('Share link copied to clipboard');
   };
 
-  const handleRotatePublicLink = async () => {
-    const handleRotate = async () => {
+  const handleRotatePublicLink = async (): Promise<boolean> => {
+    const handleRotate = async (): Promise<boolean> => {
       try {
         const updated = await rotatePublicNoteLink(liveNote.$id);
         if (updated) {
@@ -630,19 +635,21 @@ export function NoteDetailSidebar({
           } else {
             showSuccess('Public link rotated');
           }
+          return true;
         }
       } catch (err: any) {
         if (err.message === 'VAULT_LOCKED') {
           showError('Vault Locked', 'You must unlock your vault to rotate the public link.');
           const unlocked = await promptSudo();
-          if (unlocked) handleRotate();
+          if (unlocked) return handleRotate();
         } else {
           showError('Rotate Failed', err.message || 'Failed to rotate public link.');
         }
       }
+      return false;
     };
 
-    handleRotate();
+    return handleRotate();
   };
 
   const handleCancel = () => {
@@ -657,6 +664,12 @@ export function NoteDetailSidebar({
   const handleDelete = () => {
     onDelete(liveNote.$id || '');
     setShowDeleteConfirm(false);
+  };
+
+  const confirmRotateLink = async () => {
+    setPendingHubAction(null);
+    const rotated = await handleRotatePublicLink();
+    if (rotated) setShowActionHub(false);
   };
 
   const loadCrossSuggestions = useCallback(async () => {
@@ -683,6 +696,7 @@ export function NoteDetailSidebar({
   }, [showActionHub, loadCrossSuggestions]);
 
   const handleCreateTaskFromNote = useCallback(async () => {
+    setIsCreatingTaskFromNote(true);
     try {
       const task = await createTaskFromNote(liveNote);
       onUpdate({ ...liveNote, linkedTaskId: task.$id } as Notes);
@@ -698,6 +712,8 @@ export function NoteDetailSidebar({
         return;
       }
       showError('Create Task Failed', error?.message || 'Failed to create task from note.');
+    } finally {
+      setIsCreatingTaskFromNote(false);
     }
   }, [liveNote, onUpdate, promptSudo, showError, showSuccess]);
 
@@ -1577,15 +1593,17 @@ export function NoteDetailSidebar({
             <Button
               variant="contained"
               startIcon={<TaskIcon />}
+              disabled={isCreatingTaskFromNote}
               onClick={handleCreateTaskFromNote}
               sx={{
                 borderRadius: '999px',
                 bgcolor: theme.palette.primary.main,
                 fontWeight: 800,
                 textTransform: 'none',
+                minWidth: 160,
               }}
             >
-              Create Flow Task
+              {isCreatingTaskFromNote ? 'Creating...' : 'Create Flow Task'}
             </Button>
             <Button
               variant="outlined"
@@ -1607,25 +1625,24 @@ export function NoteDetailSidebar({
             <Button
               variant="outlined"
               startIcon={<LockIcon />}
-              onClick={() => {
-                handleRotatePublicLink();
-                setShowActionHub(false);
-              }}
+              disabled={!isPublic}
+              onClick={() => setPendingHubAction('rotate')}
               sx={{
                 borderRadius: '999px',
                 borderColor: alpha(theme.palette.text.primary, 0.15),
                 color: theme.palette.text.primary,
                 fontWeight: 800,
                 textTransform: 'none',
+                minWidth: 160,
               }}
             >
-              Rotate Link
+              {isPublic ? 'Rotate Link' : 'Private Note'}
             </Button>
             <Button
               variant="outlined"
               startIcon={<OpenIcon />}
               onClick={() => {
-                window.open(`https://flow.kylrix.space/tasks?source=note&noteId=${encodeURIComponent(liveNote.$id)}`, '_blank');
+                window.location.assign(`https://flow.kylrix.space/tasks?source=note&noteId=${encodeURIComponent(liveNote.$id)}`);
                 setShowActionHub(false);
               }}
               sx={{
@@ -1634,6 +1651,7 @@ export function NoteDetailSidebar({
                 color: theme.palette.text.primary,
                 fontWeight: 800,
                 textTransform: 'none',
+                minWidth: 160,
               }}
             >
               Open Flow
@@ -1645,9 +1663,12 @@ export function NoteDetailSidebar({
               Cross-app suggestions
             </Typography>
             {isLoadingSuggestions ? (
-              <CircularProgress size={18} sx={{ color: theme.palette.primary.main }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: theme.palette.text.secondary }}>
+                <CircularProgress size={18} sx={{ color: theme.palette.primary.main }} />
+                <Typography variant="caption">Loading ideas…</Typography>
+              </Box>
             ) : crossSuggestions.length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '32dvh', overflowY: 'auto', pr: 0.5 }}>
                 {crossSuggestions.map((suggestion) => (
                   <Box
                     key={suggestion.id}
@@ -1674,7 +1695,7 @@ export function NoteDetailSidebar({
                       size="small"
                       variant="text"
                       onClick={() => {
-                        window.open(`https://kylrix.space/integrations?source=note&action=${encodeURIComponent(suggestion.id)}`, '_blank');
+                        window.location.assign(`https://kylrix.space/integrations?source=note&action=${encodeURIComponent(suggestion.id)}`);
                         setShowActionHub(false);
                       }}
                       sx={{ color: theme.palette.primary.main, fontWeight: 800 }}
@@ -1690,6 +1711,41 @@ export function NoteDetailSidebar({
               </Typography>
             )}
           </Box>
+
+          {pendingHubAction === 'rotate' && (
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '20px',
+                bgcolor: alpha(theme.palette.warning.main, 0.08),
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.5,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
+                Rotate the public link? Anyone with the old link will lose access.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={confirmRotateLink}
+                  sx={{ borderRadius: '999px', textTransform: 'none', fontWeight: 800 }}
+                >
+                  Confirm rotate
+                </Button>
+                <Button
+                  variant="text"
+                  onClick={() => setPendingHubAction(null)}
+                  sx={{ borderRadius: '999px', textTransform: 'none', fontWeight: 800, color: theme.palette.text.secondary }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Drawer>
 

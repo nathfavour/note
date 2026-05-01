@@ -80,7 +80,7 @@ export function TaskSelectorModal({ isOpen, onClose, onSelect }: TaskSelectorMod
         }
       }}
     >
-      <Box sx={{ minHeight: '300px', maxHeight: '72vh', display: 'flex', flexDirection: 'column', p: 3, gap: 2 }}>
+      <Box sx={{ minHeight: 0, maxHeight: '72vh', display: 'flex', flexDirection: 'column', p: 3, gap: 2, overflow: 'hidden' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.02em', color: 'white', fontFamily: 'var(--font-clash-display)' }}>
@@ -121,16 +121,16 @@ export function TaskSelectorModal({ isOpen, onClose, onSelect }: TaskSelectorMod
         />
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: 0 }}>
             <CircularProgress size={32} sx={{ color: '#6366F1' }} />
           </Box>
         ) : filteredTasks.length === 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, opacity: 0.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: 0, opacity: 0.5, textAlign: 'center' }}>
             <TaskIcon sx={{ fontSize: 48, mb: 1 }} />
             <Typography variant="body2">No tasks found</Typography>
           </Box>
         ) : (
-          <List sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+          <List sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 1 }}>
             {filteredTasks.map((task) => (
               <ListItemButton
                 key={task.$id}
