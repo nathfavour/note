@@ -21,6 +21,7 @@ import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
 import { 
   createNote, 
+  createMomentFromNote,
   listNotes,
   realtime,
   APPWRITE_DATABASE_ID,
@@ -124,6 +125,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
   const [isLoadingNote, setIsLoadingNote] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isPostingMoment, setIsPostingMoment] = useState(false);
   const [alreadyDuplicated, setAlreadyDuplicated] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCopied, setIsCopied] = React.useState(false);
@@ -573,6 +575,26 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     }
   };
 
+  const handlePostAsMoment = async () => {
+    if (!verifiedNote || !user || user.$id !== verifiedNote.userId || isPostingMoment) return;
+
+    setIsPostingMoment(true);
+    try {
+      const moment = await createMomentFromNote({
+        $id: verifiedNote.$id,
+        title: verifiedNote.title,
+        userId: verifiedNote.userId,
+      });
+
+      showSuccess('Moment Posted', 'This note has been posted as a moment.');
+      window.location.assign(`${getEcosystemUrl('connect')}/post/${moment.$id}`);
+    } catch (err: any) {
+      showError('Post Failed', err.message || 'Failed to post note as a moment.');
+    } finally {
+      setIsPostingMoment(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -612,6 +634,27 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
 
             {/* Duplicate Button Logic */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              {isAuthenticated && user?.$id === verifiedNote.userId && (verifiedNote.isPublic || isEditableByAnyone) && (
+                <Button
+                  variant="outlined"
+                  onClick={handlePostAsMoment}
+                  disabled={isPostingMoment}
+                  startIcon={isPostingMoment ? <CircularProgress size={16} color="inherit" /> : <Waves size={16} />}
+                  sx={{
+                    borderRadius: '14px',
+                    borderColor: 'rgba(255, 255, 255, 0.12)',
+                    color: 'white',
+                    fontWeight: 800,
+                    textTransform: 'none',
+                    px: 3,
+                    height: 44,
+                    whiteSpace: 'nowrap',
+                    '&:hover': { borderColor: '#F59E0B', bgcolor: 'rgba(245, 158, 11, 0.08)' }
+                  }}
+                >
+                  {isPostingMoment ? 'Posting...' : 'Post as Moment'}
+                </Button>
+              )}
               <Button
                 component={MuiLink}
                 href={isAuthenticated

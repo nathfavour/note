@@ -75,6 +75,7 @@ export const APPWRITE_BUCKET_NOTES_ATTACHMENTS = APPWRITE_CONFIG.BUCKETS.NOTES_A
 export const APPWRITE_BUCKET_EXTENSION_ASSETS = APPWRITE_CONFIG.BUCKETS.EXTENSION_ASSETS;
 export const APPWRITE_BUCKET_BACKUPS = APPWRITE_CONFIG.BUCKETS.BACKUPS;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = APPWRITE_CONFIG.BUCKETS.TEMP_UPLOADS;
+export const CONNECT_COLLECTION_ID_MOMENTS = APPWRITE_CONFIG.TABLES.CHAT.MOMENTS;
 
 export { client, account, databases, storage, functions, ID, Query, Permission, Role, OAuthProvider, realtime };
 
@@ -773,6 +774,37 @@ const noteCreationService = createNoteCreationService({
 
 export async function createNote(data: Partial<Notes>) {
   return noteCreationService.createNote(data as any);
+}
+
+export async function createMomentFromNote(note: Pick<Notes, '$id' | 'title' | 'userId'>) {
+  const noteTitle = (note.title || 'Untitled Note').trim();
+  const caption = `Shared note: ${noteTitle}`;
+  const metadata = {
+    type: 'post',
+    attachments: [{ type: 'note', id: note.$id }],
+  };
+
+  return databases.createDocument(
+    APPWRITE_CONFIG.DATABASES.CHAT,
+    CONNECT_COLLECTION_ID_MOMENTS,
+    ID.unique(),
+    {
+      userId: note.userId,
+      caption,
+      type: 'image',
+      momentKind: 'post',
+      sourceId: null,
+      searchTitle: noteTitle,
+      fileId: JSON.stringify(metadata),
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    },
+    [
+      `read("user:${note.userId}")`,
+      `update("user:${note.userId}")`,
+      `delete("user:${note.userId}")`,
+    ],
+  );
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
