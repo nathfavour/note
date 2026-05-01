@@ -14,9 +14,6 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { 
-  LayoutGrid, 
-  LogOut, 
-  Settings,
   Mic,
   Waves
 } from 'lucide-react';
@@ -40,16 +37,11 @@ import {
   Paper,
   Avatar,
   IconButton,
-  Menu,
-  MenuItem,
-  Divider,
   CircularProgress,
   AppBar,
   Toolbar,
   Stack,
   Tooltip,
-  ListItemIcon,
-  ListItemText,
   alpha,
   Link as MuiLink,
   keyframes
@@ -59,11 +51,7 @@ import CommentsSection from '@/app/(app)/notes/Comments';
 import NoteReactions from '@/app/(app)/notes/NoteReactions';
 import NoteTopbar from '@/components/common/NoteTopbar';
 
-import Logo from '@/components/common/Logo';
-import { getEcosystemUrl } from '@/constants/ecosystem';
-import { getEffectiveDisplayName, getUserProfilePicId } from '@/lib/utils';
-import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
-import { EcosystemPortal } from '@/components/common/EcosystemPortal';
+import { getEffectiveDisplayName } from '@/lib/utils';
 import { useDataNexus } from '@/context/DataNexusContext';
 import { ecosystemSecurity } from '@/lib/ecosystem/security';
 import { decryptGhostData } from '@/lib/encryption/ghost-crypto';
@@ -120,243 +108,6 @@ function decodeUrlSafeBase64ToBuffer(key: string): Uint8Array {
 function isRenderableImageSrc(value?: string | null) {
   if (!value) return false;
   return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:');
-}
-
-interface SharedNoteHeaderProps {
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
-}
-
-function SharedNoteHeader({ onRefresh, isRefreshing }: SharedNoteHeaderProps) {
-  const { user, isAuthenticated, logout } = useAuth();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
-  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
-  const profilePicId = getUserProfilePicId(user);
-
-  useEffect(() => {
-    let mounted = true;
-    const cached = getCachedProfilePreview(profilePicId || undefined);
-    if (cached !== undefined) {
-      setSmallProfileUrl(cached ?? null);
-    }
-
-    const fetchPreview = async () => {
-      try {
-        if (profilePicId) {
-          const url = await fetchProfilePreview(profilePicId, 64, 64);
-          if (mounted) setSmallProfileUrl(url as unknown as string);
-        } else {
-          if (mounted) setSmallProfileUrl(null);
-        }
-      } catch (_err) {
-        if (mounted) setSmallProfileUrl(null);
-      }
-    };
-    fetchPreview();
-    return () => { mounted = false; };
-  }, [profilePicId]);
-
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    handleCloseMenu();
-    logout();
-  };
-
-  return (
-    <AppBar 
-      position="fixed" 
-      elevation={0}
-      sx={{ 
-        zIndex: 1201,
-        bgcolor: '#161412',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        backgroundImage: 'none'
-      }}
-    >
-      <Toolbar sx={{ 
-        justifyContent: 'space-between', 
-        px: { xs: 2, md: 4 }, 
-        minHeight: '88px' 
-      }}>
-        <Logo 
-          app="note" 
-          size={40} 
-          variant="full"
-          sx={{ 
-            cursor: 'pointer', 
-            '&:hover': { opacity: 0.8 },
-            fontFamily: 'var(--font-clash)',
-            fontWeight: 900,
-            letterSpacing: '-0.04em'
-          }}
-          component={NextLink}
-          href="/"
-        />
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {onRefresh && (
-            <Tooltip title="Refresh Note">
-              <IconButton 
-                onClick={onRefresh}
-                disabled={isRefreshing}
-                sx={{ 
-                  color: isRefreshing ? '#EC4899' : 'rgba(255, 255, 255, 0.4)',
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid',
-                  borderColor: isRefreshing ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  width: 44,
-                  height: 44,
-                  '&:hover': { 
-                    bgcolor: 'rgba(255, 255, 255, 0.05)', 
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    color: 'white'
-                  },
-                  '& svg': {
-                    animation: isRefreshing ? `${spin} 1s linear infinite` : 'none',
-                  }
-                }}
-              >
-                <RefreshIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-            </Tooltip>
-          )}
-
-          <Tooltip title="Kylrix Portal">
-            <IconButton 
-              onClick={() => setIsEcosystemPortalOpen(true)}
-              sx={{ 
-                color: '#6366F1',
-                bgcolor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                width: 44,
-                height: 44,
-                '&:hover': { 
-                  bgcolor: 'rgba(255, 255, 255, 0.05)', 
-                  borderColor: '#6366F1',
-                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)' 
-                }
-              }}
-            >
-              <LayoutGrid size={22} />
-            </IconButton>
-          </Tooltip>
-
-          {isAuthenticated ? (
-            <>
-              <IconButton 
-                onClick={handleOpenMenu}
-                sx={{ 
-                  p: 0.5,
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '14px',
-                  bgcolor: 'rgba(255, 255, 255, 0.03)',
-                  '&:hover': { borderColor: 'rgba(99, 102, 241, 0.3)', bgcolor: 'rgba(255, 255, 255, 0.05)' },
-                  transition: 'all 0.2s'
-                }}
-              >
-                <Avatar 
-                  src={smallProfileUrl || undefined}
-                  sx={{ 
-                    width: 34, 
-                    height: 34, 
-                    bgcolor: '#050505',
-                    fontSize: '0.875rem',
-                    fontWeight: 800,
-                    color: '#6366F1',
-                    borderRadius: '10px',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
-                  {user?.name ? user.name[0].toUpperCase() : 'U'}
-                </Avatar>
-              </IconButton>
-
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseMenu}
-                PaperProps={{
-                  sx: {
-                    mt: 2,
-                    width: 280,
-                    bgcolor: '#161412',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '28px',
-                    backgroundImage: 'none',
-                    boxShadow: '0 25px 50px rgba(0,0,0,0.7)',
-                    p: 1,
-                    color: 'white'
-                  }
-                }}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              >
-                <Box sx={{ px: 2.5, py: 2.5, bgcolor: 'rgba(255, 255, 255, 0.02)', borderRadius: '20px', mb: 1 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'var(--font-mono)' }}>
-                    Identity
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: 'white', mt: 1, fontFamily: 'var(--font-satoshi)' }}>
-                    {user?.name || user?.email}
-                  </Typography>
-                </Box>
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
-                <Box sx={{ py: 0.5 }}>
-                  <MenuItem component={NextLink} href="/notes" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
-                    <ListItemIcon sx={{ minWidth: 40 }}><LayoutGrid size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
-                    <ListItemText primary="My Dashboard" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
-                  </MenuItem>
-                  <MenuItem component={NextLink} href="/settings" onClick={handleCloseMenu} sx={{ py: 1.8, px: 2.5, borderRadius: '16px', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
-                    <ListItemIcon sx={{ minWidth: 40 }}><Settings size={18} color="rgba(255, 255, 255, 0.6)" /></ListItemIcon>
-                    <ListItemText primary="Settings" primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontFamily: 'var(--font-satoshi)' }} />
-                  </MenuItem>
-                </Box>
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.05)', my: 1 }} />
-                <MenuItem onClick={handleLogout} sx={{ py: 2, px: 2.5, borderRadius: '16px', color: '#FF4D4D', '&:hover': { bgcolor: alpha('#FF4D4D', 0.05) } }}>
-                  <ListItemIcon sx={{ minWidth: 40 }}><LogOut size={18} color="#FF4D4D" /></ListItemIcon>
-                  <ListItemText primary="Disconnect Session" primaryTypographyProps={{ variant: 'body2', fontWeight: 800, fontFamily: 'var(--font-satoshi)' }} />
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <Button
-              href={`${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
-              variant="contained"
-              size="large"
-              sx={{
-                ml: 1,
-                background: 'linear-gradient(135deg, #6366F1 0%, #00D1DA 100%)',
-                color: '#000',
-                fontWeight: 800,
-                fontFamily: 'var(--font-satoshi)',
-                borderRadius: '14px',
-                textTransform: 'none',
-                px: 4,
-                boxShadow: '0 8px 20px rgba(99, 102, 241, 0.15)',
-                '&:hover': { background: 'linear-gradient(135deg, #00E5FF 0%, #00C1CA 100%)', transform: 'translateY(-1px)' }
-              }}
-            >
-              Connect
-            </Button>
-          )}
-        </Box>
-      </Toolbar>
-      <EcosystemPortal 
-        open={isEcosystemPortalOpen} 
-        onClose={() => setIsEcosystemPortalOpen(false)} 
-      />
-    </AppBar>
-  );
 }
 
 export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClientProps) {
