@@ -1,4 +1,4 @@
-export type KylrixApp = 'accounts' | 'note' | 'flow' | 'connect' | 'vault' | 'kylrix';
+import { KylrixApp } from '../design';
 
 export type EcosystemSurfaceKind = 'page' | 'topbar' | 'drawer' | 'sidebar' | 'modal' | 'inline';
 export type EcosystemObjectKind = 'note' | 'task' | 'event' | 'form' | 'huddle' | 'call' | 'coupon' | 'subscription' | 'referral' | 'message' | 'credential';

@@ -3,8 +3,7 @@
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
-
-export type KylrixApp = 'root' | 'vault' | 'flow' | 'note' | 'connect';
+import { KylrixApp } from '@/lib/sdk';
 
 interface LogoProps {
   sx?: any;
@@ -31,10 +30,12 @@ const Logo: React.FC<LogoProps> = ({
   // App Specific Colors (Muted V3 Palette)
   const appColors: Record<KylrixApp, { primary: string; secondary: string; label: string }> = {
     root: { primary: "#6366F1", secondary: "#6366F1", label: "KYLRIX" },
+    accounts: { primary: "#6366F1", secondary: "#6366F1", label: "ACCOUNTS" },
     vault: { primary: "#6366F1", secondary: "#10B981", label: "VAULT" }, // Left: Indigo, Right: Emerald
     flow: { primary: "#6366F1", secondary: "#A855F7", label: "FLOW" },   // Left: Indigo, Right: Amethyst
     note: { primary: "#6366F1", secondary: "#EC4899", label: "NOTE" },   // Left: Indigo, Right: Pink
-    connect: { primary: "#6366F1", secondary: "#F59E0B", label: "CONNECT" } // Left: Indigo, Right: Amber
+    connect: { primary: "#6366F1", secondary: "#F59E0B", label: "CONNECT" }, // Left: Indigo, Right: Amber
+    kylrix: { primary: "#6366F1", secondary: "#6366F1", label: "KYLRIX" }
   };
 
   const current = appColors[app] || appColors.root;

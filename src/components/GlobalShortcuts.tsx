@@ -91,7 +91,7 @@ export default function GlobalShortcuts() {
 
     window.addEventListener("keydown", handler);
     const contextMenuHandler = (event: MouseEvent) => {
-      if (navigationPolicy.shouldSuppressContextMenu(event)) {
+      if (navigationPolicy.shouldSuppressContextMenu()) {
         event.preventDefault();
       }
     };

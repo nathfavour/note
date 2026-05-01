@@ -281,7 +281,7 @@ export default function CreateNoteForm({
       }
     }
     closeOverlay();
-  }, [closeOverlay, content, isDirty, persist, resolvedNoteId, tags.length, title]);
+  }, [closeOverlay, content, isDirty, persist, resolvedNoteId, title]);
 
   const handleTagKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
