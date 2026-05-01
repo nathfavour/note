@@ -17,7 +17,8 @@ import {
   LayoutGrid, 
   LogOut, 
   Settings,
-  PhoneCall
+  Mic,
+  Waves
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
@@ -73,6 +74,37 @@ const spin = keyframes`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 `;
+
+const ripple = keyframes`
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.6); opacity: 0; }
+`;
+
+const HuddleIcon = ({ color }: { color: string }) => (
+  <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
+    <Box
+      sx={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        border: `2px solid ${color}`,
+        animation: `${ripple} 2s infinite ease-out`,
+      }}
+    />
+    <Mic size={16} style={{ position: 'relative', zIndex: 1 }} />
+    <Waves 
+      size={10} 
+      style={{ 
+        position: 'absolute', 
+        bottom: -2, 
+        right: -2, 
+        color: color,
+        filter: `drop-shadow(0 0 4px ${color})`
+      }} 
+    />
+  </Box>
+);
 
 interface SharedNoteClientProps {
    noteId: string;
@@ -832,7 +864,7 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
                   ? `${getEcosystemUrl('connect')}/calls?source=shared-note&noteId=${verifiedNote.$id}&title=${encodeURIComponent(verifiedNote.title || 'Shared Note')}`
                   : `${getEcosystemUrl('accounts')}/login?source=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin + window.location.pathname) : ''}`
                 }
-                startIcon={<PhoneCall size={18} />}
+                startIcon={<HuddleIcon color={getConnectPrimaryColor()} />}
                 variant="outlined"
                 sx={{
                   borderRadius: '14px',
