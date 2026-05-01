@@ -5,10 +5,7 @@ import {
   Box, 
   Typography, 
   IconButton, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
+  Drawer, 
   Stack, 
   Button, 
   alpha,
@@ -16,7 +13,9 @@ import {
   Paper,
   TextField,
   Chip,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Close as CloseIcon, 
@@ -34,6 +33,8 @@ interface AIGeneratePromptModalProps {
 }
 
 export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = false, initialPrompt = '' }: AIGeneratePromptModalProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedType, setSelectedType] = useState<'topic' | 'brainstorm' | 'research' | 'custom'>('topic');
   const [customPrompt, setCustomPrompt] = useState(initialPrompt);
 
@@ -85,34 +86,41 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
   };
 
   return (
-    <Dialog
+    <Drawer
+      anchor={isMobile ? 'bottom' : 'right'}
       open={true}
       onClose={onClose}
-      maxWidth="md"
-      fullWidth
+      ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
+          width: isMobile ? '100%' : 'min(100vw, 650px)',
+          maxWidth: '100%',
+          height: isMobile ? '92dvh' : '100%',
+          maxHeight: '100dvh',
           bgcolor: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(25px) saturate(180%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '28px',
+          borderRadius: isMobile ? '24px 24px 0 0' : '0',
           backgroundImage: 'none',
           color: 'white',
-          overflow: 'hidden'
+          display: 'flex',
+          flexDirection: 'column'
         }
       }}
     >
-      <DialogTitle sx={{ 
+      {/* Header */}
+      <Box sx={{ 
         p: 3, 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        flexShrink: 0
       }}>
         <Stack direction="row" spacing={2} alignItems="center">
           <Box sx={{ 
-            w: 40, 
-            h: 40, 
+            width: 40, 
+            height: 40, 
             bgcolor: '#6366F1', 
             borderRadius: '12px', 
             display: 'flex', 
@@ -138,9 +146,28 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
         >
           <CloseIcon />
         </IconButton>
-      </DialogTitle>
+      </Box>
 
-      <DialogContent sx={{ p: 4 }}>
+      {/* Content */}
+      <Box sx={{ 
+        p: 4,
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        '&::-webkit-scrollbar': {
+          width: '6px'
+        },
+        '&::-webkit-scrollbar-track': {
+          bgcolor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          bgcolor: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '3px',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.2)'
+          }
+        }
+      }}>
         <Stack spacing={4}>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: 'white' }}>
@@ -254,15 +281,21 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
             </Box>
           </Box>
         </Stack>
-      </DialogContent>
+      </Box>
 
-      <DialogActions sx={{ 
+      {/* Footer */}
+      <Box sx={{ 
         p: 3, 
         bgcolor: 'rgba(255, 255, 255, 0.02)', 
         borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        justifyContent: 'space-between'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexShrink: 0,
+        gap: 2,
+        flexDirection: isMobile ? 'column' : 'row'
       }}>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, ml: 1 }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600 }}>
           {isGenerating ? (
             <Stack direction="row" spacing={1} alignItems="center">
               <CircularProgress size={14} sx={{ color: '#6366F1' }} />
@@ -298,7 +331,7 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
             {isGenerating ? 'Generating...' : 'Generate Note'}
           </Button>
         </Stack>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </Drawer>
   );
 }
