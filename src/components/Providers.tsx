@@ -1,5 +1,6 @@
 "use client";
 
+import { useLastActiveApp } from "@/lib/sdk/ecosystem";
 import { AuthProvider } from "@/components/ui/AuthContext";
 import { OverlayProvider } from "@/components/ui/OverlayContext";
 import { LoadingProvider } from "@/components/ui/LoadingContext";
@@ -38,6 +39,8 @@ function MuiThemeWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
+    useLastActiveApp();
+    
     return (
         <DataNexusProvider>
             <SubscriptionProvider>

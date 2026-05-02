@@ -363,3 +363,19 @@ export function topbarMatches(query: string, terms: string[]) {
   const normalized = query.trim().toLowerCase();
   return terms.some((term) => term.includes(normalized) || normalized.includes(term));
 }
+
+/**
+ * Get the href for topbar logo based on the app
+ * Returns the landing page or dashboard for the given app
+ */
+export function getTopbarLogoHref(app: 'accounts' | 'note' | 'vault' | 'flow' | 'connect' | 'kylrix'): string {
+  const paths: Record<string, string> = {
+    'accounts': '/dashboard',
+    'note': '/dashboard',
+    'vault': '/dashboard',
+    'flow': '/dashboard',
+    'connect': '/dashboard',
+    'kylrix': '/',
+  };
+  return paths[app] || '/';
+}
