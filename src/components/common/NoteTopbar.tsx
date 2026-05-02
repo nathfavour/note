@@ -538,9 +538,8 @@ export default function NoteTopbar({
         const username = profileSeed.username;
         if (username) {
           stageProfileView(profileSeed as any, profileSeed.avatar || null);
-          void router.prefetch(`/u/${encodeURIComponent(username)}`);
           handleCloseAll();
-          router.push(`/u/${encodeURIComponent(username)}?transition=profile`);
+          window.location.href = `${getEcosystemUrl('connect')}/u/${encodeURIComponent(username)}?transition=profile`;
         }
       }
     };
@@ -666,9 +665,8 @@ export default function NoteTopbar({
                         const username = profileUsername ? String(profileUsername).replace(/^@+/, '').toLowerCase() : null;
                         if (username) {
                         stageProfileView(profileSeed as any, profileSeed.avatar || null);
-                          void router.prefetch(`/u/${encodeURIComponent(username)}`);
                           handleCloseAll();
-                          router.push(`/u/${encodeURIComponent(username)}?transition=profile`);
+                          window.location.href = `${getEcosystemUrl('connect')}/u/${encodeURIComponent(username)}?transition=profile`;
                         }
                       }
                     }}
