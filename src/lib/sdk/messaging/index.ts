@@ -1,12 +1,20 @@
+import { KylrixApp } from '../design';
+
+export type MessageKind = 'text' | 'image' | 'video' | 'file' | 'call_signal';
+
 export interface MessageEnvelope {
-  id: string;
-  threadId: string;
+  conversationId: string;
   senderId: string;
-  body: string;
-  sentAt?: string;
-  readAt?: string | null;
+  kind: MessageKind;
+  content?: string;
+  attachments?: string[];
+  app?: KylrixApp;
+  createdAt?: string;
 }
 
-export function createMessageEnvelope(envelope: MessageEnvelope) {
-  return envelope;
+export function buildMessageEnvelope(message: MessageEnvelope): MessageEnvelope {
+  return {
+    ...message,
+    createdAt: message.createdAt || new Date().toISOString(),
+  };
 }

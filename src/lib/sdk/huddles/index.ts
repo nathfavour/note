@@ -1,11 +1,17 @@
+import { KylrixApp } from '../design';
+
 export interface HuddleSignal {
   id: string;
-  roomId: string;
   hostId: string;
-  purpose: string;
-  active?: boolean;
+  title: string;
+  participants?: string[];
+  sourceApp: KylrixApp;
+  startedAt?: string;
 }
 
-export function createHuddleSignal(signal: HuddleSignal) {
-  return signal;
+export function buildHuddleSignal(signal: HuddleSignal): HuddleSignal {
+  return {
+    ...signal,
+    startedAt: signal.startedAt || new Date().toISOString(),
+  };
 }

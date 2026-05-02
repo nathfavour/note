@@ -1,11 +1,29 @@
-export interface MomentSignal {
+import { KylrixApp } from '../design';
+
+export type MomentVisibility = 'private' | 'shared' | 'public';
+
+export interface MomentAttachment {
   id: string;
-  authorId: string;
-  body: string;
-  createdAt?: string;
-  visibility?: 'private' | 'shared' | 'link';
+  type: 'image' | 'video' | 'file' | 'link';
+  url: string;
+  title?: string;
 }
 
-export function createMomentSignal(signal: MomentSignal) {
-  return signal;
+export interface MomentSignal {
+  id: string;
+  app: KylrixApp;
+  title: string;
+  body?: string;
+  visibility: MomentVisibility;
+  authorId: string;
+  threadId?: string;
+  attachments?: MomentAttachment[];
+  createdAt?: string;
+}
+
+export function buildMomentSignal(signal: MomentSignal): MomentSignal {
+  return {
+    ...signal,
+    createdAt: signal.createdAt || new Date().toISOString(),
+  };
 }

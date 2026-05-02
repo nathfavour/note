@@ -1,7 +1,7 @@
-import { ID } from 'appwrite';
+import { ID, type Models } from 'appwrite';
 import { createCrossObjectMetadata, type CrossObjectOrigin } from '../orchestration';
 
-export interface NoteCreationContext<NoteRow = any> {
+export interface NoteCreationContext<NoteRow = Models.Document> {
   databaseId: string;
   tableId: string;
   getCurrentUser: () => Promise<{ $id: string } | null>;
@@ -24,7 +24,7 @@ export interface NoteCreationInput {
   attachments?: unknown[];
 }
 
-export function createNoteCreationService<NoteRow = any>(deps: NoteCreationContext<NoteRow>) {
+export function createNoteCreationService<NoteRow = Models.Document>(deps: NoteCreationContext<NoteRow>) {
   return {
     async createNote(data: NoteCreationInput) {
       const user = await deps.getCurrentUser();
