@@ -30,7 +30,7 @@ import {
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import PaywallDialog from '../NoteContextMenu';
+import PaywallDrawer from '../NoteContextMenu';
 import { updateNote, createNote, toggleNoteVisibility, rotatePublicNoteLink, createTaskFromNote, getShareableUrl, getCurrentPublicNoteShareUrl, getNotePublicState } from '@/lib/appwrite';
 import { useToast } from './Toast';
 import { useSudo } from '@/context/SudoContext';
@@ -405,7 +405,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
         noteId={note.$id} 
         noteTitle={note.title || 'Untitled note'} 
       />
-      <PaywallDialog
+      <PaywallDrawer
         open={isPaywallDialogOpen}
         onClose={() => setIsPaywallDialogOpen(false)}
         note={note}
