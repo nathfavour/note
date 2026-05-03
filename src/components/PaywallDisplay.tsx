@@ -7,10 +7,11 @@ import type { Notes } from '@/types/appwrite';
 
 interface PaywallDisplayProps {
   note: Notes;
+  authorName?: string;
   onPayClick?: () => void;
 }
 
-const PaywallDisplay: React.FC<PaywallDisplayProps> = ({ note, onPayClick }) => {
+const PaywallDisplay: React.FC<PaywallDisplayProps> = ({ note, authorName, onPayClick }) => {
   const metadata = typeof note.metadata === 'string' ? JSON.parse(note.metadata || '{}') : note.metadata;
   const paywall = metadata?.paywall;
 
@@ -68,13 +69,10 @@ const PaywallDisplay: React.FC<PaywallDisplayProps> = ({ note, onPayClick }) => 
 
         <Stack spacing={1} alignItems="center" textAlign="center">
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.72)' }}>
-            {note.userId && note.userId.length > 0 
-              ? 'This note is premium'
-              : 'This content is premium'
-            }
+            {authorName ? `${authorName} made this note premium` : 'This note is premium'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
-            Pay ${amount} to unlock
+            Pay ${amount} to access this content
           </Typography>
         </Stack>
 

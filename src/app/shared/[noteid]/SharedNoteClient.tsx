@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { NoteContentRenderer } from '@/components/NoteContentRenderer';
+import PaywallDisplay from '@/components/PaywallDisplay';
 import { 
   createNote, 
   createMomentFromNote,
@@ -603,6 +604,21 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
     );
   }
 
+  const shouldShowPaywall = () => {
+    if (!verifiedNote || !verifiedNote.isPublic) return false;
+    const meta = parseSharedNoteMeta(verifiedNote);
+    const paywall = meta?.paywall;
+    if (!paywall?.enabled) return false;
+    // Show paywall if user is not the owner
+    if (isAuthenticated && user?.$id === verifiedNote.userId) return false;
+    return true;
+  };
+
+  const handlePaywallClick = () => {
+    // TODO: Implement payment flow when drawer is ready
+    console.log('Payment initiated for paywall');
+  };
+
   const NoteContent = () => (
     <Paper 
       elevation={0}
@@ -831,29 +847,39 @@ export default function SharedNoteClient({ noteId, initialKey }: SharedNoteClien
       </Box>
 
       <Box sx={{ position: 'relative', p: { xs: 4, md: 6 }, bgcolor: 'rgba(0, 0, 0, 0.1)' }}>
-        <IconButton
-          onClick={handleCopyContent}
-          sx={{
-            position: 'absolute',
-            top: 24,
-            right: 24,
-            bgcolor: isCopied ? alpha('#6366F1', 0.1) : '#1C1A18',
-            border: '1px solid',
-            borderColor: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '12px',
-            color: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
-            transition: 'all 0.2s',
-            '&:hover': { bgcolor: '#252220', color: 'white' }
-          }}
-          title={isCopied ? 'Copied!' : 'Copy content'}
-        >
-          {isCopied ? <CheckIcon /> : <CopyIcon />}
-        </IconButton>
-        <NoteContentRenderer
-          content={verifiedNote.content || ''}
-          format={(verifiedNote.format as 'text' | 'doodle') || 'text'}
-          emptyFallback={<Typography sx={{ color: 'rgba(255, 255, 255, 0.2)', fontStyle: 'italic', fontFamily: 'var(--font-satoshi)' }}>This note is empty.</Typography>}
-        />
+        {shouldShowPaywall() ? (
+          <PaywallDisplay 
+            note={verifiedNote} 
+            authorName={authorProfile ? (authorProfile.firstName && authorProfile.lastName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile.firstName || authorProfile.lastName || `@${authorProfile.username}`) : undefined}
+            onPayClick={handlePaywallClick}
+          />
+        ) : (
+          <>
+            <IconButton
+              onClick={handleCopyContent}
+              sx={{
+                position: 'absolute',
+                top: 24,
+                right: 24,
+                bgcolor: isCopied ? alpha('#6366F1', 0.1) : '#1C1A18',
+                border: '1px solid',
+                borderColor: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                color: isCopied ? '#6366F1' : 'rgba(255, 255, 255, 0.4)',
+                transition: 'all 0.2s',
+                '&:hover': { bgcolor: '#252220', color: 'white' }
+              }}
+              title={isCopied ? 'Copied!' : 'Copy content'}
+            >
+              {isCopied ? <CheckIcon /> : <CopyIcon />}
+            </IconButton>
+            <NoteContentRenderer
+              content={verifiedNote.content || ''}
+              format={(verifiedNote.format as 'text' | 'doodle') || 'text'}
+              emptyFallback={<Typography sx={{ color: 'rgba(255, 255, 255, 0.2)', fontStyle: 'italic', fontFamily: 'var(--font-satoshi)' }}>This note is empty.</Typography>}
+            />
+          </>
+        )}
       </Box>
 
       <Box sx={{ p: 3, bgcolor: '#161412', borderTop: '1px solid rgba(255, 255, 255, 0.03)' }}>

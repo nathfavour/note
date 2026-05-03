@@ -26,9 +26,11 @@ import {
   LockOpen as PublicIcon,
   Link as LinkIcon,
   Refresh as RefreshIcon,
+  LocalOffer as LocalOfferIcon,
 } from '@mui/icons-material';
 import { sidebarIgnoreProps } from '@/constants/sidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
+import PaywallDialog from '../NoteContextMenu';
 import { updateNote, createNote, toggleNoteVisibility, rotatePublicNoteLink, createTaskFromNote, getShareableUrl, getCurrentPublicNoteShareUrl, getNotePublicState } from '@/lib/appwrite';
 import { useToast } from './Toast';
 import { useSudo } from '@/context/SudoContext';
@@ -56,6 +58,7 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   const { showSuccess, showError, showInfo } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
+  const [isPaywallDialogOpen, setIsPaywallDialogOpen] = React.useState(false);
   const [isAIProcessing, setIsAIProcessing] = React.useState(false);
   const isPublic = getNotePublicState(note);
 
@@ -327,6 +330,13 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
     }
   };
 
+  const handlePaywallUpdate = (updatedNote: any) => {
+    // Update the note in the parent context if needed
+    if (onNoteSelect) {
+      onNoteSelect(updatedNote);
+    }
+  };
+
   const contextMenuItems = [
     {
       label: pinned ? 'Unpin' : 'Pin',
@@ -351,6 +361,11 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
       label: 'Duplicate',
       icon: <DuplicateIcon sx={{ fontSize: 18 }} />,
       onClick: () => { handleDuplicate(); }
+    },
+    {
+      label: 'Add Paywall',
+      icon: <LocalOfferIcon sx={{ fontSize: 18, color: '#EC4899' }} />,
+      onClick: () => { setIsPaywallDialogOpen(true); }
     },
     ...(isPro ? [
       {
@@ -389,6 +404,12 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
         onOpenChange={setIsShareModalOpen} 
         noteId={note.$id} 
         noteTitle={note.title || 'Untitled note'} 
+      />
+      <PaywallDialog
+        open={isPaywallDialogOpen}
+        onClose={() => setIsPaywallDialogOpen(false)}
+        note={note}
+        onUpdate={handlePaywallUpdate}
       />
       <Card
         {...sidebarIgnoreProps}
