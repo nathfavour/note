@@ -3,7 +3,8 @@
  * Keep this package framework-agnostic and pure.
  */
 
-export type KylrixApp = 'root' | 'vault' | 'flow' | 'note' | 'connect';
+import type { KylrixApp } from '../orchestration/index';
+export type { KylrixApp } from '../orchestration/index';
 
 export const KYLRIX_COLORS = {
   ecosystemPrimary: '#6366F1',
@@ -21,7 +22,8 @@ export const KYLRIX_TYPOGRAPHY = {
 } as const;
 
 export const KYLRIX_APP_TONES: Record<KylrixApp, { primary: string; secondary: string; label: string }> = {
-  root: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: KYLRIX_COLORS.ecosystemPrimary, label: 'Kylrix' },
+  kylrix: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: KYLRIX_COLORS.ecosystemPrimary, label: 'Kylrix' },
+  accounts: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: KYLRIX_COLORS.ecosystemPrimary, label: 'Accounts' },
   vault: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: '#10B981', label: 'Vault' },
   flow: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: '#A855F7', label: 'Flow' },
   note: { primary: KYLRIX_COLORS.ecosystemPrimary, secondary: '#EC4899', label: 'Note' },

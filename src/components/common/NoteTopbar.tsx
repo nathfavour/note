@@ -244,7 +244,7 @@ export default function NoteTopbar({
     () =>
       createEcosystemPanelItems('note').map((item) => ({
         ...item,
-        href: getEcosystemUrl(item.app === 'root' ? 'accounts' : item.app),
+        href: getEcosystemUrl(item.app === 'kylrix' ? 'kylrix' : item.app),
       })),
     [],
   );
@@ -255,7 +255,7 @@ export default function NoteTopbar({
         routeLabel: 'Note',
         currentApp: 'note',
         snippets: [],
-        resolveUrl: (app, path = '') => `${getEcosystemUrl(app === 'root' ? 'accounts' : app)}${path}`,
+        resolveUrl: (app, path = '') => `${getEcosystemUrl(app === 'kylrix' ? 'kylrix' : app)}${path}`,
       }),
     [searchQuery],
   );

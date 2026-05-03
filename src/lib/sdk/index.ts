@@ -135,7 +135,7 @@ export * from './appwrite/index';
 export * from './topbar/index';
 export * from './fab/index';
 export * from './security/index';
-export * from './wallet/index';
+// export * from './wallet/index'; // DISABLED: wallet module uses Node.js modules
 export * from './social/index';
 export * from './messaging/index';
 export * from './huddles/index';

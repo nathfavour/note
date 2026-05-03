@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import type { KylrixApp } from '@/lib/sdk';
 
 export type IslandPanel = 'ecosystem' | 'profile' | 'search';
-export type KylrixApp = 'root' | 'vault' | 'flow' | 'note' | 'connect';
 export type IslandType = 'success' | 'error' | 'warning' | 'info' | 'pro' | 'system' | 'suggestion' | 'connect';
 
 export interface IslandNotification {

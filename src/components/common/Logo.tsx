@@ -18,7 +18,7 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({ 
   sx, 
   size = 40, 
-  app = 'root', 
+  app = 'kylrix', 
   variant = 'full',
   component,
   href,
@@ -29,22 +29,21 @@ const Logo: React.FC<LogoProps> = ({
 
   // App Specific Colors (Muted V3 Palette)
   const appColors: Record<KylrixApp, { primary: string; secondary: string; label: string }> = {
-    root: { primary: "#6366F1", secondary: "#6366F1", label: "KYLRIX" },
+    kylrix: { primary: "#6366F1", secondary: "#6366F1", label: "KYLRIX" },
     accounts: { primary: "#6366F1", secondary: "#6366F1", label: "ACCOUNTS" },
     vault: { primary: "#6366F1", secondary: "#10B981", label: "VAULT" }, // Left: Indigo, Right: Emerald
     flow: { primary: "#6366F1", secondary: "#A855F7", label: "FLOW" },   // Left: Indigo, Right: Amethyst
     note: { primary: "#6366F1", secondary: "#EC4899", label: "NOTE" },   // Left: Indigo, Right: Pink
     connect: { primary: "#6366F1", secondary: "#F59E0B", label: "CONNECT" }, // Left: Indigo, Right: Amber
-    kylrix: { primary: "#6366F1", secondary: "#6366F1", label: "KYLRIX" }
   };
 
-  const current = appColors[app] || appColors.root;
+  const current = appColors[app] || appColors.kylrix;
 
   // The Identity Split:
   // Left Hemisphere = Application Specific Color
   // Right Hemisphere = Ecosystem Indigo (#6366F1)
   const leftColor = current.secondary;
-  const rightColor = app === 'root' ? (isDarkMode ? "#FFFFFF" : "#000000") : current.primary;
+  const rightColor = app === 'kylrix' ? (isDarkMode ? "#FFFFFF" : "#000000") : current.primary;
   
   // Center cutout color (punches through to background)
   const cutoutColor = isDarkMode ? "#0A0908" : "#FFFFFF";
@@ -87,7 +86,7 @@ const Logo: React.FC<LogoProps> = ({
             transform="rotate(45 50 50)"
           />
         );
-      case 'root': // Diamond
+      case 'kylrix': // Diamond
       default:
         return <polygon points="50,38 62,50 50,62 38,50" fill={cutoutColor} />;
     }

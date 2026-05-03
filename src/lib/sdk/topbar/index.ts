@@ -108,7 +108,7 @@ export interface TopbarProfileSurface {
 }
 
 export function createTopbarAction(action: Omit<TopbarAction, 'accent'> & { app?: KylrixApp; accent?: string }): TopbarAction {
-  const accent = action.accent || getAppTone(action.app || 'root').secondary;
+  const accent = action.accent || getAppTone(action.app || 'kylrix').secondary;
   return {
     ...action,
     accent,
@@ -176,7 +176,7 @@ export function createEcosystemPanelItems(currentApp: KylrixApp = 'note'): Topba
     { id: 'vault', app: 'vault', label: 'Vault', description: 'Passwords, 2FA, and keys.', selected: currentApp === 'vault' },
     { id: 'flow', app: 'flow', label: 'Goals', description: 'Tasks, plans, and follow-through.', selected: currentApp === 'flow' },
     { id: 'connect', app: 'connect', label: 'Connect', description: 'Secure messages and sharing.', selected: currentApp === 'connect' },
-    { id: 'accounts', app: 'root', label: 'Accounts', description: 'Your Kylrix account.', selected: currentApp === 'root' },
+    { id: 'accounts', app: 'kylrix', label: 'Accounts', description: 'Your Kylrix account.', selected: currentApp === 'kylrix' },
   ];
 }
 
@@ -233,7 +233,7 @@ export function createTopbarSearchSurface(params: {
       kind: 'moment',
       title: 'Open moments',
       description: 'Jump into the feed and surface recent moments.',
-      href: resolveUrl('root', '/'),
+      href: resolveUrl('kylrix', '/'),
       accent: '#F59E0B',
       terms: ['moment', 'moments', 'feed', 'post'],
     },
@@ -281,7 +281,7 @@ export function createTopbarSearchSurface(params: {
       kind: 'moment',
       title: 'Search moments',
       description: 'Search feed posts and public replies.',
-      href: resolveUrl('root', `/?search=${encodeURIComponent(query)}`),
+      href: resolveUrl('kylrix', `/?search=${encodeURIComponent(query)}`),
       accent: '#F59E0B',
       terms: ['moment', 'moments', 'post', 'feed'],
     },
@@ -308,7 +308,7 @@ export function createTopbarSearchSurface(params: {
       kind: 'app',
       title: 'Search apps',
       description: 'Jump between Kylrix apps instantly.',
-      href: resolveUrl('root', '/'),
+      href: resolveUrl('kylrix', '/'),
       accent: '#F59E0B',
       terms: ['app', 'apps', 'note', 'flow', 'vault', 'connect'],
     },

@@ -234,7 +234,7 @@ export default function CreateNoteForm({
       format,
       tags: normalizedTags,
       isPublic,
-      metadata: {
+      metadata: JSON.stringify({
         paywall: hasPaywall && paywallAmount ? {
           enabled: true,
           amount: typeof paywallAmount === 'number' ? paywallAmount : parseFloat(paywallAmount as any) || 0,
@@ -244,7 +244,7 @@ export default function CreateNoteForm({
           amount: 0,
           currency: 'USD',
         },
-      },
+      }),
     };
 
     const hasMeaningfulContent = Boolean(payload.title || payload.content || (resolvedNoteId && payload.tags.length));
@@ -533,10 +533,12 @@ export default function CreateNoteForm({
                     size="small"
                     type="number"
                     inputProps={{ step: '0.01', min: '0' }}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    }}
                     value={paywallAmount}
                     onChange={(e) => setPaywallAmount(e.target.value ? parseFloat(e.target.value) : '')}
                     placeholder="Price in USD"
-                    startAdornment={<InputAdornment position="start">$</InputAdornment>}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '12px',
