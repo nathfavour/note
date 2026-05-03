@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Drawer,
   Box, 
@@ -14,6 +14,38 @@ const Overlay: React.FC = () => {
   const { isOpen, content, closeOverlay } = useOverlay();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isExpanded, setIsExpanded] = useState(false);
+  const dragStartY = useRef(0);
+  const startHeight = useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    dragStartY.current = e.clientY;
+    startHeight.current = isExpanded ? window.innerHeight : window.innerHeight * 0.6;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (dragStartY.current === 0) return;
+    
+    const deltaY = dragStartY.current - e.clientY;
+    const threshold = 100;
+    
+    // If dragging up more than threshold, expand
+    if (deltaY > threshold && !isExpanded) {
+      setIsExpanded(true);
+    }
+    // If dragging down more than threshold, collapse
+    if (deltaY < -threshold && isExpanded) {
+      setIsExpanded(false);
+    }
+  };
+
+  const handleMouseUp = () => {
+    dragStartY.current = 0;
+  };
+
+  const drawerHeight = isMobile 
+    ? (isExpanded ? '100dvh' : '60dvh')
+    : '100%';
 
   return (
     <Drawer
@@ -25,7 +57,7 @@ const Overlay: React.FC = () => {
         sx: {
           width: isMobile ? '100%' : 'min(100vw, 720px)',
           maxWidth: isMobile ? '100%' : '720px',
-          height: isMobile ? '92dvh' : '100%',
+          height: drawerHeight,
           maxHeight: '100dvh',
           borderTopLeftRadius: isMobile ? '24px' : 0,
           borderTopRightRadius: isMobile ? '24px' : 0,
@@ -35,6 +67,7 @@ const Overlay: React.FC = () => {
           boxShadow: '0 24px 48px rgba(0,0,0,0.45)',
           display: 'flex',
           flexDirection: 'column',
+          transition: 'height 0.3s ease-out',
         }
       }}
       slotProps={{
@@ -56,7 +89,11 @@ const Overlay: React.FC = () => {
             minHeight: 0,
             flex: 1,
             maxHeight: '100vh',
+            userSelect: 'none',
           }}
+          onMouseDown={isMobile ? handleMouseDown : undefined}
+          onMouseMove={isMobile ? handleMouseMove : undefined}
+          onMouseUp={isMobile ? handleMouseUp : undefined}
           onClick={(e) => e.stopPropagation()}
         >
           {content}
