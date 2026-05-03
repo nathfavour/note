@@ -6,9 +6,12 @@ import {
   Button,
   Chip,
   Divider,
+  FormControlLabel,
   IconButton,
+  InputAdornment,
   Paper,
   Stack,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -21,11 +24,13 @@ import {
   Close as CloseIcon,
   Code as CodeIcon,
   Description as DescriptionIcon,
+  AttachMoney as MoneyIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   FormatBold as BoldIcon,
   FormatItalic as ItalicIcon,
   FormatUnderlined as UnderlineIcon,
+  DragHandle as DragHandleIcon,
   LocalOffer as TagIcon,
   Lock as PrivateIcon,
   Public as PublicIcon,
@@ -39,6 +44,7 @@ import type { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
 import { useNotes } from '@/context/NotesContext';
 import { useDataNexus } from '@/context/DataNexusContext';
+import { ecosystemSecurity } from '@/lib/ecosystem/security';
 
 interface CreateNoteFormProps {
   onNoteCreated: (note: Notes) => void;
@@ -65,6 +71,7 @@ export default function CreateNoteForm({
   const { showSuccess, showError } = useToast();
   const { notes: allNotes } = useNotes();
   const { fetchOptimized, getCachedData, setCachedData } = useDataNexus();
+  const hasMasterKey = ecosystemSecurity.status.hasKey;
 
   const [title, setTitle] = useState(initialContent?.title || '');
   const [content, setContent] = useState(initialContent?.content || '');
@@ -78,6 +85,8 @@ export default function CreateNoteForm({
   const [resolvedNoteId, setResolvedNoteId] = useState<string | undefined>(noteId);
   const [isHydrated, setIsHydrated] = useState(false);
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState('');
+  const [hasPaywall, setHasPaywall] = useState(false);
+  const [paywallAmount, setPaywallAmount] = useState<number | ''>(0);
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
   const createdToastShown = useRef(false);
 
@@ -98,8 +107,10 @@ export default function CreateNoteForm({
     format,
     tags: normalizeTags(tags),
     isPublic,
+    hasPaywall,
+    paywallAmount,
     resolvedNoteId: resolvedNoteId || null,
-  }), [title, content, format, tags, isPublic, resolvedNoteId]);
+  }), [title, content, format, tags, isPublic, hasPaywall, paywallAmount, resolvedNoteId]);
 
   const isDirty = snapshot !== lastSavedSnapshot;
 
@@ -125,12 +136,17 @@ export default function CreateNoteForm({
         setFormat((cached.format as 'text' | 'doodle') || initialFormat);
         setTags(normalizeTags(cached.tags || []));
         setIsPublic(!!cached.isPublic);
+        const paywall = (cached as any).metadata?.paywall;
+        setHasPaywall(!!paywall?.enabled);
+        setPaywallAmount(paywall?.amount || 0);
         setLastSavedSnapshot(JSON.stringify({
           title: cached.title || '',
           content: cached.content || '',
           format: (cached.format as 'text' | 'doodle') || 'text',
           tags: normalizeTags(cached.tags || []),
           isPublic: !!cached.isPublic,
+          hasPaywall: !!paywall?.enabled,
+          paywallAmount: paywall?.amount || 0,
           resolvedNoteId: cached.$id,
         }));
       }
@@ -144,12 +160,17 @@ export default function CreateNoteForm({
         setFormat((loaded.format as 'text' | 'doodle') || initialFormat);
         setTags(normalizeTags(loaded.tags || []));
         setIsPublic(!!loaded.isPublic);
+        const paywall = (loaded as any).metadata?.paywall;
+        setHasPaywall(!!paywall?.enabled);
+        setPaywallAmount(paywall?.amount || 0);
         setLastSavedSnapshot(JSON.stringify({
           title: loaded.title || '',
           content: loaded.content || '',
           format: (loaded.format as 'text' | 'doodle') || 'text',
           tags: normalizeTags(loaded.tags || []),
           isPublic: !!loaded.isPublic,
+          hasPaywall: !!paywall?.enabled,
+          paywallAmount: paywall?.amount || 0,
           resolvedNoteId: loaded.$id,
         }));
       } catch (error) {
@@ -213,6 +234,17 @@ export default function CreateNoteForm({
       format,
       tags: normalizedTags,
       isPublic,
+      metadata: {
+        paywall: hasPaywall && paywallAmount ? {
+          enabled: true,
+          amount: typeof paywallAmount === 'number' ? paywallAmount : parseFloat(paywallAmount as any) || 0,
+          currency: 'USD',
+        } : {
+          enabled: false,
+          amount: 0,
+          currency: 'USD',
+        },
+      },
     };
 
     const hasMeaningfulContent = Boolean(payload.title || payload.content || (resolvedNoteId && payload.tags.length));
@@ -249,12 +281,15 @@ export default function CreateNoteForm({
 
       if (saved?.$id) {
         setCachedData(`note_${saved.$id}`, saved);
+        const paywall = (saved as any).metadata?.paywall;
         setLastSavedSnapshot(JSON.stringify({
           title: saved.title || '',
           content: saved.content || '',
           format: (saved.format as 'text' | 'doodle') || format,
           tags: normalizeTags((saved.tags || []) as string[]),
           isPublic: !!saved.isPublic,
+          hasPaywall: !!paywall?.enabled,
+          paywallAmount: paywall?.amount || 0,
           resolvedNoteId: saved.$id,
         }));
       }
@@ -269,7 +304,7 @@ export default function CreateNoteForm({
     } finally {
       setIsSaving(false);
     }
-  }, [content, format, isPublic, onNoteCreated, resolvedNoteId, setCachedData, showError, showSuccess, tags, title]);
+  }, [content, format, isPublic, hasPaywall, paywallAmount, onNoteCreated, resolvedNoteId, setCachedData, showError, showSuccess, tags, title]);
 
   const handleClose = useCallback(async () => {
     const shouldPersist = Boolean((resolvedNoteId && isDirty) || (!resolvedNoteId && (title.trim() || content.trim())));
@@ -331,6 +366,9 @@ export default function CreateNoteForm({
             bgcolor: 'rgba(22, 20, 18, 0.95)',
           }}
         >
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+            <DragHandleIcon sx={{ fontSize: 20, color: 'rgba(255,255,255,0.3)' }} />
+          </Box>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Box
               sx={{
@@ -474,6 +512,40 @@ export default function CreateNoteForm({
                 </Stack>
               )}
             </Box>
+
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
+
+            {hasMasterKey && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <MoneyIcon sx={{ fontSize: 18, color: 'rgba(255,255,255,0.5)' }} />
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Paywall
+                  </Typography>
+                </Stack>
+                <FormControlLabel
+                  control={<Switch checked={hasPaywall} onChange={(e) => setHasPaywall(e.target.checked)} size="small" />}
+                  label={<Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.82)' }}>Lock behind paywall</Typography>}
+                />
+                {hasPaywall && (
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    inputProps={{ step: '0.01', min: '0' }}
+                    value={paywallAmount}
+                    onChange={(e) => setPaywallAmount(e.target.value ? parseFloat(e.target.value) : '')}
+                    placeholder="Price in USD"
+                    startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                      }
+                    }}
+                  />
+                )}
+              </Box>
+            )}
 
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
