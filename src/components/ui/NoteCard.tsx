@@ -331,10 +331,8 @@ const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onUpdate, onDelete
   };
 
   const handlePaywallUpdate = (updatedNote: any) => {
-    // Update the note in the parent context if needed
-    if (onNoteSelect) {
-      onNoteSelect(updatedNote);
-    }
+    // Update the note in the local context without triggering profile fetches
+    upsertNote(updatedNote as Notes);
   };
 
   const contextMenuItems = [
