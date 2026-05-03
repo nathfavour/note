@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDrawerState } from '@/components/ui/DrawerStateContext';
+import { createBottomBarSurface, getBottomBarViewportOffset } from '@/lib/sdk/bottombar';
 
 import { 
   Box, 
