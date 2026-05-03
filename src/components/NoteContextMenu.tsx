@@ -16,9 +16,10 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Close as CloseIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
+import { Close as CloseIcon, DragHandle as DragHandleIcon, Check as CheckIcon } from '@mui/icons-material';
 import type { Notes } from '@/types/appwrite';
 import { updateNote } from '@/lib/appwrite';
+import { useDrawerState } from '@/components/ui/DrawerStateContext';
 
 interface PaywallDrawerProps {
   open: boolean;
@@ -35,6 +36,7 @@ const PaywallDrawer: React.FC<PaywallDrawerProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { setIsDrawerOpen } = useDrawerState();
   const [isExpanded, setIsExpanded] = useState(false);
   const dragStartY = useRef(0);
 
@@ -43,21 +45,20 @@ const PaywallDrawer: React.FC<PaywallDrawerProps> = ({
     : note.metadata || {};
   const currentPaywall = metadata?.paywall;
 
-  // Local state - only initialize on mount, not on props change
   const [hasPaywall, setHasPaywall] = useState(() => !!currentPaywall?.enabled);
   const [paywallAmount, setPaywallAmount] = useState<number | ''>(() => currentPaywall?.amount || '');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Reset state when drawer closes
   React.useEffect(() => {
     if (!open) {
       setIsExpanded(false);
+      setIsDrawerOpen(false);
     } else {
-      // Initialize on open
       setHasPaywall(!!currentPaywall?.enabled);
       setPaywallAmount(currentPaywall?.amount || '');
+      setIsDrawerOpen(true);
     }
-  }, [open, currentPaywall]);
+  }, [open, currentPaywall, setIsDrawerOpen]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     dragStartY.current = e.clientY;
@@ -111,11 +112,16 @@ const PaywallDrawer: React.FC<PaywallDrawerProps> = ({
     }
   };
 
+  const handleClose = () => {
+    setIsDrawerOpen(false);
+    onClose();
+  };
+
   return (
     <Drawer
       anchor={isMobile ? 'bottom' : 'right'}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
@@ -160,85 +166,211 @@ const PaywallDrawer: React.FC<PaywallDrawerProps> = ({
         >
           {/* Header with drag handle */}
           {isMobile && (
-            <Box sx={{ p: 2, textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <DragHandleIcon sx={{ fontSize: 20, color: 'rgba(255,255,255,0.3)' }} />
+            <Box sx={{ 
+              p: 2, 
+              pt: 2.5,
+              textAlign: 'center', 
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <DragHandleIcon sx={{ fontSize: 20, color: 'rgba(255,255,255,0.2)' }} />
             </Box>
           )}
 
-          {/* Close button for desktop */}
+          {/* Desktop Close button */}
           {!isMobile && (
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <IconButton onClick={onClose} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Box sx={{ 
+              p: 2.5, 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid rgba(255,255,255,0.05)' 
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-satoshi)',
+                  fontSize: '1.125rem',
+                  letterSpacing: '-0.01em'
+                }}
+              >
+                {currentPaywall?.enabled ? 'Edit Paywall' : 'Add Paywall'}
+              </Typography>
+              <IconButton 
+                onClick={handleClose} 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.6)',
+                  '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.05)' }
+                }}
+              >
                 <CloseIcon />
               </IconButton>
             </Box>
           )}
 
           {/* Content */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-            <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 3 }}>
-              {currentPaywall?.enabled ? 'Edit Paywall' : 'Add Paywall'}
-            </Typography>
+          <Box sx={{ flex: 1, overflow: 'auto', p: isMobile ? 2.5 : 3 }}>
+            {isMobile && (
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-satoshi)',
+                  fontSize: '1.125rem',
+                  letterSpacing: '-0.01em',
+                  mb: 3
+                }}
+              >
+                {currentPaywall?.enabled ? 'Edit Paywall' : 'Add Paywall'}
+              </Typography>
+            )}
 
-            <Stack spacing={2}>
-              <FormControlLabel
-                control={
-                  <Switch 
-                    checked={hasPaywall} 
-                    onChange={(e) => setHasPaywall(e.target.checked)}
+            <Stack spacing={3}>
+              <Box sx={{
+                p: 2.5,
+                borderRadius: '16px',
+                bgcolor: 'rgba(99, 102, 241, 0.08)',
+                border: '1px solid rgba(99, 102, 241, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }}>
+                <Box>
+                  <FormControlLabel
+                    control={
+                      <Switch 
+                        checked={hasPaywall} 
+                        onChange={(e) => setHasPaywall(e.target.checked)}
+                        sx={{
+                          '& .MuiSwitch-switchBase': {
+                            color: 'rgba(255,255,255,0.4)',
+                          },
+                          '& .MuiSwitch-switchBase.Mui-checked': {
+                            color: '#6366F1',
+                          },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                            backgroundColor: '#6366F1',
+                          },
+                        }}
+                      />
+                    }
+                    label=""
+                    sx={{ m: 0 }}
+                  />
+                </Box>
+                <Box>
+                  <Typography 
+                    sx={{ 
+                      color: 'white', 
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-satoshi)',
+                      fontSize: '0.95rem',
+                      letterSpacing: '-0.01em'
+                    }}
+                  >
+                    Lock content with paywall
+                  </Typography>
+                  <Typography 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.5)', 
+                      fontFamily: 'var(--font-satoshi)',
+                      fontSize: '0.85rem',
+                      mt: 0.5,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    Readers must pay to access this note
+                  </Typography>
+                </Box>
+              </Box>
+
+              {hasPaywall && (
+                <Box>
+                  <Typography 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.7)', 
+                      fontFamily: 'var(--font-satoshi)',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      mb: 1.5,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    Price (USD)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    inputProps={{ step: '0.01', min: '0', max: '9999.99' }}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.6)' }}>$</InputAdornment>,
+                      endAdornment: <InputAdornment position="end" sx={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-satoshi)' }}>USD</InputAdornment>,
+                    }}
+                    value={paywallAmount}
+                    onChange={(e) => setPaywallAmount(e.target.value ? parseFloat(e.target.value) : '')}
+                    placeholder="0.00"
                     sx={{
-                      '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#6366F1',
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '14px',
+                        color: 'white',
+                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-mono)',
+                        '& input::placeholder': {
+                          color: 'rgba(255,255,255,0.3)',
+                          opacity: 1,
+                        }
                       },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#6366F1',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        transition: 'border-color 0.2s'
+                      },
+                      '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255,255,255,0.12)',
+                      },
+                      '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(99, 102, 241, 0.4)',
                       },
                     }}
                   />
-                }
-                label={<span style={{ color: 'white', fontWeight: 500 }}>Lock this note behind paywall</span>}
-              />
-              {hasPaywall && (
-                <TextField
-                  fullWidth
-                  size="small"
-                  type="number"
-                  inputProps={{ step: '0.01', min: '0' }}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  }}
-                  value={paywallAmount}
-                  onChange={(e) => setPaywallAmount(e.target.value ? parseFloat(e.target.value) : '')}
-                  placeholder="Price in USD"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '12px',
-                      color: 'white',
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255,255,255,0.12)',
-                    },
-                    '& .MuiOutlinedInput-input::placeholder': {
-                      color: 'rgba(255,255,255,0.3)',
-                      opacity: 1,
-                    },
-                  }}
-                />
+                </Box>
               )}
             </Stack>
           </Box>
 
           {/* Footer with action buttons */}
-          <Box sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 2 }}>
+          <Box sx={{ 
+            p: isMobile ? 2.5 : 3, 
+            borderTop: '1px solid rgba(255,255,255,0.05)', 
+            display: 'flex', 
+            gap: 2,
+            bgcolor: 'rgba(0,0,0,0.1)'
+          }}>
             <Button
-              onClick={onClose}
+              onClick={handleClose}
               fullWidth
               sx={{ 
                 color: 'rgba(255,255,255,0.7)',
-                borderColor: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '12px',
+                borderColor: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '14px',
+                fontFamily: 'var(--font-satoshi)',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                py: 1.75,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  color: 'white',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  bgcolor: 'rgba(255,255,255,0.04)'
+                }
               }}
             >
               Cancel
@@ -248,21 +380,33 @@ const PaywallDrawer: React.FC<PaywallDrawerProps> = ({
               disabled={isSaving || (hasPaywall && !paywallAmount)}
               variant="contained"
               fullWidth
+              startIcon={isSaving ? undefined : <CheckIcon />}
               sx={{
                 bgcolor: '#6366F1',
                 color: 'white',
-                borderRadius: '12px',
+                borderRadius: '14px',
+                fontFamily: 'var(--font-satoshi)',
                 fontWeight: 700,
+                fontSize: '0.95rem',
+                py: 1.75,
+                transition: 'all 0.2s',
+                boxShadow: '0 8px 16px rgba(99, 102, 241, 0.3)',
                 '&:hover': {
                   bgcolor: '#4F46E5',
+                  boxShadow: '0 12px 24px rgba(99, 102, 241, 0.4)',
+                  transform: 'translateY(-1px)'
+                },
+                '&:active': {
+                  transform: 'translateY(0)'
                 },
                 '&:disabled': {
-                  bgcolor: 'rgba(99,102,241,0.4)',
+                  bgcolor: 'rgba(99, 102, 241, 0.4)',
                   color: 'rgba(255,255,255,0.5)',
+                  boxShadow: 'none',
                 }
               }}
             >
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? 'Saving...' : 'Save Paywall'}
             </Button>
           </Box>
         </Box>

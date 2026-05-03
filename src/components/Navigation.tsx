@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useSidebar } from '@/components/ui/SidebarContext';
-import { createBottomBarSurface, getBottomBarViewportOffset } from '@/lib/sdk/bottombar';
+import { useDrawerState } from '@/components/ui/DrawerStateContext';
 
 import { 
   Box, 
@@ -30,6 +30,7 @@ import {
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
+  const { isDrawerOpen } = useDrawerState();
   const surface = createBottomBarSurface({
     activeHref: pathname || '/notes',
     items: [
@@ -39,6 +40,8 @@ export const MobileBottomNav: React.FC = () => {
       { id: 'extensions', label: 'Caps', href: '/extensions' },
     ],
   });
+
+  if (isDrawerOpen) return null;
 
   return (
     <Box

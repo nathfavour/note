@@ -17,6 +17,7 @@ import { EcosystemPortal } from "@/components/common/EcosystemPortal";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { SudoProvider } from "@/context/SudoContext";
 import { NotesProvider } from "@/context/NotesContext";
+import { DrawerStateProvider } from "@/components/ui/DrawerStateContext";
 
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { darkTheme, lightTheme } from "@/theme/theme";
@@ -42,42 +43,44 @@ export function Providers({ children }: { children: React.ReactNode }) {
     useLastActiveApp();
     
     return (
-        <DataNexusProvider>
-            <SubscriptionProvider>
-                <EcosystemProvider>
-                    <AppThemeProvider>
-                        <AuthProvider>
-                            <NotificationProvider>
-                                <NotesProvider>
-                                    <MuiThemeWrapper>
-                                        <SudoProvider>
-                                            <IslandProvider>
-                                                <PotatoProvider>
-                                                    <ToastProvider>
-                                                        <OverlayProvider>
-                                                            <LoadingProvider>
-                                                                <ContextMenuProvider>
-                                                                    <RouteGuard>
-                                                                        {children}
-                                                                    </RouteGuard>
-                                                                    <Overlay />
-                                                                    <GlobalContextMenu />
-                                                                    <GlobalShortcuts />
-                                                                    <EcosystemPortal />
-                                                                </ContextMenuProvider>
-                                                            </LoadingProvider>
-                                                        </OverlayProvider>
-                                                    </ToastProvider>
-                                                </PotatoProvider>
-                                            </IslandProvider>
-                                        </SudoProvider>
-                                    </MuiThemeWrapper>
-                                </NotesProvider>
-                            </NotificationProvider>
-                        </AuthProvider>
-                    </AppThemeProvider>
-                </EcosystemProvider>
-            </SubscriptionProvider>
-        </DataNexusProvider>
+        <DrawerStateProvider>
+            <DataNexusProvider>
+                <SubscriptionProvider>
+                    <EcosystemProvider>
+                        <AppThemeProvider>
+                            <AuthProvider>
+                                <NotificationProvider>
+                                    <NotesProvider>
+                                        <MuiThemeWrapper>
+                                            <SudoProvider>
+                                                <IslandProvider>
+                                                    <PotatoProvider>
+                                                        <ToastProvider>
+                                                            <OverlayProvider>
+                                                                <LoadingProvider>
+                                                                    <ContextMenuProvider>
+                                                                        <RouteGuard>
+                                                                            {children}
+                                                                        </RouteGuard>
+                                                                        <Overlay />
+                                                                        <GlobalContextMenu />
+                                                                        <GlobalShortcuts />
+                                                                        <EcosystemPortal />
+                                                                    </ContextMenuProvider>
+                                                                </LoadingProvider>
+                                                            </OverlayProvider>
+                                                        </ToastProvider>
+                                                    </PotatoProvider>
+                                                </IslandProvider>
+                                            </SudoProvider>
+                                        </MuiThemeWrapper>
+                                    </NotesProvider>
+                                </NotificationProvider>
+                            </AuthProvider>
+                        </AppThemeProvider>
+                    </EcosystemProvider>
+                </SubscriptionProvider>
+            </DataNexusProvider>
+        </DrawerStateProvider>
     );
 }
