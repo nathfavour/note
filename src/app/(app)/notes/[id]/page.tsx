@@ -25,8 +25,8 @@ import {
   ArrowBack as BackIcon
 } from '@mui/icons-material';
 import { useToast } from '@/components/ui/Toast';
-import CommentsSection from '@/app/(app)/notes/Comments';
-import NoteReactions from '@/app/(app)/notes/NoteReactions';
+import CommentsSection from '@/app/(app)/note/(app)/notes/Comments';
+import NoteReactions from '@/app/(app)/note/(app)/notes/NoteReactions';
 import SudoGuard from '@/components/ui/SudoGuard';
 import { useDataNexus } from '@/context/DataNexusContext';
 

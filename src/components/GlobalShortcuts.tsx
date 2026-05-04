@@ -76,7 +76,7 @@ export default function GlobalShortcuts() {
         e.preventDefault();
         if (window.location.pathname.startsWith("/notes")) {
           // Dynamically import CreateNoteForm when needed
-          import("@/app/(app)/notes/CreateNoteForm").then(({ default: CreateNoteForm }) => {
+          import("@/app/(app)/note/(app)/notes/CreateNoteForm").then(({ default: CreateNoteForm }) => {
             openOverlay(<CreateNoteForm onNoteCreated={(n) => upsertNote(n)} />);
           });
         } else {

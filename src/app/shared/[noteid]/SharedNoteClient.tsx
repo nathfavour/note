@@ -49,8 +49,8 @@ import {
   keyframes
 } from '@mui/material';
 import NextLink from 'next/link';
-import CommentsSection from '@/app/(app)/notes/Comments';
-import NoteReactions from '@/app/(app)/notes/NoteReactions';
+import CommentsSection from '@/app/(app)/note/(app)/notes/Comments';
+import NoteReactions from '@/app/(app)/note/(app)/notes/NoteReactions';
 import NoteTopbar from '@/components/common/NoteTopbar';
 
 import Logo from '@/components/common/Logo';
